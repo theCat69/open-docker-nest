@@ -122,11 +122,9 @@ derive_local_project_root_from_symlink_target() {
   local symlink_target_path="$1"
   local derived_project_root
   local package_manifest_path
-  local plugin_entry_candidate_path
 
   derived_project_root="$(resolve_path "$(dirname "${symlink_target_path}")/..")"
   package_manifest_path="${derived_project_root}/package.json"
-  plugin_entry_candidate_path="${derived_project_root}/${LA_BRIGUADE_PLUGIN_ENTRY_RELATIVE}"
 
   if [[ ! -d "${derived_project_root}" ]]; then
     fail "Unable to derive la-briguade local project root from '${symlink_target_path}'. Expected directory at '<resolved-target>/../..' (resolved to '${derived_project_root}'). Remediation: ensure plugins/index.js points into a local la-briguade layout where '../../' reaches the project root, or disable local mode with LA_BRIGUADE_LOCAL_MODE=off."
@@ -138,10 +136,6 @@ derive_local_project_root_from_symlink_target() {
 
   if [[ ! -f "${package_manifest_path}" || ! -r "${package_manifest_path}" ]]; then
     fail "Derived la-briguade local project root is invalid: ${derived_project_root}. Expected a readable package manifest at '${package_manifest_path}' to confirm a project-root mount target. Remediation: ensure plugins/index.js points to a local la-briguade build output where '<resolved-target>/../..' is the project root, or disable local mode with LA_BRIGUADE_LOCAL_MODE=off."
-  fi
-
-  if [[ ! -f "${plugin_entry_candidate_path}" || ! -r "${plugin_entry_candidate_path}" ]]; then
-    fail "Derived la-briguade local project root is invalid: ${derived_project_root}. Expected a readable plugin entry at '${plugin_entry_candidate_path}' to confirm the la-briguade project layout. Remediation: ensure plugins/index.js points to a local la-briguade build output where '<resolved-target>/../..' is the project root, or disable local mode with LA_BRIGUADE_LOCAL_MODE=off."
   fi
 
   printf '%s\n' "${derived_project_root}"
