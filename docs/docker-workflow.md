@@ -24,7 +24,7 @@ bin/opencode-docker [--project <host-path>] [--image <image-ref>] [--shell] [--]
 - Default project mount is the current directory.
 - Override project mount with `--project <host-path>`.
 - Override image with `--image <image-ref>`.
-- `--shell` starts an interactive shell at `/workspace`.
+- `--shell` starts an interactive shell at `/workspace` as user `opencode` with `HOME=/home/opencode`.
 - Without `--shell` and without command args, default command is `opencode`.
 - Any command after `--` is passed through unchanged.
 
@@ -106,6 +106,24 @@ Start an interactive shell:
 bin/opencode-docker --shell
 ```
 
+Validate shell user + home contract:
+
+```bash
+printf 'id -un\nprintf "%s\\n" "$HOME"\nexit\n' | script -q -c "bin/opencode-docker --shell" /dev/null
+# Expected output includes:
+# opencode
+# /home/opencode
+```
+
+Validate shell-mode host ownership mapping:
+
+```bash
+rm -f .tmp-shell-ownership-check
+printf 'echo shell-write > /workspace/.tmp-shell-ownership-check\nexit\n' | script -q -c "bin/opencode-docker --shell" /dev/null
+ls -n .tmp-shell-ownership-check
+# Expected UID/GID match host `id -u` / `id -g` (and are not 0)
+```
+
 Run OpenSpec command parity checks:
 
 ```bash
@@ -114,6 +132,20 @@ bin/opencode-docker -- opencode run "/opsx-propose demo-change"
 bin/opencode-docker -- opencode run "/opsx-explore demo-change"
 bin/opencode-docker -- opencode run "/opsx-apply demo-change"
 bin/opencode-docker -- opencode run "/opsx-archive demo-change"
+```
+
+Validate unchanged default and pass-through behavior:
+
+```bash
+# Default no-arg mode still launches opencode (not implicit shell)
+timeout 8 bin/opencode-docker </dev/null
+
+# Direct command pass-through remains unchanged
+bin/opencode-docker -- /usr/bin/env bash -lc 'printf "%s\n" "$0" "$1" "$2"' passthrough-check alpha beta
+# Expected:
+# passthrough-check
+# alpha
+# beta
 ```
 
 ## Permissions and file ownership

@@ -27,6 +27,10 @@ docker build -t opencode-docker:latest .
 bin/opencode-docker [--project <host-path>] [--image <image-ref>] [--shell] [--] [command ...args]
 ```
 
+- `--shell` opens an interactive shell as user `opencode` with `HOME=/home/opencode`.
+- With no command args and no `--shell`, the wrapper still runs `opencode` by default.
+- Commands provided after `--` are passed through unchanged (`-- <command> ...args`).
+
 ### Common examples
 
 Run the default `opencode` command:

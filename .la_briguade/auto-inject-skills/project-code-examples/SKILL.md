@@ -18,7 +18,7 @@ Examples are intentionally focused excerpts copied from real project code. They 
 ## Available Examples
 - `fail-fast-wrapper-validation.md` — prerequisite/path validation with actionable failures.
 - `safe-bash-argument-forwarding.md` — array-safe command forwarding into `docker run`.
-- `container-uid-gid-remap.md` — non-root UID/GID remapping validation/export.
+- `container-uid-gid-remap.md` — non-root UID/GID remapping with UID-conflict-safe reassignment before export.
 - `docker-non-root-entrypoint.md` — Dockerfile pattern for tini + custom entrypoint.
 - `openspec-spec-driven-config.md` — minimal OpenSpec `schema: spec-driven` config baseline.
 - `conditional-runtime-bind-mounts.md` — conditional bind-mount wiring for optional runtime integration paths.
