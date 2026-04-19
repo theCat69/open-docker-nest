@@ -1,4 +1,4 @@
-<!-- Demonstrates UID/GID remapping with non-root guard and env export. -->
+<!-- Focused excerpt from production entrypoint support logic (docker/user-map.sh); HOST_UID/HOST_GID are provided by the wrapper at runtime. -->
 ```bash
 if ! [[ "${HOST_UID}" =~ ^[0-9]+$ && "${HOST_GID}" =~ ^[0-9]+$ ]]; then
   echo "Error: HOST_UID and HOST_GID must be numeric values." >&2

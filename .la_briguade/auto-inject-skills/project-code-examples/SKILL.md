@@ -8,11 +8,12 @@ Defines how to use and maintain examples under `.code-examples-for-ai/` for this
 
 ## Invariants
 - Examples must come from real repository patterns, not generic pseudocode.
-- One pattern per file, concise and immediately reusable.
+- One pattern per file, concise, and presented as a focused excerpt (not a full drop-in file).
 - Example filenames stay kebab-case and descriptive.
 
 ## Intro
-Use these examples as the canonical style reference for Bash wrappers, Docker runtime wiring, and OpenSpec configuration patterns.
+Use these examples as canonical style references for Bash wrappers, Docker runtime wiring, and OpenSpec configuration patterns.
+Examples are intentionally focused excerpts copied from real project code. They may omit surrounding setup (variable declarations, helper functions, or file-level context) and are meant for adaptation, not copy-paste as standalone files.
 
 ## Available Examples
 - `fail-fast-wrapper-validation.md` — prerequisite/path validation with actionable failures.
@@ -28,6 +29,7 @@ Use these examples as the canonical style reference for Bash wrappers, Docker ru
 - When introducing a new architectural pattern, add one focused example file.
 - Prefer short snippets with brief inline comments over long files.
 - Keep example content synchronized with current production code.
+- Keep excerpt framing explicit so readers know when setup/context lives outside the snippet.
 
 ## Validation Checklist
 - New examples are derived from existing source files.

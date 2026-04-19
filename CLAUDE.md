@@ -1,8 +1,9 @@
 # Agent Guidance Pointer
 
-Canonical agent guidance for this repository is maintained in:
+Canonical implementation guidance for this repository is maintained in:
 
-- `AGENTS.md`
 - `.la_briguade/auto-inject-skills/`
 
-Auto-inject skills are the source of truth for implementation behavior.
+`AGENTS.md` and `CLAUDE.md` are high-level pointers only.
+
+Auto-inject skills are the sole source of truth for implementation behavior.

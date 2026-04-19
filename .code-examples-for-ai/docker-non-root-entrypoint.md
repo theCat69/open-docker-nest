@@ -1,4 +1,4 @@
-<!-- Demonstrates Docker runtime setup with tini entrypoint and non-root defaults. -->
+<!-- Focused excerpt from production Dockerfile; shows runtime wiring pattern, not the full build file. -->
 ```dockerfile
 FROM node:22-bookworm-slim
 

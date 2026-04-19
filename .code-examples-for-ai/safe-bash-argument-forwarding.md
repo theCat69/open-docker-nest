@@ -1,4 +1,4 @@
-<!-- Demonstrates safe array-based Docker argument and command forwarding. -->
+<!-- Focused excerpt from production wrapper logic (bin/opencode-docker); variables like shell_mode, CONTAINER_PROJECT_DIR, and image_ref are defined in surrounding code. -->
 ```bash
 declare -a passthrough_command=()
 

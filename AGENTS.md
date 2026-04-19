@@ -1,6 +1,7 @@
 # Implementer Agent System
 
-This repository uses auto-injected project skills as the canonical agent guidance.
+This repository uses auto-injected project skills as the canonical implementation guidance.
+AGENTS.md and CLAUDE.md are high-level pointers only.
 
 ## Canonical Skills Location
 
