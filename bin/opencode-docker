@@ -1,0 +1,140 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_NAME="$(basename "$0")"
+DEFAULT_IMAGE="opencode-docker:latest"
+CONTAINER_PROJECT_DIR="/workspace"
+
+usage() {
+  cat <<'EOF'
+Usage:
+  bin/opencode-docker [--project <host-path>] [--image <image-ref>] [--shell] [--] [command ...args]
+
+Options:
+  --project <host-path>  Host project directory to mount (default: current directory)
+  --image <image-ref>    Docker image reference (default: opencode-docker:latest)
+  --shell                Start an interactive shell inside the container
+  -h, --help             Show this help message
+EOF
+}
+
+fail() {
+  local message="$1"
+  echo "${SCRIPT_NAME}: ${message}" >&2
+  exit 1
+}
+
+ensure_dir() {
+  local dir_path="$1"
+
+  if [[ -d "${dir_path}" ]]; then
+    return 0
+  fi
+
+  if mkdir -p "${dir_path}" 2>/dev/null; then
+    return 0
+  fi
+
+  fail "Unable to create persistence directory: ${dir_path}. Remediation: verify parent directory ownership/permissions or create it manually, then re-run."
+}
+
+resolve_path() {
+  local input_path="$1"
+
+  if command -v realpath >/dev/null 2>&1; then
+    realpath "${input_path}"
+    return
+  fi
+
+  if command -v python3 >/dev/null 2>&1; then
+    python3 -c 'import os,sys; print(os.path.realpath(sys.argv[1]))' "${input_path}"
+    return
+  fi
+
+  fail "Unable to resolve path '${input_path}'. Install 'realpath' or 'python3'."
+}
+
+if ! command -v docker >/dev/null 2>&1; then
+  fail "Docker CLI is required but was not found in PATH. Install Docker and re-run."
+fi
+
+project_path="$(pwd)"
+image_ref="${OPENCODE_DOCKER_IMAGE:-${DEFAULT_IMAGE}}"
+shell_mode=false
+declare -a passthrough_command=()
+
+while [[ "$#" -gt 0 ]]; do
+  case "$1" in
+    --project)
+      [[ "$#" -ge 2 ]] || fail "--project requires a value"
+      project_path="$2"
+      shift 2
+      ;;
+    --image)
+      [[ "$#" -ge 2 ]] || fail "--image requires a value"
+      image_ref="$2"
+      shift 2
+      ;;
+    --shell)
+      shell_mode=true
+      shift
+      ;;
+    --)
+      shift
+      passthrough_command=("$@")
+      break
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      passthrough_command=("$@")
+      break
+      ;;
+  esac
+done
+
+if [[ ! -d "${project_path}" ]]; then
+  fail "Project path does not exist or is not a directory: ${project_path}. Remediation: pass a valid directory with --project."
+fi
+
+resolved_project_path="$(resolve_path "${project_path}")"
+
+if [[ ! -d "${resolved_project_path}" ]]; then
+  fail "Resolved project path is not a directory: ${resolved_project_path}."
+fi
+
+persistence_root="${HOME}/.opencode-docker"
+host_config_dir="${persistence_root}/config"
+host_state_dir="${persistence_root}/state"
+host_share_dir="${persistence_root}/share"
+
+ensure_dir "${host_config_dir}"
+ensure_dir "${host_state_dir}"
+ensure_dir "${host_share_dir}"
+
+if [[ "${shell_mode}" == true ]]; then
+  command_to_run=("/bin/bash")
+elif [[ "${#passthrough_command[@]}" -eq 0 ]]; then
+  command_to_run=("opencode")
+else
+  command_to_run=("${passthrough_command[@]}")
+fi
+
+docker_run_args=(
+  --rm
+  --workdir "${CONTAINER_PROJECT_DIR}"
+  --env "HOST_UID=$(id -u)"
+  --env "HOST_GID=$(id -g)"
+  --volume "${resolved_project_path}:${CONTAINER_PROJECT_DIR}"
+  --volume "${host_config_dir}:/home/opencode/.config/opencode"
+  --volume "${host_state_dir}:/home/opencode/.local/state/opencode"
+  --volume "${host_share_dir}:/home/opencode/.local/share/opencode"
+)
+
+if [[ "${shell_mode}" == true || ( -t 0 && -t 1 ) ]]; then
+  docker_run_args+=(--interactive --tty)
+fi
+
+exec docker run "${docker_run_args[@]}" "${image_ref}" "${command_to_run[@]}"
