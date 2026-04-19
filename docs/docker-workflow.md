@@ -13,6 +13,8 @@ This repository supports running OpenCode/OpenSpec workflows inside a single Doc
 docker build -t opencode-docker:latest .
 ```
 
+The image installs `cache-ctrl` during build, so runtime commands can rely on it without startup-time installation.
+
 ## Wrapper usage
 
 ```bash
@@ -42,6 +44,40 @@ The wrapper ensures these directories exist and mounts them on each run:
 - `~/.local/share/opencode` → `/home/opencode/.local/share/opencode`
 
 If directory creation fails, the wrapper exits non-zero and prints the failing path plus remediation guidance.
+
+### Optional la-briguade user config import
+
+On each run, the wrapper checks for `~/la_briguade` on the host:
+
+- If present and accessible, it is bind-mounted to `/home/opencode/la_briguade`.
+- If absent, startup continues (non-fatal).
+- If present but invalid/inaccessible (for example broken symlink or permission issue), startup continues and prints actionable diagnostics.
+
+This config import behavior is independent from la-briguade plugin installation mode.
+
+### Local symlink plugin-dev mode (auto/force/off)
+
+The wrapper supports a local plugin-dev contract for `plugins/index.js` symlink workflows.
+
+Environment contract:
+
+- `LA_BRIGUADE_LOCAL_MODE=auto|force|off` (default: `auto`)
+- `LA_BRIGUADE_LOCAL_PATH` (optional)
+
+Mode behavior:
+
+- `auto`: if `<project>/plugins/index.js` is a symlink, local-link mode activates automatically.
+- `force`: local-link mode is required; preflight fails fast if `plugins/index.js` is missing, not a symlink, or its resolved target is invalid/inaccessible.
+- `off`: local-link mode is disabled even if auto-detect would match.
+
+When local-link mode is active:
+
+- The wrapper resolves the absolute host symlink target from `plugins/index.js`.
+- It bind-mounts that host target into the same absolute path in-container.
+- If `LA_BRIGUADE_LOCAL_PATH` is set, it must exactly match the resolved symlink target; mismatch fails preflight.
+- If `LA_BRIGUADE_LOCAL_PATH` is unset, the resolved symlink target is used.
+
+When `LA_BRIGUADE_LOCAL_MODE=off`, `LA_BRIGUADE_LOCAL_PATH` is ignored.
 
 ### Migration from legacy persistence paths
 
@@ -91,3 +127,10 @@ Result: files created or edited in `/workspace` are owned by the invoking host u
 - `Docker CLI is required but was not found`: install Docker and ensure `docker` is on `PATH`.
 - `Project path does not exist`: pass a valid directory with `--project`.
 - `Unable to create persistence directory`: fix permissions/ownership for the reported path (or create it manually), then rerun.
+- `Invalid LA_BRIGUADE_LOCAL_MODE`: use one of `auto`, `force`, `off`.
+- `LA_BRIGUADE local-link mode requires .../plugins/index.js to be a symlink`: create/update `plugins/index.js` to point to your local la-briguade build output.
+- `LA_BRIGUADE_LOCAL_PATH must exactly match...`: set `LA_BRIGUADE_LOCAL_PATH` to the resolved absolute symlink target or unset it.
+
+## Release plugin installation behavior
+
+Standard/release la-briguade plugin installation via the OpenCode plugin array is unchanged and requires no additional repository-side setup.

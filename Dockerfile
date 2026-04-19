@@ -1,5 +1,8 @@
 FROM node:22-bookworm-slim
 
+ARG CACHE_CTRL_VERSION=1.5.1
+ARG BUN_VERSION=1.3.11
+
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
     bash \
@@ -10,7 +13,14 @@ RUN apt-get update \
     util-linux \
   && rm -rf /var/lib/apt/lists/*
 
-RUN npm install --global "opencode-ai@1.14.17"
+RUN npm install --global "bun@${BUN_VERSION}" \
+  && ln -sf /usr/local/lib/node_modules/bun/bin/bun.exe /usr/local/bin/bun \
+  && bun --version >/dev/null
+
+RUN npm install --global \
+  "opencode-ai@1.14.17" \
+  "@thecat69/cache-ctrl@${CACHE_CTRL_VERSION}" \
+  && cache-ctrl version >/dev/null
 
 RUN if ! getent group opencode >/dev/null; then groupadd opencode; fi \
   && if ! id -u opencode >/dev/null 2>&1; then useradd --gid opencode --create-home --shell /bin/bash opencode; fi

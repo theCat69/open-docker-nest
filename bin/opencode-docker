@@ -4,6 +4,10 @@ set -euo pipefail
 SCRIPT_NAME="$(basename "$0")"
 DEFAULT_IMAGE="opencode-docker:latest"
 CONTAINER_PROJECT_DIR="/workspace"
+CONTAINER_HOME_DIR="/home/opencode"
+LA_BRIGUADE_HOST_CONFIG_RELATIVE="la_briguade"
+LA_BRIGUADE_LOCAL_MODE_DEFAULT="auto"
+LA_BRIGUADE_PLUGIN_ENTRY_RELATIVE="plugins/index.js"
 
 usage() {
   cat <<'EOF'
@@ -22,6 +26,11 @@ fail() {
   local message="$1"
   echo "${SCRIPT_NAME}: ${message}" >&2
   exit 1
+}
+
+warn() {
+  local message="$1"
+  echo "${SCRIPT_NAME}: Warning: ${message}" >&2
 }
 
 ensure_dir() {
@@ -52,6 +61,119 @@ resolve_path() {
   fi
 
   fail "Unable to resolve path '${input_path}'. Install 'realpath' or 'python3'."
+}
+
+resolve_symlink_target_absolute() {
+  local symlink_path="$1"
+  local symlink_dir
+  local raw_target
+
+  symlink_dir="$(dirname "${symlink_path}")"
+  raw_target="$(readlink "${symlink_path}")"
+
+  if [[ "${raw_target}" == /* ]]; then
+    printf '%s\n' "${raw_target}"
+    return
+  fi
+
+  resolve_path "${symlink_dir}/${raw_target}"
+}
+
+validate_local_mode_value() {
+  local local_mode="$1"
+
+  case "${local_mode}" in
+    auto|force|off)
+      return 0
+      ;;
+    *)
+      fail "Invalid LA_BRIGUADE_LOCAL_MODE value '${local_mode}'. Allowed values: auto, force, off."
+      ;;
+  esac
+}
+
+prepare_la_briguade_config_mount() {
+  local host_source_path="$1"
+  local container_target_path="$2"
+
+  if [[ ! -e "${host_source_path}" && ! -L "${host_source_path}" ]]; then
+    return 0
+  fi
+
+  if [[ -L "${host_source_path}" && ! -e "${host_source_path}" ]]; then
+    warn "Skipping la-briguade config import from ${host_source_path}: path is a broken symlink. Remediation: fix symlink target or remove the path if unused."
+    return 0
+  fi
+
+  if [[ ! -r "${host_source_path}" ]]; then
+    warn "Skipping la-briguade config import from ${host_source_path}: source exists but is not readable. Remediation: grant read permissions or remove the path if unused."
+    return 0
+  fi
+
+  if [[ -d "${host_source_path}" && ! -x "${host_source_path}" ]]; then
+    warn "Skipping la-briguade config import from ${host_source_path}: directory is not traversable. Remediation: add execute permission on the directory."
+    return 0
+  fi
+
+  docker_run_args+=(--volume "${host_source_path}:${container_target_path}")
+}
+
+resolve_la_briguade_local_link_target() {
+  local local_mode="$1"
+  local plugin_entry_path="$2"
+  local configured_local_path="$3"
+  local active_mode=false
+  local detected_symlink_target=""
+
+  case "${local_mode}" in
+    off)
+      printf '\n'
+      return 0
+      ;;
+    auto)
+      if [[ -L "${plugin_entry_path}" ]]; then
+        active_mode=true
+      fi
+      ;;
+    force)
+      active_mode=true
+      ;;
+  esac
+
+  if [[ "${active_mode}" != true ]]; then
+    printf '\n'
+    return 0
+  fi
+
+  if [[ ! -L "${plugin_entry_path}" ]]; then
+    fail "LA_BRIGUADE local-link mode requires ${plugin_entry_path} to be a symlink. Remediation: replace ${LA_BRIGUADE_PLUGIN_ENTRY_RELATIVE} with a symlink to your local la-briguade build output."
+  fi
+
+  if [[ ! -e "${plugin_entry_path}" ]]; then
+    fail "LA_BRIGUADE local-link mode found a broken symlink at ${plugin_entry_path}. Remediation: rebuild la-briguade local output or update ${LA_BRIGUADE_PLUGIN_ENTRY_RELATIVE} to a valid target."
+  fi
+
+  detected_symlink_target="$(resolve_symlink_target_absolute "${plugin_entry_path}")"
+
+  if [[ ! -e "${detected_symlink_target}" ]]; then
+    fail "Resolved la-briguade symlink target does not exist: ${detected_symlink_target}. Remediation: rebuild la-briguade local output or update ${LA_BRIGUADE_PLUGIN_ENTRY_RELATIVE}."
+  fi
+
+  if [[ ! -r "${detected_symlink_target}" ]]; then
+    fail "Resolved la-briguade symlink target is not readable: ${detected_symlink_target}. Remediation: fix permissions on the local build target."
+  fi
+
+  if [[ -n "${configured_local_path}" ]]; then
+    if [[ "${local_mode}" == "force" && ( ! -e "${configured_local_path}" || ! -r "${configured_local_path}" ) ]]; then
+      fail "Invalid LA_BRIGUADE_LOCAL_PATH '${configured_local_path}'. In force mode this path must exist and be readable."
+    fi
+
+    if [[ "${configured_local_path}" != "${detected_symlink_target}" ]]; then
+      fail "LA_BRIGUADE_LOCAL_PATH must exactly match the resolved symlink target '${detected_symlink_target}' when local-link mode is active. Received '${configured_local_path}'."
+    fi
+  fi
+
+  printf '%s\n' "${detected_symlink_target}"
 }
 
 if ! command -v docker >/dev/null 2>&1; then
@@ -108,10 +230,15 @@ fi
 host_config_dir="${HOME}/.config/opencode"
 host_state_dir="${HOME}/.local/state/opencode"
 host_share_dir="${HOME}/.local/share/opencode"
+host_la_briguade_config_dir="${HOME}/${LA_BRIGUADE_HOST_CONFIG_RELATIVE}"
+la_briguade_local_mode="${LA_BRIGUADE_LOCAL_MODE:-${LA_BRIGUADE_LOCAL_MODE_DEFAULT}}"
+la_briguade_local_path="${LA_BRIGUADE_LOCAL_PATH:-}"
+plugin_entry_path="${resolved_project_path}/${LA_BRIGUADE_PLUGIN_ENTRY_RELATIVE}"
 
 ensure_dir "${host_config_dir}"
 ensure_dir "${host_state_dir}"
 ensure_dir "${host_share_dir}"
+validate_local_mode_value "${la_briguade_local_mode}"
 
 if [[ "${shell_mode}" == true ]]; then
   command_to_run=("/bin/bash")
@@ -129,8 +256,15 @@ docker_run_args=(
   --volume "${resolved_project_path}:${CONTAINER_PROJECT_DIR}"
   --volume "${host_config_dir}:/home/opencode/.config/opencode"
   --volume "${host_state_dir}:/home/opencode/.local/state/opencode"
-  --volume "${host_share_dir}:/home/opencode/.local/share/opencode"
+  --volume "${host_share_dir}:${CONTAINER_HOME_DIR}/.local/share/opencode"
 )
+
+prepare_la_briguade_config_mount "${host_la_briguade_config_dir}" "${CONTAINER_HOME_DIR}/${LA_BRIGUADE_HOST_CONFIG_RELATIVE}"
+
+la_briguade_local_link_target="$(resolve_la_briguade_local_link_target "${la_briguade_local_mode}" "${plugin_entry_path}" "${la_briguade_local_path}")"
+if [[ -n "${la_briguade_local_link_target}" ]]; then
+  docker_run_args+=(--volume "${la_briguade_local_link_target}:${la_briguade_local_link_target}")
+fi
 
 if [[ "${shell_mode}" == true || ( -t 0 && -t 1 ) ]]; then
   docker_run_args+=(--interactive --tty)
