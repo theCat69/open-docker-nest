@@ -12,7 +12,8 @@ export interface CommandResult {
 
 const currentFilePath = fileURLToPath(import.meta.url);
 const repositoryRootPath = resolve(dirname(currentFilePath), "../../..");
-const wrapperScriptPath = join(repositoryRootPath, "bin/opencode-docker");
+const wrapperScriptPath = join(repositoryRootPath, "bin/opencode-docker.js");
+const repositoryEntrypointPath = join(repositoryRootPath, "bin/opencode-docker");
 
 const baseEnvironment = {
   ...process.env,
@@ -32,6 +33,24 @@ export function removeDirectoryIfPresent(pathToRemove: string): void {
 
 export function runWrapper(projectPath: string, args: readonly string[]): CommandResult {
   const result = spawnSync(wrapperScriptPath, ["--project", projectPath, ...args], {
+    cwd: repositoryRootPath,
+    encoding: "utf8",
+    env: baseEnvironment,
+    timeout: wrapperCommandTimeoutMs,
+  });
+
+  return {
+    status: result.status,
+    stdout: result.stdout,
+    stderr: result.stderr,
+  };
+}
+
+export function runWrapperFromRepositoryEntrypoint(
+  projectPath: string,
+  args: readonly string[],
+): CommandResult {
+  const result = spawnSync(repositoryEntrypointPath, ["--project", projectPath, ...args], {
     cwd: repositoryRootPath,
     encoding: "utf8",
     env: baseEnvironment,

@@ -4,7 +4,8 @@ Run [OpenCode](https://github.com/anomalyco/opencode) inside Docker with host-pr
 
 ## What this repository provides
 
-- A host wrapper: `bin/opencode-docker`
+- An authoritative host entrypoint: `bin/opencode-docker.js`
+- A compatibility shim: `bin/opencode-docker` → `bin/opencode-docker.js`
 - A Docker image with `opencode` and `cache-ctrl` installed
 - A `/workspace` mount model for running against your host project
 - Persistent host-backed OpenCode config/state/share directories across runs
@@ -24,9 +25,11 @@ docker build -t opencode-docker:latest .
 ## Usage
 
 ```bash
-bin/opencode-docker [--project <host-path>] [--image <image-ref>] [--shell] [--] [command ...args]
+bin/opencode-docker.js [--project <host-path>] [--image <image-ref>] [--shell] [--] [command ...args]
 ```
 
+- `bin/opencode-docker.js` is the published entrypoint.
+- `bin/opencode-docker` remains available as a thin compatibility shim.
 - `--shell` opens an interactive shell as user `opencode` with `HOME=/home/opencode`.
 - With no command args and no `--shell`, the wrapper still runs `opencode` by default.
 - Commands provided after `--` are passed through unchanged (`-- <command> ...args`).
@@ -36,26 +39,30 @@ bin/opencode-docker [--project <host-path>] [--image <image-ref>] [--shell] [--]
 Run the default `opencode` command:
 
 ```bash
-bin/opencode-docker
+bin/opencode-docker.js
 ```
 
 Run any OpenCode command with the same pass-through shape:
 
 ```bash
-bin/opencode-docker -- opencode --help
+bin/opencode-docker.js -- opencode --help
 ```
 
 Open an interactive shell in the container:
 
 ```bash
-bin/opencode-docker --shell
+bin/opencode-docker.js --shell
 ```
 
 Mount a different project directory:
 
 ```bash
-bin/opencode-docker --project /path/to/project -- opencode --help
+bin/opencode-docker.js --project /path/to/project -- opencode --help
 ```
+
+## Windows support
+
+Windows hosts support core flows only: default mode, `--shell`, and direct command pass-through. Advanced local-dev modes for la-briguade and `cache-ctrl` remain Unix-like and are currently unsupported on Windows.
 
 ## Mount and persistence model
 

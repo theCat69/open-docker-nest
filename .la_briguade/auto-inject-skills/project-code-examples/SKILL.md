@@ -22,6 +22,7 @@ Examples are intentionally focused excerpts copied from real project code. They 
 - `docker-non-root-entrypoint.md` — Dockerfile pattern for tini + custom entrypoint.
 - `openspec-spec-driven-config.md` — minimal OpenSpec `schema: spec-driven` config baseline.
 - `conditional-runtime-bind-mounts.md` — conditional bind-mount wiring for optional runtime integration paths.
+- `js-wrapper-runtime-plan-modules.md` — thin JS entrypoint delegation to modular runtime planning/execution.
 
 ## Location
 - Root example directory: `.code-examples-for-ai/`

@@ -1,6 +1,6 @@
 # Dockerized OpenCode Workflow
 
-This repository supports running OpenCode/OpenSpec workflows inside a single Docker image using `bin/opencode-docker`.
+This repository supports running OpenCode/OpenSpec workflows inside a single Docker image using `bin/opencode-docker.js` as the authoritative entrypoint. `bin/opencode-docker` remains a thin compatibility shim.
 
 ## Prerequisites
 
@@ -18,15 +18,26 @@ The image installs `cache-ctrl` during build, so runtime commands can rely on it
 ## Wrapper usage
 
 ```bash
-bin/opencode-docker [--project <host-path>] [--image <image-ref>] [--shell] [--] [command ...args]
+bin/opencode-docker.js [--project <host-path>] [--image <image-ref>] [--shell] [--] [command ...args]
 ```
 
+- `bin/opencode-docker.js` is the published entrypoint.
+- `bin/opencode-docker` forwards directly to `bin/opencode-docker.js` for compatibility.
 - Default project mount is the current directory.
 - Override project mount with `--project <host-path>`.
 - Override image with `--image <image-ref>`.
 - `--shell` starts an interactive shell at `/workspace` as user `opencode` with `HOME=/home/opencode`.
 - Without `--shell` and without command args, default command is `opencode`.
 - Any command after `--` is passed through unchanged.
+
+## Windows support
+
+Windows hosts support core flows only: default mode, `--shell`, and direct command pass-through.
+
+Advanced local-dev modes remain Unix-like and are not supported on Windows in this change:
+
+- la-briguade local symlink/plugin-dev mode
+- `cache-ctrl` local-dev mode
 
 ## Mount model
 
@@ -135,13 +146,13 @@ bin/opencode-docker -- opencode --help
 Start an interactive shell:
 
 ```bash
-bin/opencode-docker --shell
+bin/opencode-docker.js --shell
 ```
 
 Validate shell user + home contract:
 
 ```bash
-printf 'id -un\nprintf "%s\\n" "$HOME"\nexit\n' | script -q -c "bin/opencode-docker --shell" /dev/null
+printf 'id -un\nprintf "%s\\n" "$HOME"\nexit\n' | script -q -c "bin/opencode-docker.js --shell" /dev/null
 # Expected output includes:
 # opencode
 # /home/opencode
@@ -151,7 +162,7 @@ Validate shell-mode host ownership mapping:
 
 ```bash
 rm -f .tmp-shell-ownership-check
-printf 'echo shell-write > /workspace/.tmp-shell-ownership-check\nexit\n' | script -q -c "bin/opencode-docker --shell" /dev/null
+printf 'echo shell-write > /workspace/.tmp-shell-ownership-check\nexit\n' | script -q -c "bin/opencode-docker.js --shell" /dev/null
 ls -n .tmp-shell-ownership-check
 # Expected UID/GID match host `id -u` / `id -g` (and are not 0)
 ```
@@ -159,21 +170,21 @@ ls -n .tmp-shell-ownership-check
 Run OpenSpec command parity checks:
 
 ```bash
-bin/opencode-docker -- opencode --help
-bin/opencode-docker -- opencode run "/opsx-propose demo-change"
-bin/opencode-docker -- opencode run "/opsx-explore demo-change"
-bin/opencode-docker -- opencode run "/opsx-apply demo-change"
-bin/opencode-docker -- opencode run "/opsx-archive demo-change"
+bin/opencode-docker.js -- opencode --help
+bin/opencode-docker.js -- opencode run "/opsx-propose demo-change"
+bin/opencode-docker.js -- opencode run "/opsx-explore demo-change"
+bin/opencode-docker.js -- opencode run "/opsx-apply demo-change"
+bin/opencode-docker.js -- opencode run "/opsx-archive demo-change"
 ```
 
 Validate unchanged default and pass-through behavior:
 
 ```bash
 # Default no-arg mode still launches opencode (not implicit shell)
-timeout 8 bin/opencode-docker </dev/null
+timeout 8 bin/opencode-docker.js </dev/null
 
 # Direct command pass-through remains unchanged
-bin/opencode-docker -- /usr/bin/env bash -lc 'printf "%s\n" "$0" "$1" "$2"' passthrough-check alpha beta
+bin/opencode-docker.js -- /usr/bin/env bash -lc 'printf "%s\n" "$0" "$1" "$2"' passthrough-check alpha beta
 # Expected:
 # passthrough-check
 # alpha

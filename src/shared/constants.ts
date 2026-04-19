@@ -1,0 +1,11 @@
+export const SCRIPT_NAME = "opencode-docker";
+export const DEFAULT_IMAGE = "opencode-docker:latest";
+export const CONTAINER_PROJECT_DIR = "/workspace";
+export const CONTAINER_HOME_DIR = "/home/opencode";
+export const LA_BRIGUADE_HOST_CONFIG_RELATIVE = "la_briguade";
+export const LA_BRIGUADE_LOCAL_MODE_DEFAULT = "auto" as const;
+export const LA_BRIGUADE_PLUGIN_ENTRY_RELATIVE = "plugins/index.js";
+export const CACHE_CTRL_LOCAL_MODE_DEFAULT = "auto" as const;
+export const CACHE_CTRL_HOST_BINARY_ENTRY_RELATIVE = ".local/bin/cache-ctrl";
+export const CACHE_CTRL_HOST_SKILL_ENTRY_RELATIVE = ".config/opencode/skills/cache-ctrl-caller/SKILL.md";
+export const CACHE_CTRL_CONTAINER_BIN_DIR = "/home/opencode/.local/bin";
