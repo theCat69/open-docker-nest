@@ -22,9 +22,9 @@ The system SHALL persist OpenCode config, state, and share directories across co
 - **GIVEN** no persistence path overrides are configured
 - **WHEN** the wrapper prepares container mounts
 - **THEN** it uses host directories:
-  - `~/.opencode-docker/config`
-  - `~/.opencode-docker/state`
-  - `~/.opencode-docker/share`
+  - `~/.config/opencode`
+  - `~/.local/state/opencode`
+  - `~/.local/share/opencode`
 - **AND** mounts them to:
   - `/home/opencode/.config/opencode`
   - `/home/opencode/.local/state/opencode`

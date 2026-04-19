@@ -17,7 +17,7 @@ Build and environment setup for container image and local wrapper execution.
 
 ## Environment Setup
 - Build image from repository root.
-- Use host persistence root `~/.opencode-docker/{config,state,share}` created by wrapper.
+- Use host persistence directories `~/.config/opencode`, `~/.local/state/opencode`, and `~/.local/share/opencode` (auto-created by wrapper when missing).
 
 ## Build Commands
 - `docker build -t opencode-docker:latest .`

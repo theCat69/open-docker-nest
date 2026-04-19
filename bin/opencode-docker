@@ -105,10 +105,9 @@ if [[ ! -d "${resolved_project_path}" ]]; then
   fail "Resolved project path is not a directory: ${resolved_project_path}."
 fi
 
-persistence_root="${HOME}/.opencode-docker"
-host_config_dir="${persistence_root}/config"
-host_state_dir="${persistence_root}/state"
-host_share_dir="${persistence_root}/share"
+host_config_dir="${HOME}/.config/opencode"
+host_state_dir="${HOME}/.local/state/opencode"
+host_share_dir="${HOME}/.local/share/opencode"
 
 ensure_dir "${host_config_dir}"
 ensure_dir "${host_state_dir}"

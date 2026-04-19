@@ -37,11 +37,24 @@ bin/opencode-docker [--project <host-path>] [--image <image-ref>] [--shell] [--]
 
 The wrapper ensures these directories exist and mounts them on each run:
 
-- `~/.opencode-docker/config` → `/home/opencode/.config/opencode`
-- `~/.opencode-docker/state` → `/home/opencode/.local/state/opencode`
-- `~/.opencode-docker/share` → `/home/opencode/.local/share/opencode`
+- `~/.config/opencode` → `/home/opencode/.config/opencode`
+- `~/.local/state/opencode` → `/home/opencode/.local/state/opencode`
+- `~/.local/share/opencode` → `/home/opencode/.local/share/opencode`
 
 If directory creation fails, the wrapper exits non-zero and prints the failing path plus remediation guidance.
+
+### Migration from legacy persistence paths
+
+If you previously used `~/.opencode-docker/{config,state,share}`, migrate existing data into the new defaults before your next run:
+
+```bash
+mkdir -p ~/.config/opencode ~/.local/state/opencode ~/.local/share/opencode
+cp -a ~/.opencode-docker/config/. ~/.config/opencode/
+cp -a ~/.opencode-docker/state/. ~/.local/state/opencode/
+cp -a ~/.opencode-docker/share/. ~/.local/share/opencode/
+```
+
+After confirming data is present in the new locations, you can archive or remove `~/.opencode-docker`.
 
 ## Examples
 
@@ -77,4 +90,4 @@ Result: files created or edited in `/workspace` are owned by the invoking host u
 
 - `Docker CLI is required but was not found`: install Docker and ensure `docker` is on `PATH`.
 - `Project path does not exist`: pass a valid directory with `--project`.
-- `Unable to create persistence directory`: fix permissions/ownership for `~/.opencode-docker` (or create dirs manually), then rerun.
+- `Unable to create persistence directory`: fix permissions/ownership for the reported path (or create it manually), then rerun.
