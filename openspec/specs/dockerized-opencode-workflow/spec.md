@@ -121,7 +121,7 @@ The system SHALL support importing user la-briguade configuration from `~/la_bri
 - **AND** local symlink plugin-dev mode is evaluated separately
 
 ### Requirement: Local symlink-based la-briguade plugin-development mode supports explicit env contract
-The system SHALL support a local symlink-based la-briguade plugin-development mode that uses `LA_BRIGUADE_LOCAL_MODE` (`auto`, `force`, `off`) as the explicit mode contract and supports optional `LA_BRIGUADE_LOCAL_PATH` as the host local build output path override.
+The system SHALL support a local symlink-based la-briguade plugin-development mode that uses `LA_BRIGUADE_LOCAL_MODE` (`auto`, `force`, `off`) as the explicit mode contract and supports optional `LA_BRIGUADE_LOCAL_PATH` as an explicit assertion of the derived host local project root path.
 
 #### Scenario: Auto-detect selects local symlink mode
 - **GIVEN** the project plugin target path exists in the mounted workspace and `/workspace/plugins/index.js` is a symlink to a host-managed local build artifact
@@ -129,12 +129,13 @@ The system SHALL support a local symlink-based la-briguade plugin-development mo
 - **THEN** it enables local symlink mode automatically
 - **AND** uses local linkage behavior without changing default command syntax
 
-#### Scenario: Local-link mode preserves existing symlink absolute target behavior
+#### Scenario: Local-link mode mounts derived local project root from symlink target
 - **GIVEN** local symlink mode is active
 - **AND** `/workspace/plugins/index.js` points to a host absolute symlink target path
 - **WHEN** the wrapper prepares Docker mounts
-- **THEN** it bind-mounts that host absolute symlink target into the same absolute path inside the container
-- **AND** `/workspace/plugins/index.js` remains resolvable without rewriting symlink content
+- **THEN** it derives a host local project root by resolving `<symlink-target>/../..`
+- **AND** bind-mounts that derived host project-root directory into the same absolute path inside the container
+- **AND** wrapper preflight fails with actionable diagnostics if `<symlink-target>/../..` cannot be resolved to an accessible directory
 
 #### Scenario: Explicit override disables auto-detected local mode
 - **GIVEN** local symlink mode would be auto-detected
@@ -160,21 +161,21 @@ The system SHALL support a local symlink-based la-briguade plugin-development mo
 - **THEN** wrapper startup fails before `docker run`
 - **AND** diagnostics list allowed values and remediation
 
-#### Scenario: LA_BRIGUADE_LOCAL_PATH must match symlink target in active local mode
+#### Scenario: LA_BRIGUADE_LOCAL_PATH must match derived project root in active local mode
 - **GIVEN** local-link mode resolves active (`LA_BRIGUADE_LOCAL_MODE=force` or `auto` with symlink match)
 - **AND** `./plugins/index.js` resolves to an absolute host symlink target path
 - **AND** `LA_BRIGUADE_LOCAL_PATH` is set
 - **WHEN** wrapper preflight validation runs
-- **THEN** `LA_BRIGUADE_LOCAL_PATH` must exactly equal the resolved absolute symlink target path
+- **THEN** `LA_BRIGUADE_LOCAL_PATH` must exactly equal the derived local project root path (`<resolved-symlink-target>/../..`)
 - **AND** wrapper fails before `docker run` with actionable diagnostics when they differ
 
-#### Scenario: Active local mode uses resolved symlink target when LA_BRIGUADE_LOCAL_PATH is unset
+#### Scenario: Active local mode uses derived project root when LA_BRIGUADE_LOCAL_PATH is unset
 - **GIVEN** local-link mode resolves active (`LA_BRIGUADE_LOCAL_MODE=force` or `auto` with symlink match)
 - **AND** `./plugins/index.js` resolves to an absolute host symlink target path
 - **AND** `LA_BRIGUADE_LOCAL_PATH` is unset
 - **WHEN** Docker mounts are prepared
-- **THEN** wrapper uses the resolved absolute symlink target as local-link host source path
-- **AND** bind-mounts it into the same absolute path in the container
+- **THEN** wrapper derives local project root at `<resolved-symlink-target>/../..` and uses it as local-link host source path
+- **AND** bind-mounts that derived project-root path into the same absolute path in the container
 
 #### Scenario: Invalid LA_BRIGUADE_LOCAL_PATH fails in forced local mode
 - **GIVEN** `LA_BRIGUADE_LOCAL_MODE=force`

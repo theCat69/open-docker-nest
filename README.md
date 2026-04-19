@@ -74,7 +74,7 @@ The container starts as the `opencode` user and remaps runtime UID/GID from the 
 
 - `cache-ctrl` is installed in the image and available at runtime.
 - If `~/la_briguade` exists and is readable, it is mounted into the container at `/home/opencode/la_briguade`.
-- Local la-briguade symlink workflows are supported through `LA_BRIGUADE_LOCAL_MODE` (`auto`, `force`, `off`) and optional `LA_BRIGUADE_LOCAL_PATH`.
+- Local la-briguade symlink workflows are supported through `LA_BRIGUADE_LOCAL_MODE` (`auto`, `force`, `off`) and optional `LA_BRIGUADE_LOCAL_PATH`; when active, the wrapper derives and mounts the local project root at `<resolved plugins/index.js target>/../..`.
 
 ## More detail
 

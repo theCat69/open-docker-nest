@@ -73,9 +73,10 @@ Mode behavior:
 When local-link mode is active:
 
 - The wrapper resolves the absolute host symlink target from `plugins/index.js`.
-- It bind-mounts that host target into the same absolute path in-container.
-- If `LA_BRIGUADE_LOCAL_PATH` is set, it must exactly match the resolved symlink target; mismatch fails preflight.
-- If `LA_BRIGUADE_LOCAL_PATH` is unset, the resolved symlink target is used.
+- It derives a local project root by walking `../..` from the resolved symlink target path and resolving to an absolute directory.
+- It bind-mounts that derived project root into the same absolute path in-container.
+- If `LA_BRIGUADE_LOCAL_PATH` is set, it must exactly match the derived project root; mismatch fails preflight.
+- If `LA_BRIGUADE_LOCAL_PATH` is unset, the derived project root is used.
 
 When `LA_BRIGUADE_LOCAL_MODE=off`, `LA_BRIGUADE_LOCAL_PATH` is ignored.
 
@@ -161,7 +162,8 @@ Result: files created or edited in `/workspace` are owned by the invoking host u
 - `Unable to create persistence directory`: fix permissions/ownership for the reported path (or create it manually), then rerun.
 - `Invalid LA_BRIGUADE_LOCAL_MODE`: use one of `auto`, `force`, `off`.
 - `LA_BRIGUADE local-link mode requires .../plugins/index.js to be a symlink`: create/update `plugins/index.js` to point to your local la-briguade build output.
-- `LA_BRIGUADE_LOCAL_PATH must exactly match...`: set `LA_BRIGUADE_LOCAL_PATH` to the resolved absolute symlink target or unset it.
+- `Unable to derive la-briguade local project root...`: ensure `plugins/index.js` points into a local la-briguade layout where `<resolved-target>/../..` reaches the project root (or disable local mode).
+- `LA_BRIGUADE_LOCAL_PATH must exactly match...`: set `LA_BRIGUADE_LOCAL_PATH` to the derived project root path or unset it.
 
 ## Release plugin installation behavior
 

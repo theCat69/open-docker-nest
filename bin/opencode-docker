@@ -118,12 +118,42 @@ prepare_la_briguade_config_mount() {
   docker_run_args+=(--volume "${host_source_path}:${container_target_path}")
 }
 
-resolve_la_briguade_local_link_target() {
+derive_local_project_root_from_symlink_target() {
+  local symlink_target_path="$1"
+  local derived_project_root
+  local package_manifest_path
+  local plugin_entry_candidate_path
+
+  derived_project_root="$(resolve_path "$(dirname "${symlink_target_path}")/..")"
+  package_manifest_path="${derived_project_root}/package.json"
+  plugin_entry_candidate_path="${derived_project_root}/${LA_BRIGUADE_PLUGIN_ENTRY_RELATIVE}"
+
+  if [[ ! -d "${derived_project_root}" ]]; then
+    fail "Unable to derive la-briguade local project root from '${symlink_target_path}'. Expected directory at '<resolved-target>/../..' (resolved to '${derived_project_root}'). Remediation: ensure plugins/index.js points into a local la-briguade layout where '../../' reaches the project root, or disable local mode with LA_BRIGUADE_LOCAL_MODE=off."
+  fi
+
+  if [[ ! -r "${derived_project_root}" || ! -x "${derived_project_root}" ]]; then
+    fail "Derived la-briguade local project root is not accessible: ${derived_project_root}. Remediation: grant read/execute permissions on the directory, or disable local mode with LA_BRIGUADE_LOCAL_MODE=off."
+  fi
+
+  if [[ ! -f "${package_manifest_path}" || ! -r "${package_manifest_path}" ]]; then
+    fail "Derived la-briguade local project root is invalid: ${derived_project_root}. Expected a readable package manifest at '${package_manifest_path}' to confirm a project-root mount target. Remediation: ensure plugins/index.js points to a local la-briguade build output where '<resolved-target>/../..' is the project root, or disable local mode with LA_BRIGUADE_LOCAL_MODE=off."
+  fi
+
+  if [[ ! -f "${plugin_entry_candidate_path}" || ! -r "${plugin_entry_candidate_path}" ]]; then
+    fail "Derived la-briguade local project root is invalid: ${derived_project_root}. Expected a readable plugin entry at '${plugin_entry_candidate_path}' to confirm the la-briguade project layout. Remediation: ensure plugins/index.js points to a local la-briguade build output where '<resolved-target>/../..' is the project root, or disable local mode with LA_BRIGUADE_LOCAL_MODE=off."
+  fi
+
+  printf '%s\n' "${derived_project_root}"
+}
+
+resolve_la_briguade_local_project_root() {
   local local_mode="$1"
   local plugin_entry_path="$2"
   local configured_local_path="$3"
   local active_mode=false
   local detected_symlink_target=""
+  local detected_project_root=""
 
   case "${local_mode}" in
     off)
@@ -164,16 +194,24 @@ resolve_la_briguade_local_link_target() {
   fi
 
   if [[ -n "${configured_local_path}" ]]; then
-    if [[ "${local_mode}" == "force" && ( ! -e "${configured_local_path}" || ! -r "${configured_local_path}" ) ]]; then
-      fail "Invalid LA_BRIGUADE_LOCAL_PATH '${configured_local_path}'. In force mode this path must exist and be readable."
+    if [[ "${local_mode}" == "force" && ( ! -d "${configured_local_path}" || ! -r "${configured_local_path}" || ! -x "${configured_local_path}" ) ]]; then
+      fail "Invalid LA_BRIGUADE_LOCAL_PATH '${configured_local_path}'. In force mode this path must be an accessible directory (exists with read/execute permissions)."
     fi
 
-    if [[ "${configured_local_path}" != "${detected_symlink_target}" ]]; then
-      fail "LA_BRIGUADE_LOCAL_PATH must exactly match the resolved symlink target '${detected_symlink_target}' when local-link mode is active. Received '${configured_local_path}'."
+    if ! detected_project_root="$(derive_local_project_root_from_symlink_target "${detected_symlink_target}")"; then
+      return 1
+    fi
+
+    if [[ "${configured_local_path}" != "${detected_project_root}" ]]; then
+      fail "LA_BRIGUADE_LOCAL_PATH must exactly match the project root derived from the resolved symlink target ('${detected_project_root}', from '${detected_symlink_target}/../..') when local-link mode is active. Received '${configured_local_path}'."
+    fi
+  else
+    if ! detected_project_root="$(derive_local_project_root_from_symlink_target "${detected_symlink_target}")"; then
+      return 1
     fi
   fi
 
-  printf '%s\n' "${detected_symlink_target}"
+  printf '%s\n' "${detected_project_root}"
 }
 
 if ! command -v docker >/dev/null 2>&1; then
@@ -261,9 +299,11 @@ docker_run_args=(
 
 prepare_la_briguade_config_mount "${host_la_briguade_config_dir}" "${CONTAINER_HOME_DIR}/${LA_BRIGUADE_HOST_CONFIG_RELATIVE}"
 
-la_briguade_local_link_target="$(resolve_la_briguade_local_link_target "${la_briguade_local_mode}" "${plugin_entry_path}" "${la_briguade_local_path}")"
-if [[ -n "${la_briguade_local_link_target}" ]]; then
-  docker_run_args+=(--volume "${la_briguade_local_link_target}:${la_briguade_local_link_target}")
+if ! la_briguade_local_project_root="$(resolve_la_briguade_local_project_root "${la_briguade_local_mode}" "${plugin_entry_path}" "${la_briguade_local_path}")"; then
+  exit 1
+fi
+if [[ -n "${la_briguade_local_project_root}" ]]; then
+  docker_run_args+=(--volume "${la_briguade_local_project_root}:${la_briguade_local_project_root}")
 fi
 
 if [[ "${shell_mode}" == true || ( -t 0 && -t 1 ) ]]; then
