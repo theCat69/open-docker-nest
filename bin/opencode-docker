@@ -8,6 +8,11 @@ CONTAINER_HOME_DIR="/home/opencode"
 LA_BRIGUADE_HOST_CONFIG_RELATIVE="la_briguade"
 LA_BRIGUADE_LOCAL_MODE_DEFAULT="auto"
 LA_BRIGUADE_PLUGIN_ENTRY_RELATIVE="plugins/index.js"
+CACHE_CTRL_LOCAL_MODE_DEFAULT="auto"
+CACHE_CTRL_HOST_BINARY_ENTRY_RELATIVE=".local/bin/cache-ctrl"
+CACHE_CTRL_HOST_SKILL_ENTRY_RELATIVE=".config/opencode/skills/cache-ctrl-caller/SKILL.md"
+CACHE_CTRL_CONTAINER_BIN_DIR="/home/opencode/.local/bin"
+CACHE_CTRL_CONTAINER_BINARY_PATH="${CACHE_CTRL_CONTAINER_BIN_DIR}/cache-ctrl"
 
 usage() {
   cat <<'EOF'
@@ -90,6 +95,140 @@ validate_local_mode_value() {
       fail "Invalid LA_BRIGUADE_LOCAL_MODE value '${local_mode}'. Allowed values: auto, force, off."
       ;;
   esac
+}
+
+validate_cache_ctrl_local_mode_value() {
+  local local_mode="$1"
+
+  case "${local_mode}" in
+    auto|force|off)
+      return 0
+      ;;
+    *)
+      fail "Invalid CACHE_CTRL_LOCAL_MODE value '${local_mode}'. Allowed values: auto, force, off. Remediation: set CACHE_CTRL_LOCAL_MODE to one of the allowed values or unset it to use default auto mode."
+      ;;
+  esac
+}
+
+derive_cache_ctrl_checkout_root_from_target() {
+  local resolved_target_path="$1"
+  local source_label="$2"
+  local search_dir
+  local expected_skill_path
+
+  search_dir="$(resolve_path "$(dirname "${resolved_target_path}")")"
+
+  while true; do
+    expected_skill_path="${search_dir}/skills/cache-ctrl-caller/SKILL.md"
+
+    if [[ -d "${search_dir}" && -r "${search_dir}" && -x "${search_dir}" && -f "${expected_skill_path}" && -r "${expected_skill_path}" ]]; then
+      printf '%s\n' "${search_dir}"
+      return 0
+    fi
+
+    if [[ "${search_dir}" == "/" ]]; then
+      break
+    fi
+
+    search_dir="$(dirname "${search_dir}")"
+  done
+
+  printf '%s\n' "Unable to derive cache-ctrl checkout root from ${source_label} '${resolved_target_path}'. Expected an accessible ancestor containing 'skills/cache-ctrl-caller/SKILL.md'. Remediation: point ~/.local/bin/cache-ctrl and ~/.config/opencode/skills/cache-ctrl-caller/SKILL.md to the same local cache-ctrl checkout, or disable local mode with CACHE_CTRL_LOCAL_MODE=off."
+  return 1
+}
+
+resolve_cache_ctrl_local_state() {
+  local local_mode="$1"
+  local configured_local_path="$2"
+  local host_binary_entry_path="$3"
+  local host_skill_entry_path="$4"
+  local mode_label="CACHE_CTRL local-dev"
+  local resolved_binary_target=""
+  local resolved_skill_target=""
+  local derived_root_from_binary=""
+  local derived_root_from_skill=""
+  local authoritative_root=""
+  local resolved_configured_local_path=""
+  local -a preflight_issues=()
+
+  if [[ "${local_mode}" == "off" ]]; then
+    CACHE_CTRL_LOCAL_ACTIVE="false"
+    CACHE_CTRL_LOCAL_PROJECT_ROOT=""
+    CACHE_CTRL_LOCAL_BINARY_TARGET=""
+    return 0
+  fi
+
+  if [[ ! -e "${host_binary_entry_path}" && ! -L "${host_binary_entry_path}" ]]; then
+    preflight_issues+=("Missing host binary entry '${host_binary_entry_path}'.")
+  elif [[ -L "${host_binary_entry_path}" && ! -e "${host_binary_entry_path}" ]]; then
+    preflight_issues+=("Host binary entry '${host_binary_entry_path}' is a broken symlink.")
+  else
+    resolved_binary_target="$(resolve_path "${host_binary_entry_path}")"
+
+    if [[ ! -e "${resolved_binary_target}" ]]; then
+      preflight_issues+=("Resolved binary target does not exist: ${resolved_binary_target}.")
+    elif [[ ! -f "${resolved_binary_target}" ]]; then
+      preflight_issues+=("Resolved binary target is not a file: ${resolved_binary_target}.")
+    elif [[ ! -r "${resolved_binary_target}" || ! -x "${resolved_binary_target}" ]]; then
+      preflight_issues+=("Resolved binary target is not readable/executable: ${resolved_binary_target}.")
+    elif ! derived_root_from_binary="$(derive_cache_ctrl_checkout_root_from_target "${resolved_binary_target}" "resolved binary target")"; then
+      preflight_issues+=("${derived_root_from_binary}")
+    fi
+  fi
+
+  if [[ ! -e "${host_skill_entry_path}" && ! -L "${host_skill_entry_path}" ]]; then
+    preflight_issues+=("Missing canonical skill link '${host_skill_entry_path}'.")
+  elif [[ ! -L "${host_skill_entry_path}" ]]; then
+    preflight_issues+=("Canonical skill entry '${host_skill_entry_path}' must be a symlink in local-dev mode.")
+  elif [[ ! -e "${host_skill_entry_path}" ]]; then
+    preflight_issues+=("Canonical skill link '${host_skill_entry_path}' is a broken symlink.")
+  else
+    resolved_skill_target="$(resolve_path "${host_skill_entry_path}")"
+
+    if [[ ! -e "${resolved_skill_target}" ]]; then
+      preflight_issues+=("Resolved skill target does not exist: ${resolved_skill_target}.")
+    elif [[ ! -f "${resolved_skill_target}" || ! -r "${resolved_skill_target}" ]]; then
+      preflight_issues+=("Resolved skill target is not a readable file: ${resolved_skill_target}.")
+    elif ! derived_root_from_skill="$(derive_cache_ctrl_checkout_root_from_target "${resolved_skill_target}" "resolved skill target")"; then
+      preflight_issues+=("${derived_root_from_skill}")
+    fi
+  fi
+
+  if [[ -n "${derived_root_from_binary}" && -n "${derived_root_from_skill}" && "${derived_root_from_binary}" != "${derived_root_from_skill}" ]]; then
+    preflight_issues+=("Resolved cache-ctrl roots disagree: binary-derived='${derived_root_from_binary}', skill-derived='${derived_root_from_skill}'.")
+  fi
+
+  if [[ -n "${derived_root_from_binary}" && -n "${derived_root_from_skill}" ]]; then
+    authoritative_root="${derived_root_from_binary}"
+  fi
+
+  if [[ -n "${configured_local_path}" && -n "${authoritative_root}" ]]; then
+    if [[ ! -d "${configured_local_path}" || ! -r "${configured_local_path}" || ! -x "${configured_local_path}" ]]; then
+      preflight_issues+=("CACHE_CTRL_LOCAL_PATH '${configured_local_path}' must be an accessible directory when local mode is active.")
+    else
+      resolved_configured_local_path="$(resolve_path "${configured_local_path}")"
+      if [[ "${resolved_configured_local_path}" != "${authoritative_root}" ]]; then
+        preflight_issues+=("CACHE_CTRL_LOCAL_PATH must match the derived cache-ctrl checkout root. Derived='${authoritative_root}', received='${resolved_configured_local_path}'.")
+      fi
+    fi
+  fi
+
+  if [[ "${#preflight_issues[@]}" -gt 0 ]]; then
+    if [[ "${local_mode}" == "force" ]]; then
+      fail "${mode_label} preflight failed: ${preflight_issues[*]} Remediation: fix the reported local cache-ctrl inputs or disable local mode with CACHE_CTRL_LOCAL_MODE=off."
+    fi
+
+    warn "${mode_label} auto mode did not activate. Continuing with image-installed cache-ctrl runtime. Reasons: ${preflight_issues[*]} Remediation: fix local cache-ctrl links, or set CACHE_CTRL_LOCAL_MODE=off to silence this warning."
+    CACHE_CTRL_LOCAL_ACTIVE="false"
+    CACHE_CTRL_LOCAL_PROJECT_ROOT=""
+    CACHE_CTRL_LOCAL_BINARY_TARGET=""
+    return 0
+  fi
+
+  CACHE_CTRL_LOCAL_ACTIVE="true"
+  CACHE_CTRL_LOCAL_PROJECT_ROOT="${authoritative_root}"
+  CACHE_CTRL_LOCAL_BINARY_TARGET="${resolved_binary_target}"
+  return 0
 }
 
 prepare_la_briguade_config_mount() {
@@ -266,11 +405,16 @@ host_la_briguade_config_dir="${HOME}/${LA_BRIGUADE_HOST_CONFIG_RELATIVE}"
 la_briguade_local_mode="${LA_BRIGUADE_LOCAL_MODE:-${LA_BRIGUADE_LOCAL_MODE_DEFAULT}}"
 la_briguade_local_path="${LA_BRIGUADE_LOCAL_PATH:-}"
 plugin_entry_path="${resolved_project_path}/${LA_BRIGUADE_PLUGIN_ENTRY_RELATIVE}"
+cache_ctrl_local_mode="${CACHE_CTRL_LOCAL_MODE:-${CACHE_CTRL_LOCAL_MODE_DEFAULT}}"
+cache_ctrl_local_path="${CACHE_CTRL_LOCAL_PATH:-}"
+cache_ctrl_host_binary_entry_path="${HOME}/${CACHE_CTRL_HOST_BINARY_ENTRY_RELATIVE}"
+cache_ctrl_host_skill_entry_path="${HOME}/${CACHE_CTRL_HOST_SKILL_ENTRY_RELATIVE}"
 
 ensure_dir "${host_config_dir}"
 ensure_dir "${host_state_dir}"
 ensure_dir "${host_share_dir}"
 validate_local_mode_value "${la_briguade_local_mode}"
+validate_cache_ctrl_local_mode_value "${cache_ctrl_local_mode}"
 
 if [[ "${shell_mode}" == true ]]; then
   command_to_run=("/bin/bash")
@@ -298,6 +442,17 @@ if ! la_briguade_local_project_root="$(resolve_la_briguade_local_project_root "$
 fi
 if [[ -n "${la_briguade_local_project_root}" ]]; then
   docker_run_args+=(--volume "${la_briguade_local_project_root}:${la_briguade_local_project_root}")
+fi
+
+CACHE_CTRL_LOCAL_ACTIVE="false"
+CACHE_CTRL_LOCAL_PROJECT_ROOT=""
+CACHE_CTRL_LOCAL_BINARY_TARGET=""
+resolve_cache_ctrl_local_state "${cache_ctrl_local_mode}" "${cache_ctrl_local_path}" "${cache_ctrl_host_binary_entry_path}" "${cache_ctrl_host_skill_entry_path}"
+
+if [[ "${CACHE_CTRL_LOCAL_ACTIVE}" == "true" ]]; then
+  docker_run_args+=(--volume "${CACHE_CTRL_LOCAL_PROJECT_ROOT}:${CACHE_CTRL_LOCAL_PROJECT_ROOT}")
+  docker_run_args+=(--env "OPENCODE_CACHE_CTRL_LOCAL_TARGET=${CACHE_CTRL_LOCAL_BINARY_TARGET}")
+  docker_run_args+=(--env "OPENCODE_PREPEND_PATH=${CACHE_CTRL_CONTAINER_BIN_DIR}")
 fi
 
 if [[ "${shell_mode}" == true || ( -t 0 && -t 1 ) ]]; then

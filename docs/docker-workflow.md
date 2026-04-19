@@ -80,6 +80,37 @@ When local-link mode is active:
 
 When `LA_BRIGUADE_LOCAL_MODE=off`, `LA_BRIGUADE_LOCAL_PATH` is ignored.
 
+### Local cache-ctrl development mode (auto/force/off)
+
+The wrapper supports a cache-ctrl local-dev contract that is fully gated by resolved local mode.
+
+Environment contract:
+
+- `CACHE_CTRL_LOCAL_MODE=auto|force|off` (default: `auto`)
+- `CACHE_CTRL_LOCAL_PATH` (optional)
+
+Canonical host inputs used by local-dev activation:
+
+- `~/.local/bin/cache-ctrl`
+- `~/.config/opencode/skills/cache-ctrl-caller/SKILL.md`
+
+Mode behavior:
+
+- `auto`: activate cache-ctrl local-dev only when both canonical inputs are valid/readable and derive the same local checkout root.
+- `force`: require cache-ctrl local-dev; preflight fails before `docker run` when canonical inputs are missing, broken, unreadable, inaccessible, or inconsistent.
+- `off`: disable cache-ctrl local-dev and ignore cache-ctrl local-dev inputs.
+
+When cache-ctrl local-dev mode is active:
+
+- The wrapper derives one authoritative absolute cache-ctrl checkout root from resolved canonical inputs.
+- It bind-mounts that checkout root into the same absolute path in-container so host-backed skill symlinks stay resolvable without rewriting `~/.config/opencode`.
+- It passes the resolved host-backed cache-ctrl executable target path to container startup.
+- During container entrypoint, `/home/opencode/.local/bin/cache-ctrl` is created as a symlink to that mounted checkout executable path.
+- It prepends `/home/opencode/.local/bin` to `PATH` for that run only, so local `cache-ctrl` takes precedence over the image-installed binary.
+- If `CACHE_CTRL_LOCAL_PATH` is set in active mode, it must resolve to the same derived absolute checkout root.
+
+When local-dev does not activate (or `CACHE_CTRL_LOCAL_MODE=off`), no cache-ctrl local-dev mounts or `PATH` override are added and image-installed `cache-ctrl` remains default.
+
 ### Migration from legacy persistence paths
 
 If you previously used `~/.opencode-docker/{config,state,share}`, migrate existing data into the new defaults before your next run:
@@ -164,6 +195,10 @@ Result: files created or edited in `/workspace` are owned by the invoking host u
 - `LA_BRIGUADE local-link mode requires .../plugins/index.js to be a symlink`: create/update `plugins/index.js` to point to your local la-briguade build output.
 - `Unable to derive la-briguade local project root...`: ensure `plugins/index.js` points into a local la-briguade layout where `<resolved-target>/../..` reaches the project root (or disable local mode).
 - `LA_BRIGUADE_LOCAL_PATH must exactly match...`: set `LA_BRIGUADE_LOCAL_PATH` to the derived project root path or unset it.
+- `Invalid CACHE_CTRL_LOCAL_MODE`: use one of `auto`, `force`, `off`.
+- `CACHE_CTRL local-dev auto mode did not activate...`: auto mode found invalid/missing/inconsistent local inputs and safely fell back to image-installed `cache-ctrl`; fix reported inputs or set `CACHE_CTRL_LOCAL_MODE=off` to disable probing.
+- `CACHE_CTRL local-dev preflight failed...`: in force mode one or more local-dev prerequisites failed (for example missing `~/.local/bin/cache-ctrl`, broken `cache-ctrl-caller/SKILL.md` symlink, unreadable targets, inaccessible or mismatched checkout roots); fix the reported input(s) or disable with `CACHE_CTRL_LOCAL_MODE=off`.
+- `CACHE_CTRL_LOCAL_PATH must match the derived cache-ctrl checkout root...`: set `CACHE_CTRL_LOCAL_PATH` to the derived absolute checkout path (or unset it).
 
 ## Release plugin installation behavior
 
