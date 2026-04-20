@@ -16,6 +16,40 @@ Run [OpenCode](https://github.com/anomalyco/opencode) inside Docker with host-pr
 - Docker
 - A local clone of this repository
 
+## Local development install (POSIX)
+
+This repository includes non-interactive local-dev scripts that install/uninstall `open-docker-nest` in `~/.local/bin` using a symlink to this clone's `bin/open-docker-nest.js`.
+
+Install:
+
+```bash
+./install.sh
+```
+
+Uninstall:
+
+```bash
+./uninstall.sh
+```
+
+Behavior and safety contract:
+
+- Idempotent: running either script repeatedly is safe.
+- Reversible: uninstall removes only the installed symlink.
+- Overwrite protection: scripts refuse to overwrite/remove unrelated non-symlink files or unrelated symlink targets.
+- Fail-fast diagnostics: missing prerequisites (for example, `HOME`, `readlink`, or source script) fail with actionable errors.
+- PATH visibility: install warns when `~/.local/bin` is not present in your current `PATH`.
+
+If needed, add `~/.local/bin` to `PATH` in your shell profile:
+
+```bash
+# POSIX sh / bash / zsh (for interactive shells)
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.profile
+
+# fish
+set -U fish_user_paths $HOME/.local/bin $fish_user_paths
+```
+
 ## Build
 
 ```bash
@@ -152,3 +186,24 @@ Output: `schema/open-docker-nest.schema.json`
 
 - Operational workflow: `docs/docker-workflow.md`
 - Behavior/spec source of truth: `openspec/specs/dockerized-open-docker-nest-workflow/spec.md`
+
+## npm packaging readiness (assessment)
+
+This repository is **not ready for public npm publication** in its current state and does **not** publish automatically:
+
+- `package.json` exposes the CLI via `bin.open-docker-nest`.
+- `prepublishOnly` gates publish with `typecheck`, unit tests, and e2e tests.
+- `files` whitelists the publish surface (`bin/`, `src/`, `docker/`, `README.md`).
+- `license` is currently `UNLICENSED`, and no `LICENSE` file is present.
+- `publishConfig.access` is intentionally omitted to avoid signaling public publish intent before licensing is decided.
+
+Before any public publish, explicitly choose and document licensing (including adding a `LICENSE` file), then run this manual checklist:
+
+```bash
+bun run typecheck
+bun run test
+bun run test:e2e
+npm pack --dry-run
+```
+
+Note: `install.sh`/`uninstall.sh` are local-dev helpers for repository clones and are not required for npm consumers.

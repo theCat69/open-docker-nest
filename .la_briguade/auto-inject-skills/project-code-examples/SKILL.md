@@ -26,6 +26,7 @@ Examples are intentionally focused excerpts copied from real project code. They 
 - `host-docker-socket-bridge-gating.md` — explicit host-docker gating for host Docker socket bridge wiring.
 - `docker-toolchain-checksum-install.md` — Dockerfile pattern for pinned toolchain downloads with SHA-256 verification.
 - `zod-project-config-env-expansion.md` — Zod-defined project config with strict `{env:VAR}` expansion to validated runtime env values.
+- `local-cli-symlink-install-guards.md` — idempotent local CLI symlink install/uninstall with unrelated-target protection.
 
 ## Location
 - Root example directory: `.code-examples-for-ai/`

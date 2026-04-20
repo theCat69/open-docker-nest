@@ -1,6 +1,22 @@
 {
   "name": "open-docker-nest",
   "version": "0.1.0",
+  "description": "Run OpenCode in Docker with host-project parity and non-root ownership.",
+  "keywords": [
+    "opencode",
+    "docker",
+    "cli",
+    "wrapper"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/theCat69/open-docker-nest.git"
+  },
+  "homepage": "https://github.com/theCat69/open-docker-nest#readme",
+  "bugs": {
+    "url": "https://github.com/theCat69/open-docker-nest/issues"
+  },
+  "license": "UNLICENSED",
   "type": "module",
   "bin": {
     "open-docker-nest": "bin/open-docker-nest.js"
@@ -14,9 +30,6 @@
     "docker/",
     "README.md"
   ],
-  "publishConfig": {
-    "access": "public"
-  },
   "scripts": {
     "build": "bunx tsc --noEmit",
     "test": "bunx vitest run",

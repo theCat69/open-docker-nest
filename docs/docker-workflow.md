@@ -7,6 +7,37 @@ This repository supports running OpenCode/OpenSpec workflows inside a single Doc
 - Docker CLI/runtime installed and running.
 - Local clone of this repository.
 
+## Local development install / uninstall (POSIX)
+
+For repository-clone workflows, install the `open-docker-nest` command into `~/.local/bin`:
+
+```bash
+./install.sh
+```
+
+Remove it later:
+
+```bash
+./uninstall.sh
+```
+
+Contract:
+
+- Scripts are non-interactive, idempotent, and symlink-based.
+- They refuse to overwrite/remove unrelated paths.
+- Install warns if `~/.local/bin` is not in `PATH` for the current shell.
+- Uninstall only removes the managed symlink and leaves directories untouched.
+
+If your shell cannot find `open-docker-nest`, add `~/.local/bin` to `PATH`:
+
+```bash
+# POSIX sh / bash / zsh
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.profile
+
+# fish
+set -U fish_user_paths $HOME/.local/bin $fish_user_paths
+```
+
 ## Build the image
 
 ```bash
