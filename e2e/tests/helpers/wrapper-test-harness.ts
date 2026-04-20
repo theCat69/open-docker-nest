@@ -23,6 +23,15 @@ const baseEnvironment = {
 
 const wrapperCommandTimeoutMs = 600_000;
 
+function buildWrapperEnvironment(
+  overrides: Readonly<Record<string, string | undefined>>,
+): NodeJS.ProcessEnv {
+  return {
+    ...baseEnvironment,
+    ...overrides,
+  };
+}
+
 export function createTemporaryDirectory(prefix: string): string {
   return mkdtempSync(join(tmpdir(), prefix));
 }
@@ -32,10 +41,18 @@ export function removeDirectoryIfPresent(pathToRemove: string): void {
 }
 
 export function runWrapper(projectPath: string, args: readonly string[]): CommandResult {
+  return runWrapperWithEnvironmentOverrides(projectPath, args, {});
+}
+
+export function runWrapperWithEnvironmentOverrides(
+  projectPath: string,
+  args: readonly string[],
+  envOverrides: Readonly<Record<string, string | undefined>>,
+): CommandResult {
   const result = spawnSync(wrapperScriptPath, ["--project", projectPath, ...args], {
     cwd: repositoryRootPath,
     encoding: "utf8",
-    env: baseEnvironment,
+    env: buildWrapperEnvironment(envOverrides),
     timeout: wrapperCommandTimeoutMs,
   });
 

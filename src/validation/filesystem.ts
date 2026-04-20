@@ -79,6 +79,27 @@ export function hasFileReadExecuteAccess(pathToCheck: string): boolean {
   }
 }
 
+export function hasFileReadWriteAccess(pathToCheck: string): boolean {
+  try {
+    accessSync(pathToCheck, fsConstants.R_OK | fsConstants.W_OK);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function isUnixSocket(pathToCheck: string): boolean {
+  try {
+    return statSync(pathToCheck).isSocket();
+  } catch {
+    return false;
+  }
+}
+
+export function getPathGroupId(pathToCheck: string): number {
+  return statSync(pathToCheck).gid;
+}
+
 export function isReadableDirectory(pathToCheck: string): boolean {
   if (!isDirectory(pathToCheck)) {
     return false;

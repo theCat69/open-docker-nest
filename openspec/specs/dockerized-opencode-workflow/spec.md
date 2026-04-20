@@ -8,7 +8,7 @@ Define the Dockerized OpenCode workflow contract for wrapper behavior, runtime m
 The system SHALL define a Dockerized workflow that is invoked from a host-side wrapper and runs against a host-mounted project directory.
 
 #### Scenario: Wrapper mounts host project by default
-- **GIVEN** a developer runs `bin/opencode-docker` from inside a project directory
+- **GIVEN** a developer runs `bin/opencode-docker.js` from inside a project directory
 - **WHEN** no explicit project path is provided
 - **THEN** the wrapper uses the current working directory as the project mount source
 - **AND** mounts it into the container as the working project path
@@ -50,26 +50,86 @@ The system SHALL persist OpenCode config, state, and share directories across co
 The system SHALL support both interactive shell sessions and direct command execution through a single wrapper contract.
 
 #### Scenario: Interactive shell mode
-- **GIVEN** a developer invokes `bin/opencode-docker --shell`
+- **GIVEN** a developer invokes `bin/opencode-docker.js --shell`
 - **WHEN** the container starts
 - **THEN** an interactive shell session is opened in the mounted project context
 
 #### Scenario: Direct command mode
-- **GIVEN** a developer invokes `bin/opencode-docker -- <command> ...args`
+- **GIVEN** a developer invokes `bin/opencode-docker.js -- <command> ...args`
 - **WHEN** the wrapper executes the container
 - **THEN** the provided command and arguments are passed through unchanged
 
 #### Scenario: Default command mode
-- **GIVEN** a developer invokes `bin/opencode-docker` with no command arguments and no `--shell`
+- **GIVEN** a developer invokes `bin/opencode-docker.js` with no command arguments and no `--shell`
 - **WHEN** the wrapper runs
 - **THEN** the container executes `opencode` as the default command
+
+### Requirement: Explicit host-docker mode enables Docker-aware in-container sessions
+The system SHALL provide an explicit `--host-docker` mode that grants host Docker daemon access to the launched in-container session only when a usable local Unix-socket daemon is available and the active Docker context is the default/local context.
+
+#### Scenario: Host-docker mode is restricted to supported local Unix-socket host/context
+- **GIVEN** a developer invokes `bin/opencode-docker.js --host-docker`
+- **WHEN** `DOCKER_HOST` is non-local, `DOCKER_CONTEXT` is non-default, or `/var/run/docker.sock` is missing/inaccessible/unusable
+- **THEN** wrapper startup fails before `docker run`
+- **AND** diagnostics identify the unsupported host/context or socket prerequisite with remediation
+
+#### Scenario: Host-docker mode mounts host socket only when explicitly active
+- **GIVEN** host-docker mode is active on a supported local Unix-socket host/context
+- **WHEN** runtime planning prepares docker arguments
+- **THEN** `/var/run/docker.sock` is bind-mounted into the container for that run
+- **AND** in-container Docker client environment targets `unix:///var/run/docker.sock`
+- **AND** non-host-docker runs do not add that host Docker socket bridge
+
+#### Scenario: Native Windows host invocation is rejected for host-docker mode in this slice
+- **GIVEN** a developer invokes `bin/opencode-docker.js --host-docker` from a native Windows host
+- **WHEN** wrapper preflight validation runs
+- **THEN** wrapper startup fails before `docker run`
+- **AND** diagnostics state that Windows named-pipe/Docker Desktop bridging is follow-up work for host-docker mode
+
+#### Scenario: Linux invocation inside WSL follows Linux host-docker path when local socket exists
+- **GIVEN** a developer invokes `bin/opencode-docker.js --host-docker` from Linux inside WSL
+- **AND** a usable local `/var/run/docker.sock` is available in that Linux environment
+- **WHEN** preflight validation and runtime planning run
+- **THEN** host-docker mode uses the same local Unix-socket validation and mount flow as other Linux runs
+
+#### Scenario: Host-docker mode does not introduce a generic host-command bridge
+- **GIVEN** a developer invokes `bin/opencode-docker.js --host-docker`
+- **WHEN** runtime planning and execution run
+- **THEN** command execution remains in-container through the standard entrypoint
+- **AND** the wrapper does not execute session commands directly on the host
+
+#### Scenario: Host-docker mode does not forward broader host Docker config or credentials in this slice
+- **GIVEN** a developer invokes `bin/opencode-docker.js --host-docker`
+- **WHEN** runtime planning prepares mounts and environment
+- **THEN** the wrapper does not promise or add host Docker credential/config/context forwarding beyond the supported local daemon bridge
+
+#### Scenario: Host-docker mode does not translate sibling-container bind-mount source paths in this slice
+- **GIVEN** a developer invokes `bin/opencode-docker.js --host-docker`
+- **WHEN** Docker workloads launched inside the session reference in-container `/workspace/...` paths as bind-mount sources
+- **THEN** the workflow does not rewrite those paths into host-visible paths
+- **AND** bind-mount path translation remains out of scope for this slice
+
+### Requirement: Docker image includes Docker CLI for host-docker daemon workflows
+The system SHALL include Docker CLI in the container image so in-container host-docker workflows can reach the mounted host daemon without host-binary bind mounts.
+
+#### Scenario: Docker CLI is available in-container for host-docker workflows
+- **GIVEN** the repository Docker image is built successfully
+- **WHEN** a host-docker run starts inside the container
+- **THEN** Docker CLI is available in the in-container command environment
+- **AND** repository automation can query host-daemon server data via the mounted socket
+
+#### Scenario: Docker CLI installation failure stops image build
+- **GIVEN** Docker CLI cannot be installed during Docker build
+- **WHEN** the image build runs
+- **THEN** the build fails non-zero
+- **AND** host-docker mode is not shipped with a partial runtime dependency state
 
 ### Requirement: Minimum command-parity smoke validation
 The system SHALL define a minimum smoke set that demonstrates parity for key OpenCode/OpenSpec workflows through the Docker wrapper.
 
 #### Scenario: Required parity smoke commands
 - **GIVEN** a repository configured with OpenCode/OpenSpec commands
-- **WHEN** parity smoke validation is executed via `bin/opencode-docker`
+- **WHEN** parity smoke validation is executed via `bin/opencode-docker.js`
 - **THEN** the minimum command set includes:
   - `opencode --help`
   - `opencode run "/opsx-propose <change-name>"`
@@ -87,7 +147,7 @@ The system SHALL install cache-ctrl in the Docker image so containerized OpenCod
 
 #### Scenario: Cache-ctrl is available in default runtime path
 - **GIVEN** the image is built from the repository Dockerfile
-- **WHEN** a container is started through `bin/opencode-docker`
+- **WHEN** a container is started through `bin/opencode-docker.js`
 - **THEN** cache-ctrl is available to the runtime command environment
 - **AND** no additional startup installation step is required to use it
 
@@ -151,13 +211,13 @@ The system SHALL support importing user la-briguade configuration from `~/la_bri
 
 #### Scenario: User la-briguade configuration path is present
 - **GIVEN** `~/la_briguade` exists on the host
-- **WHEN** `bin/opencode-docker` prepares runtime mounts/configuration
+- **WHEN** `bin/opencode-docker.js` prepares runtime mounts/configuration
 - **THEN** the wrapper uses that path as the la-briguade configuration source
 - **AND** maps it into the container at the same home-relative path `~/la_briguade`
 
 #### Scenario: User la-briguade configuration path is absent
 - **GIVEN** `~/la_briguade` does not exist on the host
-- **WHEN** `bin/opencode-docker` prepares runtime mounts/configuration
+- **WHEN** `bin/opencode-docker.js` prepares runtime mounts/configuration
 - **THEN** startup continues without la-briguade config import mount
 - **AND** absence is not treated as a startup failure
 

@@ -8,6 +8,7 @@ export function parseCliArguments(argv: readonly string[]): ParsedCliOptions {
   let projectPath = process.cwd();
   let imageRef = process.env.OPENCODE_DOCKER_IMAGE ?? DEFAULT_IMAGE;
   let shellMode = false;
+  let hostDockerMode = false;
   let passthroughCommand: readonly string[] = [];
   let helpRequested = false;
 
@@ -43,6 +44,14 @@ export function parseCliArguments(argv: readonly string[]): ParsedCliOptions {
         shellMode = true;
         index += 1;
         break;
+      case "--host-docker":
+        hostDockerMode = true;
+        index += 1;
+        break;
+      case "--repo-command":
+        fail(
+          "--repo-command has been removed. Remediation: use --host-docker for a session-wide in-container host Docker bridge.",
+        );
       case "--":
         passthroughCommand = argv.slice(index + 1);
         index = argv.length;
@@ -63,6 +72,7 @@ export function parseCliArguments(argv: readonly string[]): ParsedCliOptions {
     projectPath,
     imageRef,
     shellMode,
+    hostDockerMode,
     passthroughCommand,
     helpRequested,
   };

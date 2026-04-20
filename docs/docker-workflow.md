@@ -18,7 +18,7 @@ The image installs `cache-ctrl` during build, so runtime commands can rely on it
 ## Wrapper usage
 
 ```bash
-bin/opencode-docker.js [--project <host-path>] [--image <image-ref>] [--shell] [--] [command ...args]
+bin/opencode-docker.js [--project <host-path>] [--image <image-ref>] [--shell] [--host-docker] [--] [command ...args]
 ```
 
 - `bin/opencode-docker.js` is the published entrypoint.
@@ -27,8 +27,69 @@ bin/opencode-docker.js [--project <host-path>] [--image <image-ref>] [--shell] [
 - Override project mount with `--project <host-path>`.
 - Override image with `--image <image-ref>`.
 - `--shell` starts an interactive shell at `/workspace` as user `opencode` with `HOME=/home/opencode`.
+- `--host-docker` enables host Docker daemon access for the entire in-container session.
+- `--repo-command` is removed; use `--host-docker`.
 - Without `--shell` and without command args, default command is `opencode`.
 - Any command after `--` is passed through unchanged.
+
+### Host Docker mode (`--host-docker`)
+
+Use this mode for OpenCode/shell/pass-through sessions that need Docker daemon access from inside the container:
+
+```bash
+bin/opencode-docker.js --host-docker
+bin/opencode-docker.js --shell --host-docker
+bin/opencode-docker.js --host-docker -- docker version
+```
+
+Behavior and scope:
+
+- Execution remains in-container at `/workspace` via the standard entrypoint and remapped non-root `opencode` user.
+- Host Docker daemon access is enabled only by bind-mounting `/var/run/docker.sock` for active `--host-docker` runs.
+- The wrapper sets in-container `DOCKER_HOST=unix:///var/run/docker.sock` for active `--host-docker` runs.
+- This mode does **not** execute commands on the host and is **not** a generic host-command bridge.
+
+Platform/prerequisite constraints:
+
+- Supported on Linux/macOS only when a usable local Unix-socket Docker daemon is available at `/var/run/docker.sock`.
+- Requires the active Docker context to be the default/local context.
+- Best-effort supported for Linux invocation inside WSL when the Linux environment has a usable `/var/run/docker.sock`.
+- Unsupported on native Windows host invocation in this change (explicit fail-fast boundary).
+- Unsupported when `DOCKER_HOST` points to non-local endpoints.
+- Unsupported when `DOCKER_CONTEXT` selects a non-default context.
+- Fails fast before `docker run` if `/var/run/docker.sock` is missing, not a socket, or not read/write accessible.
+
+Out of scope in this slice:
+
+- Host Docker credential/config parity (`~/.docker`, credential helpers, custom context material).
+- Sibling-container bind-mount source path translation from in-container `/workspace/...` paths to host-visible paths.
+
+Security posture:
+
+- `--host-docker` intentionally grants high-privilege host daemon control to any process started in that flagged session.
+- Keep usage explicit and limited to trusted repository automation.
+
+Rollback guidance:
+
+- Operational rollback is immediate: omit `--host-docker`; existing default, `--shell`, and normal pass-through behavior are unchanged.
+
+### Manual verification: Linux in WSL host-docker path
+
+Automated CI coverage for WSL is not required in this slice. Use this manual checklist when validating from Linux inside WSL:
+
+```bash
+# 1) Confirm Linux-in-WSL has a usable local socket path
+test -S /var/run/docker.sock
+
+# 2) Confirm host context/endpoint are supported for this slice
+test -z "${DOCKER_CONTEXT:-}" || test "${DOCKER_CONTEXT}" = "default"
+test -z "${DOCKER_HOST:-}" || test "${DOCKER_HOST}" = "unix:///var/run/docker.sock"
+
+# 3) Launch wrapper with session-wide host docker bridge and verify daemon reachability
+bin/opencode-docker.js --host-docker -- docker info --format '{{.ServerVersion}}'
+```
+
+Expected result: command exits zero with a non-empty daemon version string.
 
 ## Windows support
 
@@ -36,6 +97,7 @@ Windows hosts support core flows only: default mode, `--shell`, and direct comma
 
 Advanced local-dev modes remain Unix-like and are not supported on Windows in this change:
 
+- `--host-docker` mode (host Docker socket bridge)
 - la-briguade local symlink/plugin-dev mode
 - `cache-ctrl` local-dev mode
 
@@ -200,6 +262,14 @@ Result: files created or edited in `/workspace` are owned by the invoking host u
 ## Troubleshooting
 
 - `Docker CLI is required but was not found`: install Docker and ensure `docker` is on `PATH`.
+- `--repo-command has been removed`: use `--host-docker` for session-wide in-container host Docker access.
+- `--host-docker currently supports only local Unix-socket Docker hosts`: unset/adjust `DOCKER_HOST` to `unix:///var/run/docker.sock` or run without `--host-docker`.
+- `Unsupported DOCKER_CONTEXT`: unset `DOCKER_CONTEXT` or set it to `default` before using `--host-docker`.
+- `--host-docker requires a local Docker daemon socket at /var/run/docker.sock`: start Docker and verify socket provisioning.
+- `--host-docker requires /var/run/docker.sock to be a Unix socket`: use a local Unix-socket Docker daemon for this mode.
+- `--host-docker cannot access /var/run/docker.sock with read/write permissions`: fix host user access to docker socket (for example docker group membership).
+- `--host-docker could not reach a usable host Docker daemon`: ensure Docker daemon is running and reachable via `unix:///var/run/docker.sock` (for example `docker --host unix:///var/run/docker.sock version`).
+- `--host-docker is not supported for native Windows hosts in this slice`: run from Linux/macOS (or Linux inside WSL with usable socket), or omit `--host-docker`.
 - `Project path does not exist`: pass a valid directory with `--project`.
 - `Unable to create persistence directory`: fix permissions/ownership for the reported path (or create it manually), then rerun.
 - `Invalid LA_BRIGUADE_LOCAL_MODE`: use one of `auto`, `force`, `off`.

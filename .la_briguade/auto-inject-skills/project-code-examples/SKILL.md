@@ -23,6 +23,7 @@ Examples are intentionally focused excerpts copied from real project code. They 
 - `openspec-spec-driven-config.md` — minimal OpenSpec `schema: spec-driven` config baseline.
 - `conditional-runtime-bind-mounts.md` — conditional bind-mount wiring for optional runtime integration paths.
 - `js-wrapper-runtime-plan-modules.md` — thin JS entrypoint delegation to modular runtime planning/execution.
+- `host-docker-socket-bridge-gating.md` — explicit host-docker gating for host Docker socket bridge wiring.
 
 ## Location
 - Root example directory: `.code-examples-for-ai/`

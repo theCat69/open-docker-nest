@@ -31,6 +31,21 @@ function createSymlinkEntry(): string {
 }
 
 describe("enforceWindowsAdvancedModeSupport", () => {
+  it("fails with explicit diagnostics when --host-docker mode is requested", () => {
+    expect(() =>
+      enforceWindowsAdvancedModeSupport({
+        localModeLaBriguade: "off",
+        localPathLaBriguade: "",
+        localModeCacheCtrl: "off",
+        localPathCacheCtrl: "",
+        cacheCtrlHostBinaryEntryPath: join(tmpdir(), "cache-ctrl"),
+        cacheCtrlHostSkillEntryPath: join(tmpdir(), "skill"),
+        resolvedProjectPath: tmpdir(),
+        hostDockerMode: true,
+      }),
+    ).toThrow(/--host-docker is not supported for native Windows hosts in this slice/);
+  });
+
   it("fails with explicit diagnostics for cache-ctrl auto activation inputs", () => {
     const cacheCtrlBinarySymlinkPath = createSymlinkEntry();
     const cacheCtrlSkillEntryPath = join(tmpdir(), "non-symlink-skill-entry");
@@ -44,6 +59,7 @@ describe("enforceWindowsAdvancedModeSupport", () => {
         cacheCtrlHostBinaryEntryPath: cacheCtrlBinarySymlinkPath,
         cacheCtrlHostSkillEntryPath: cacheCtrlSkillEntryPath,
         resolvedProjectPath: tmpdir(),
+        hostDockerMode: false,
       }),
     ).toThrow(/Windows host support for CACHE_CTRL local-dev mode is not available/);
   });

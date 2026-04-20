@@ -39,8 +39,20 @@ if [[ -n "${OPENCODE_PREPEND_PATH:-}" ]]; then
   export PATH="${OPENCODE_PREPEND_PATH}:${PATH}"
 fi
 
+runtime_supplementary_groups="${OPENCODE_RUNTIME_GID}"
+if [[ -n "${OPENCODE_DOCKER_SOCKET_GID:-}" ]]; then
+  if ! [[ "${OPENCODE_DOCKER_SOCKET_GID}" =~ ^[0-9]+$ ]]; then
+    echo "Error: OPENCODE_DOCKER_SOCKET_GID must be numeric when set." >&2
+    exit 1
+  fi
+
+  if [[ "${OPENCODE_DOCKER_SOCKET_GID}" != "${OPENCODE_RUNTIME_GID}" ]]; then
+    runtime_supplementary_groups="${runtime_supplementary_groups},${OPENCODE_DOCKER_SOCKET_GID}"
+  fi
+fi
+
 exec setpriv \
   --reuid "${OPENCODE_RUNTIME_UID}" \
   --regid "${OPENCODE_RUNTIME_GID}" \
-  --clear-groups \
+  --groups "${runtime_supplementary_groups}" \
   "$@"

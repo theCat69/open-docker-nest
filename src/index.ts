@@ -25,13 +25,13 @@ function validateProjectPath(projectPath: string): string {
 }
 
 export async function main(): Promise<void> {
-  ensureDockerCliAvailable();
-
   const parsedCliOptions = parseCliArguments(process.argv.slice(2));
   if (parsedCliOptions.helpRequested) {
     printUsage();
     return;
   }
+
+  ensureDockerCliAvailable();
 
   const resolvedProjectPath = validateProjectPath(parsedCliOptions.projectPath);
   const runtimeContext = buildRuntimeContext(resolvedProjectPath);
@@ -44,6 +44,7 @@ export async function main(): Promise<void> {
     runtimeContext,
     parsedCliOptions.imageRef,
     parsedCliOptions.shellMode,
+    parsedCliOptions.hostDockerMode,
     parsedCliOptions.passthroughCommand,
   );
 

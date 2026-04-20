@@ -13,6 +13,7 @@ interface WindowsSupportInput {
   readonly cacheCtrlHostBinaryEntryPath: string;
   readonly cacheCtrlHostSkillEntryPath: string;
   readonly resolvedProjectPath: string;
+  readonly hostDockerMode: boolean;
 }
 
 function failUnsupported(featureName: string): never {
@@ -22,6 +23,12 @@ function failUnsupported(featureName: string): never {
 }
 
 export function enforceWindowsAdvancedModeSupport(input: WindowsSupportInput): void {
+  if (input.hostDockerMode) {
+    fail(
+      "--host-docker is not supported for native Windows hosts in this slice. Remediation: run this wrapper from Linux/macOS (or Linux inside WSL with a usable local Docker socket path), or omit --host-docker. Follow-up work is required for Windows named-pipe/Docker Desktop bridging.",
+    );
+  }
+
   const pluginEntryPath = join(input.resolvedProjectPath, LA_BRIGUADE_PLUGIN_ENTRY_RELATIVE);
 
   const requestedLaBriguadeMode =

@@ -4,6 +4,7 @@ export interface ParsedCliOptions {
   readonly projectPath: string;
   readonly imageRef: string;
   readonly shellMode: boolean;
+  readonly hostDockerMode: boolean;
   readonly passthroughCommand: readonly string[];
   readonly helpRequested: boolean;
 }

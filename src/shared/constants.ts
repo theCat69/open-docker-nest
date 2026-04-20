@@ -9,3 +9,5 @@ export const CACHE_CTRL_LOCAL_MODE_DEFAULT = "auto" as const;
 export const CACHE_CTRL_HOST_BINARY_ENTRY_RELATIVE = ".local/bin/cache-ctrl";
 export const CACHE_CTRL_HOST_SKILL_ENTRY_RELATIVE = ".config/opencode/skills/cache-ctrl-caller/SKILL.md";
 export const CACHE_CTRL_CONTAINER_BIN_DIR = "/home/opencode/.local/bin";
+export const HOST_DOCKER_SOCKET_PATH = "/var/run/docker.sock";
+export const LOCAL_UNIX_DOCKER_HOST = "unix:///var/run/docker.sock";

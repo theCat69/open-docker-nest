@@ -6,6 +6,7 @@ import {
   removeDirectoryIfPresent,
   runShellModeSmoke,
   runWrapper,
+  runWrapperWithEnvironmentOverrides,
   runWrapperThroughTimeout,
 } from "./helpers/wrapper-test-harness";
 
@@ -62,5 +63,58 @@ describe("docker wrapper mode smoke coverage", () => {
     expect(result.status).toBe(0);
     const outputLines = result.stdout.split(/\r?\n/).filter((line) => line.length > 0);
     expect(outputLines).toEqual(["passthrough-check", "alpha", "beta"]);
+  });
+
+  it("runs host-docker mode on Unix-like hosts and reaches host daemon from inside container", () => {
+    const fixtureProjectPath = createTemporaryDirectory("dock-opencode-e2e-host-docker-");
+    temporaryPathsToClean.push(fixtureProjectPath);
+
+    const result = runWrapperWithEnvironmentOverrides(
+      fixtureProjectPath,
+      ["--host-docker", "--", "docker", "info", "--format", "{{.ServerVersion}}"],
+      { DOCKER_HOST: undefined, DOCKER_CONTEXT: undefined },
+    );
+
+    expect(result.status).toBe(0);
+    expect(result.stdout.trim().length).toBeGreaterThan(0);
+  }, 120_000);
+
+  it("fails fast with unsupported host diagnostics for host-docker non-local docker hosts", () => {
+    const fixtureProjectPath = createTemporaryDirectory("dock-opencode-e2e-host-docker-unsupported-");
+    temporaryPathsToClean.push(fixtureProjectPath);
+
+    const result = runWrapperWithEnvironmentOverrides(
+      fixtureProjectPath,
+      ["--host-docker", "--", "docker", "version"],
+      { DOCKER_HOST: "tcp://127.0.0.1:2375" },
+    );
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain("currently supports only local Unix-socket Docker hosts");
+  });
+
+  it("fails fast with unsupported host diagnostics for host-docker non-default docker context", () => {
+    const fixtureProjectPath = createTemporaryDirectory("dock-opencode-e2e-host-docker-context-");
+    temporaryPathsToClean.push(fixtureProjectPath);
+
+    const result = runWrapperWithEnvironmentOverrides(
+      fixtureProjectPath,
+      ["--host-docker", "--", "docker", "version"],
+      { DOCKER_CONTEXT: "remote-prod", DOCKER_HOST: undefined },
+    );
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain("Unsupported DOCKER_CONTEXT");
+  });
+
+  it("fails fast for removed --repo-command flag with migration guidance", () => {
+    const fixtureProjectPath = createTemporaryDirectory("dock-opencode-e2e-removed-repo-command-");
+    temporaryPathsToClean.push(fixtureProjectPath);
+
+    const result = runWrapper(fixtureProjectPath, ["--repo-command", "--", "docker", "version"]);
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain("--repo-command has been removed");
+    expect(result.stderr).toContain("use --host-docker");
   });
 });

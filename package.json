@@ -13,7 +13,7 @@
     "test:watch": "bunx vitest",
     "test:e2e": "bunx vitest -c ./e2e/vitest.config.ts run",
     "typecheck": "bunx tsc --noEmit",
-    "prepublishOnly": "bun run typecheck && bun run test"
+    "prepublishOnly": "bun run typecheck && bun run test && bun run test:e2e"
   },
   "devDependencies": {
     "@types/bun": "^1.3.12",

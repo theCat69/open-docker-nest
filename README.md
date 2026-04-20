@@ -25,14 +25,43 @@ docker build -t opencode-docker:latest .
 ## Usage
 
 ```bash
-bin/opencode-docker.js [--project <host-path>] [--image <image-ref>] [--shell] [--] [command ...args]
+bin/opencode-docker.js [--project <host-path>] [--image <image-ref>] [--shell] [--host-docker] [--] [command ...args]
 ```
 
 - `bin/opencode-docker.js` is the published entrypoint.
 - `bin/opencode-docker` remains available as a thin compatibility shim.
 - `--shell` opens an interactive shell as user `opencode` with `HOME=/home/opencode`.
+- `--host-docker` enables host Docker daemon access for the entire in-container session (explicit high-privilege mode).
 - With no command args and no `--shell`, the wrapper still runs `opencode` by default.
 - Commands provided after `--` are passed through unchanged (`-- <command> ...args`).
+- `--repo-command` is removed; use `--host-docker` for session-wide host Docker access.
+
+### Host Docker mode (`--host-docker`)
+
+Use this mode when tooling inside `/workspace` needs host Docker daemon access for a full OpenCode, shell, or pass-through session:
+
+```bash
+bin/opencode-docker.js --host-docker
+bin/opencode-docker.js --shell --host-docker
+bin/opencode-docker.js --host-docker -- docker version
+```
+
+Scope and safety contract:
+
+- Runs the session inside the container (not on the host), through the standard entrypoint as remapped non-root `opencode`.
+- Mounts `/var/run/docker.sock` only for runs where `--host-docker` is explicitly set.
+- Supports Linux/macOS only when a usable local Unix-socket Docker daemon is available at `/var/run/docker.sock`.
+- Requires the active Docker context to be the default/local context.
+- Supports best-effort Linux-in-WSL usage when invoked from Linux inside WSL and `/var/run/docker.sock` is usable in that Linux environment.
+- Fails fast on native Windows host invocation for this mode, unsupported `DOCKER_HOST` endpoints, and missing/inaccessible Docker socket prerequisites.
+- Does not forward host Docker credentials/config (`~/.docker`) in this slice.
+- Does not translate sibling-container bind-mount source paths from in-container `/workspace/...` to host-visible paths in this slice.
+
+Security note: this mode intentionally grants any process started in that flagged session control over the host Docker daemon for that run.
+
+Non-goal: this is not a generic host-command bridge.
+
+Rollback: stop using `--host-docker` and use existing default/`--shell`/normal pass-through modes.
 
 ### Common examples
 
@@ -62,7 +91,7 @@ bin/opencode-docker.js --project /path/to/project -- opencode --help
 
 ## Windows support
 
-Windows hosts support core flows only: default mode, `--shell`, and direct command pass-through. Advanced local-dev modes for la-briguade and `cache-ctrl` remain Unix-like and are currently unsupported on Windows.
+Windows hosts support core flows only: default mode, `--shell`, and direct command pass-through. `--host-docker` and advanced local-dev modes for la-briguade and `cache-ctrl` remain Unix-like in this slice and are currently unsupported on native Windows hosts.
 
 ## Mount and persistence model
 
