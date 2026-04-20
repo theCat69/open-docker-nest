@@ -124,6 +124,21 @@ The system SHALL include Docker CLI in the container image so in-container host-
 - **THEN** the build fails non-zero
 - **AND** host-docker mode is not shipped with a partial runtime dependency state
 
+### Requirement: Docker image includes Java 24 and a pinned Rust runtime toolchain
+The system SHALL install Java 24 and a pinned Rust toolchain in the container image so non-root wrapper sessions can use both toolchains without runtime bootstrap steps.
+
+#### Scenario: Java 24 and Rust are available to non-root opencode runtime
+- **GIVEN** the repository Docker image is built successfully
+- **WHEN** a container is started through `bin/opencode-docker.js` as the remapped non-root runtime user
+- **THEN** `java` and `javac` from Java 24 are available in the runtime command environment
+- **AND** `rustc` and `cargo` are available in the runtime command environment
+
+#### Scenario: Java 24 or Rust installation failure stops image build
+- **GIVEN** Java 24 or Rust cannot be installed during Docker build
+- **WHEN** the image build executes
+- **THEN** the build fails non-zero
+- **AND** runtime execution does not proceed with a partial toolchain dependency state
+
 ### Requirement: Minimum command-parity smoke validation
 The system SHALL define a minimum smoke set that demonstrates parity for key OpenCode/OpenSpec workflows through the Docker wrapper.
 

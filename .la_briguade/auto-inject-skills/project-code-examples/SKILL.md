@@ -24,6 +24,7 @@ Examples are intentionally focused excerpts copied from real project code. They 
 - `conditional-runtime-bind-mounts.md` — conditional bind-mount wiring for optional runtime integration paths.
 - `js-wrapper-runtime-plan-modules.md` — thin JS entrypoint delegation to modular runtime planning/execution.
 - `host-docker-socket-bridge-gating.md` — explicit host-docker gating for host Docker socket bridge wiring.
+- `docker-toolchain-checksum-install.md` — Dockerfile pattern for pinned toolchain downloads with SHA-256 verification.
 
 ## Location
 - Root example directory: `.code-examples-for-ai/`

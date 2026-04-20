@@ -13,7 +13,7 @@ This repository supports running OpenCode/OpenSpec workflows inside a single Doc
 docker build -t opencode-docker:latest .
 ```
 
-The image installs `cache-ctrl` during build, so runtime commands can rely on it without startup-time installation.
+The image installs `cache-ctrl`, Java 24 (`java`/`javac`), and a pinned Rust toolchain (`rustc`/`cargo`, default `1.84.0`) during build, with deterministic amd64/arm64 artifact selection, so runtime commands can rely on them without startup-time installation.
 
 ## Wrapper usage
 
@@ -251,6 +251,12 @@ bin/opencode-docker.js -- /usr/bin/env bash -lc 'printf "%s\n" "$0" "$1" "$2"' p
 # passthrough-check
 # alpha
 # beta
+```
+
+Validate Java 24 and Rust availability as non-root `opencode` runtime user:
+
+```bash
+bin/opencode-docker.js -- /usr/bin/env bash -lc 'java -version && javac -version && rustc --version && cargo --version'
 ```
 
 ## Permissions and file ownership

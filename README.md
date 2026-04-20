@@ -6,7 +6,7 @@ Run [OpenCode](https://github.com/anomalyco/opencode) inside Docker with host-pr
 
 - An authoritative host entrypoint: `bin/opencode-docker.js`
 - A compatibility shim: `bin/opencode-docker` → `bin/opencode-docker.js`
-- A Docker image with `opencode` and `cache-ctrl` installed
+- A Docker image with `opencode`, `cache-ctrl`, Java 24, and a pinned Rust toolchain (`1.84.0`) installed
 - A `/workspace` mount model for running against your host project
 - Persistent host-backed OpenCode config/state/share directories across runs
 - Non-root execution via host UID/GID remapping

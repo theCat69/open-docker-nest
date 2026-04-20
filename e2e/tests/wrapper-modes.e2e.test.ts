@@ -65,6 +65,21 @@ describe("docker wrapper mode smoke coverage", () => {
     expect(outputLines).toEqual(["passthrough-check", "alpha", "beta"]);
   });
 
+  it("exposes Java 24 and Rust toolchains to the non-root runtime user", () => {
+    const fixtureProjectPath = createTemporaryDirectory("dock-opencode-e2e-toolchains-");
+    temporaryPathsToClean.push(fixtureProjectPath);
+
+    const result = runWrapper(fixtureProjectPath, [
+      "--",
+      "/usr/bin/env",
+      "bash",
+      "-lc",
+      "java -version >/dev/null && javac -version >/dev/null && rustc --version >/dev/null && cargo --version >/dev/null",
+    ]);
+
+    expect(result.status).toBe(0);
+  });
+
   it("runs host-docker mode on Unix-like hosts and reaches host daemon from inside container", () => {
     const fixtureProjectPath = createTemporaryDirectory("dock-opencode-e2e-host-docker-");
     temporaryPathsToClean.push(fixtureProjectPath);
