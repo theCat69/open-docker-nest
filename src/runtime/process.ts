@@ -14,8 +14,14 @@ export function ensureDockerCliAvailable(): void {
 }
 
 export function executeDockerRun(plan: DockerRuntimePlan): never {
+  const dockerProcessEnvironment: NodeJS.ProcessEnv = {
+    ...process.env,
+    ...plan.dockerClientEnvironment,
+  };
+
   const execution = spawnSync("docker", ["run", ...plan.dockerRunArgs, plan.imageRef, ...plan.commandToRun], {
     stdio: "inherit",
+    env: dockerProcessEnvironment,
   });
 
   if (execution.error !== undefined) {

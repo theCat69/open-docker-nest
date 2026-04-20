@@ -189,6 +189,7 @@ export function buildDockerRuntimePlan(
   }
 
   const commandToRun = resolveCommandToRun(shellMode, passthroughCommand);
+  const dockerClientEnvironment: Record<string, string> = {};
 
   const dockerRunArgs: string[] = [
     "--rm",
@@ -239,6 +240,16 @@ export function buildDockerRuntimePlan(
     dockerRunArgs.push("--env", `OPENCODE_PREPEND_PATH=${CACHE_CTRL_CONTAINER_BIN_DIR}`);
   }
 
+  for (const environmentVariableName of Object.keys(runtimeContext.extraContainerEnvironment)) {
+    dockerRunArgs.push("--env", environmentVariableName);
+    const resolvedValue = runtimeContext.extraContainerEnvironment[environmentVariableName];
+    if (resolvedValue === undefined) {
+      continue;
+    }
+
+    dockerClientEnvironment[environmentVariableName] = resolvedValue;
+  }
+
   if (hostDockerMode) {
     const dockerSocketGroupId = getPathGroupId(HOST_DOCKER_SOCKET_PATH);
     dockerRunArgs.push("--volume", `${HOST_DOCKER_SOCKET_PATH}:${HOST_DOCKER_SOCKET_PATH}`);
@@ -253,6 +264,7 @@ export function buildDockerRuntimePlan(
   return {
     imageRef,
     dockerRunArgs,
+    dockerClientEnvironment,
     commandToRun,
   };
 }

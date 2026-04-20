@@ -49,6 +49,7 @@ import { main } from "../src/index.js";
 
 const runtimeContextFixture: RuntimeContext = {
   resolvedProjectPath: "/workspace",
+  extraContainerEnvironment: {},
   hostConfigDirectoryPath: "/tmp/config",
   hostStateDirectoryPath: "/tmp/state",
   hostShareDirectoryPath: "/tmp/share",
@@ -81,6 +82,7 @@ afterEach(() => {
   buildDockerRuntimePlanMock.mockReturnValue({
     imageRef: "opencode-docker:latest",
     dockerRunArgs: ["--rm"],
+    dockerClientEnvironment: {},
     commandToRun: ["opencode"],
   });
 });

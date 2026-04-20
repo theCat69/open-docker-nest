@@ -97,6 +97,7 @@ function createRuntimeContextFixture(): RuntimeContext {
 
   return {
     resolvedProjectPath: projectPath,
+    extraContainerEnvironment: {},
     hostConfigDirectoryPath: configPath,
     hostStateDirectoryPath: statePath,
     hostShareDirectoryPath: sharePath,
@@ -211,5 +212,35 @@ describe("buildDockerRuntimePlan", () => {
     expect(() =>
       buildDockerRuntimePlan(context, "opencode-docker:latest", false, true, ["docker", "version"]),
     ).toThrow(/--host-docker cannot access \/var\/run\/docker.sock with read\/write permissions/);
+  });
+
+  it("adds validated project extra container environment values", () => {
+    const context = createRuntimeContextFixture();
+    mockIsReadablePath.mockReturnValue(false);
+
+    const contextWithExtraEnvironment: RuntimeContext = {
+      ...context,
+      extraContainerEnvironment: {
+        OPENAI_API_KEY: "secret-value",
+        FEATURE_FLAG: "on",
+      },
+    };
+
+    const runtimePlan = buildDockerRuntimePlan(
+      contextWithExtraEnvironment,
+      "opencode-docker:latest",
+      false,
+      false,
+      ["opencode", "--help"],
+    );
+
+    expect(runtimePlan.dockerRunArgs).toContain("OPENAI_API_KEY");
+    expect(runtimePlan.dockerRunArgs).toContain("FEATURE_FLAG");
+    expect(runtimePlan.dockerRunArgs).not.toContain("OPENAI_API_KEY=secret-value");
+    expect(runtimePlan.dockerRunArgs).not.toContain("FEATURE_FLAG=on");
+    expect(runtimePlan.dockerClientEnvironment).toEqual({
+      OPENAI_API_KEY: "secret-value",
+      FEATURE_FLAG: "on",
+    });
   });
 });

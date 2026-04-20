@@ -10,6 +10,7 @@ import {
 } from "../shared/constants.js";
 import type { RuntimeContext } from "../shared/types.js";
 import { validateCacheCtrlLocalMode, validateLaBriguadeLocalMode } from "../validation/local-modes.js";
+import { loadProjectExtraContainerEnvironment } from "../config/project-config.js";
 
 export function buildRuntimeContext(resolvedProjectPath: string): RuntimeContext {
   const hostHomeDirectory = homedir();
@@ -19,9 +20,11 @@ export function buildRuntimeContext(resolvedProjectPath: string): RuntimeContext
   const cacheCtrlLocalMode = validateCacheCtrlLocalMode(
     process.env.CACHE_CTRL_LOCAL_MODE ?? CACHE_CTRL_LOCAL_MODE_DEFAULT,
   );
+  const extraContainerEnvironment = loadProjectExtraContainerEnvironment(resolvedProjectPath, process.env);
 
   return {
     resolvedProjectPath,
+    extraContainerEnvironment,
     hostConfigDirectoryPath: join(hostHomeDirectory, ".config", "opencode"),
     hostStateDirectoryPath: join(hostHomeDirectory, ".local", "state", "opencode"),
     hostShareDirectoryPath: join(hostHomeDirectory, ".local", "share", "opencode"),

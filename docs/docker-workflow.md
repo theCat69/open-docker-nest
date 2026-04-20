@@ -128,6 +128,44 @@ On each run, the wrapper checks for `~/la_briguade` on the host:
 
 This config import behavior is independent from la-briguade plugin installation mode.
 
+### Project-level wrapper config (`dock-opencode.json`)
+
+The wrapper loads two config levels and merges them in this order: defaults < user < project.
+
+- User config: `~/.config/dock-opencode/dock-opencode.json`
+- Project config: `<project-root>/dock-opencode.json`
+
+Both files keep the `.json` extension, and JSONC comments are supported.
+
+Supported shape in this slice:
+
+```json
+{
+  "extraContainerEnvironment": {
+    "OPENAI_API_KEY": "{env:OPENAI_API_KEY}",
+    "FEATURE_FLAG": "enabled"
+  }
+}
+```
+
+Rules:
+
+- Config is validated with Zod as source of truth.
+- `extraContainerEnvironment` values may be literals or exact `{env:ENV_VAR_NAME}` placeholders (no surrounding whitespace).
+- Placeholder syntax is strict; malformed placeholders fail startup before `docker run`.
+- Missing host env references fail startup with remediation.
+- Runtime planning receives only validated plain env key/value data.
+- For each configured env key, docker args pass `--env KEY` (name only).
+- The wrapper provides the corresponding value from its own process environment when invoking Docker, so secret values are not embedded in `docker run` arguments.
+
+Schema generation is available as an explicit command and is not used on runtime hot paths:
+
+```bash
+bun run schema:generate
+```
+
+The generated JSON Schema is for editor/tooling integration; runtime validation continues to use the Zod schema directly.
+
 ### Local symlink plugin-dev mode (auto/force/off)
 
 The wrapper supports a local plugin-dev contract for `plugins/index.js` symlink workflows.

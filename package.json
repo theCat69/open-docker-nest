@@ -12,6 +12,7 @@
     "test": "bunx vitest run",
     "test:watch": "bunx vitest",
     "test:e2e": "bunx vitest -c ./e2e/vitest.config.ts run",
+    "schema:generate": "bun run src/config/generate-schema.ts",
     "typecheck": "bunx tsc --noEmit",
     "prepublishOnly": "bun run typecheck && bun run test && bun run test:e2e"
   },

@@ -19,6 +19,7 @@ import { executeDockerRun } from "../src/runtime/process.js";
 const samplePlan: DockerRuntimePlan = {
   imageRef: "opencode-docker:latest",
   dockerRunArgs: ["--rm"],
+  dockerClientEnvironment: {},
   commandToRun: ["opencode", "--help"],
 };
 
@@ -39,6 +40,34 @@ describe("executeDockerRun", () => {
     expect(() => executeDockerRun(samplePlan)).toThrow("process.exit invoked");
     expect(processExitSpy).toHaveBeenCalledWith(17);
     expect(processKillSpy).not.toHaveBeenCalled();
+  });
+
+  it("passes runtime env values via docker client process env", () => {
+    spawnSyncMock.mockReturnValue({
+      error: undefined,
+      signal: null,
+      status: 0,
+    });
+
+    expect(() =>
+      executeDockerRun({
+        ...samplePlan,
+        dockerClientEnvironment: {
+          OPENAI_API_KEY: "secret-value",
+        },
+      }),
+    ).toThrow("process.exit invoked");
+
+    expect(spawnSyncMock).toHaveBeenCalledWith(
+      "docker",
+      ["run", "--rm", "opencode-docker:latest", "opencode", "--help"],
+      expect.objectContaining({
+        stdio: "inherit",
+        env: expect.objectContaining({
+          OPENAI_API_KEY: "secret-value",
+        }),
+      }),
+    );
   });
 
   it("re-sends terminating signals to preserve interrupt semantics", () => {

@@ -334,3 +334,50 @@ The system SHALL keep regular/release la-briguade plugin installation behavior u
 - **THEN** no additional repository-side setup is required beyond existing baseline workflow
 - **AND** existing OpenCode plugin-array installation behavior remains unchanged
 - **AND** existing persistence and execution mode contracts remain intact
+
+### Requirement: Layered dock-opencode config supports validated extra container environment values
+The system SHALL support a minimal config surface using `dock-opencode.json` at both user and project levels, with merge precedence defaults < user < project and Zod as the schema source of truth for wrapper-consumed config.
+
+#### Scenario: Wrapper loads and merges user and project config levels
+- **GIVEN** `~/.config/dock-opencode/dock-opencode.json` and/or `<project-root>/dock-opencode.json` exist
+- **WHEN** wrapper startup validation runs
+- **THEN** each present config file is validated against the Zod-defined project schema
+- **AND** merged config is resolved with precedence defaults < user < project
+- **AND** `extraContainerEnvironment` key/value entries are passed into docker runtime planning as plain validated env values
+
+#### Scenario: JSONC comments are accepted in .json config files
+- **GIVEN** either config file includes JSONC comments while retaining the `.json` extension
+- **WHEN** wrapper startup validation runs
+- **THEN** config parsing succeeds when the remaining JSON payload is valid
+
+#### Scenario: Exact `{env:ENV_VAR_NAME}` placeholders resolve from host environment
+- **GIVEN** project config defines `extraContainerEnvironment` values with exact placeholder syntax `{env:ENV_VAR_NAME}` (no surrounding whitespace)
+- **WHEN** wrapper resolves project config before runtime planning
+- **THEN** each placeholder resolves from the host process environment
+- **AND** resolved values are injected as standard container env entries
+
+#### Scenario: Project-config env values are exposed without embedding secret values in docker run arguments
+- **GIVEN** project config provides one or more `extraContainerEnvironment` entries (literal or resolved from `{env:ENV_VAR_NAME}`)
+- **WHEN** runtime planning builds docker invocation arguments
+- **THEN** each configured key is added as `--env <KEY>` argument without inline value payload
+- **AND** the corresponding value is supplied from the wrapper process environment for Docker execution
+- **AND** secret values are not embedded in `docker run` argument strings
+
+#### Scenario: Malformed placeholder syntax fails fast
+- **GIVEN** project config contains malformed placeholder syntax for an env value (not exact `{env:ENV_VAR_NAME}`)
+- **WHEN** wrapper preflight validation runs
+- **THEN** wrapper startup fails before `docker run`
+- **AND** diagnostics identify malformed placeholder syntax and remediation
+
+#### Scenario: Missing host env variable reference fails fast
+- **GIVEN** project config contains `{env:ENV_VAR_NAME}` for a host env variable that is not set
+- **WHEN** wrapper resolves config values
+- **THEN** wrapper startup fails before `docker run`
+- **AND** diagnostics identify the missing host env variable and remediation
+
+#### Scenario: JSON Schema generation remains off runtime hot path
+- **GIVEN** project config schema is defined in Zod
+- **WHEN** schema generation is requested through explicit tooling command
+- **THEN** JSON Schema is generated from the Zod source of truth
+- **AND** generated JSON Schema is for editor/tooling integration
+- **AND** runtime startup and runtime planning do not require JSON Schema generation to execute

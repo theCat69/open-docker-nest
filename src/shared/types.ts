@@ -18,11 +18,13 @@ export interface CacheCtrlLocalState {
 export interface DockerRuntimePlan {
   readonly imageRef: string;
   readonly dockerRunArgs: readonly string[];
+  readonly dockerClientEnvironment: Readonly<Record<string, string>>;
   readonly commandToRun: readonly string[];
 }
 
 export interface RuntimeContext {
   readonly resolvedProjectPath: string;
+  readonly extraContainerEnvironment: Readonly<Record<string, string>>;
   readonly hostConfigDirectoryPath: string;
   readonly hostStateDirectoryPath: string;
   readonly hostShareDirectoryPath: string;

@@ -10,6 +10,7 @@ Run [OpenCode](https://github.com/anomalyco/opencode) inside Docker with host-pr
 - A `/workspace` mount model for running against your host project
 - Persistent host-backed OpenCode config/state/share directories across runs
 - Non-root execution via host UID/GID remapping
+- Layered `dock-opencode.json` config (user + project) for validated extra container environment wiring
 
 ## Prerequisites
 
@@ -111,6 +112,43 @@ The container starts as the `opencode` user and remaps runtime UID/GID from the 
 - `cache-ctrl` is installed in the image and available at runtime.
 - If `~/la_briguade` exists and is readable, it is mounted into the container at `/home/opencode/la_briguade`.
 - Local la-briguade symlink workflows are supported through `LA_BRIGUADE_LOCAL_MODE` (`auto`, `force`, `off`) and optional `LA_BRIGUADE_LOCAL_PATH`; when active, the wrapper derives and mounts the local project root at `<resolved plugins/index.js target>/../..`.
+
+## Project config (`dock-opencode.json`)
+
+The wrapper reads two config levels and merges them as: defaults < user < project.
+
+- User config: `~/.config/dock-opencode/dock-opencode.json`
+- Project config: `<project-root>/dock-opencode.json`
+
+Both files use `.json` naming, and JSONC comments are supported.
+
+Current supported field:
+
+```json
+{
+  "extraContainerEnvironment": {
+    "OPENAI_API_KEY": "{env:OPENAI_API_KEY}",
+    "FEATURE_FLAG": "enabled"
+  }
+}
+```
+
+Behavior:
+
+- `{env:ENV_VAR_NAME}` placeholders are resolved from the host environment before `docker run`.
+- Placeholder syntax must match exactly `{env:ENV_VAR_NAME}` (no surrounding whitespace).
+- Missing referenced host env vars fail fast with remediation.
+- Runtime planning consumes only validated plain key/value pairs.
+- For each configured key, docker args use `--env KEY` (name only), and the value is supplied via the wrapper process environment at launch time.
+- This keeps secret values out of `docker run` CLI arguments while still exposing them in-container.
+
+Generate JSON Schema (off hot path):
+
+```bash
+bun run schema:generate
+```
+
+Output: `schema/dock-opencode.schema.json`
 
 ## More detail
 
