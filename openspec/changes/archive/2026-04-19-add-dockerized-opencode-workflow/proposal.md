@@ -19,7 +19,7 @@ Developers need a predictable way to run OpenCode/OpenSpec workflows inside Dock
 
 ## Success Criteria
 
-- `openspec/changes/add-dockerized-opencode-workflow/specs/dockerized-opencode-workflow/spec.md` exists and defines normative requirements for:
+- `openspec/changes/add-dockerized-open-docker-nest-workflow/specs/dockerized-open-docker-nest-workflow/spec.md` exists and defines normative requirements for:
   - host project bind mount,
   - persistent config/state/share mounts,
   - interactive terminal behavior,
@@ -34,14 +34,14 @@ Developers need a predictable way to run OpenCode/OpenSpec workflows inside Dock
 ## Capabilities
 
 ### New Capabilities
-- `dockerized-opencode-workflow`: Run OpenCode/OpenSpec workflows in a Docker container against host-mounted projects with persistent user state and interactive terminal support.
+- `dockerized-open-docker-nest-workflow`: Run OpenCode/OpenSpec workflows in a Docker container against host-mounted projects with persistent user state and interactive terminal support.
 
 ### Modified Capabilities
 - None.
 
 ## Impact
 
-- Expected implementation touchpoints (future work): `Dockerfile`, `docker/entrypoint.sh`, `docker/user-map.sh`, `bin/opencode-docker`, `docs/docker-workflow.md`.
+- Expected implementation touchpoints (future work): `Dockerfile`, `docker/entrypoint.sh`, `docker/user-map.sh`, `bin/open-docker-nest`, `docs/docker-workflow.md`.
 - Operational impact: introduces a containerized execution path while preserving existing local workflow behavior.
 - User impact: adds a simpler, reproducible host-side entrypoint for running OpenCode/OpenSpec in Docker.
 - Dependencies/systems: Docker CLI/runtime on developer machines; host filesystem mounts for project + persistent OpenCode directories.

@@ -20,7 +20,7 @@ const temporaryDirectoriesToRemove: string[] = [];
 const isRootRunner = typeof process.getuid === "function" && process.getuid() === 0;
 
 beforeEach(() => {
-  const fakeHomeDirectoryPath = mkdtempSync(join(tmpdir(), "dock-opencode-home-config-"));
+  const fakeHomeDirectoryPath = mkdtempSync(join(tmpdir(), "open-docker-nest-home-config-"));
   temporaryDirectoriesToRemove.push(fakeHomeDirectoryPath);
   mockHomedir.mockReturnValue(fakeHomeDirectoryPath);
 });
@@ -35,7 +35,7 @@ afterEach(() => {
 });
 
 function createProjectDirectory(): string {
-  const projectDirectoryPath = mkdtempSync(join(tmpdir(), "dock-opencode-project-config-"));
+  const projectDirectoryPath = mkdtempSync(join(tmpdir(), "open-docker-nest-project-config-"));
   temporaryDirectoriesToRemove.push(projectDirectoryPath);
   return projectDirectoryPath;
 }
@@ -49,7 +49,7 @@ describe("loadProjectExtraContainerEnvironment", () => {
 
   it("loads user config when project config does not exist", () => {
     const projectDirectoryPath = createProjectDirectory();
-    const userConfigFilePath = join(mockHomedir(), ".config", "dock-opencode", "dock-opencode.json");
+    const userConfigFilePath = join(mockHomedir(), ".config", "open-docker-nest", "open-docker-nest.json");
     mkdirSync(dirname(userConfigFilePath), { recursive: true });
     writeFileSync(
       userConfigFilePath,
@@ -73,10 +73,10 @@ describe("loadProjectExtraContainerEnvironment", () => {
     ).toEqual({ OPENAI_API_KEY: "secret", FEATURE_FLAG: "enabled" });
   });
 
-  it("loads project dock-opencode.json config with env expansion", () => {
+  it("loads project open-docker-nest.json config with env expansion", () => {
     const projectDirectoryPath = createProjectDirectory();
     writeFileSync(
-      join(projectDirectoryPath, "dock-opencode.json"),
+      join(projectDirectoryPath, "open-docker-nest.json"),
       JSON.stringify(
         {
           extraContainerEnvironment: {
@@ -96,10 +96,10 @@ describe("loadProjectExtraContainerEnvironment", () => {
     ).toEqual({ OPENAI_API_KEY: "secret", FEATURE_FLAG: "enabled" });
   });
 
-  it("loads dock-opencode.json config with JSONC comments", () => {
+  it("loads open-docker-nest.json config with JSONC comments", () => {
     const projectDirectoryPath = createProjectDirectory();
     writeFileSync(
-      join(projectDirectoryPath, "dock-opencode.json"),
+      join(projectDirectoryPath, "open-docker-nest.json"),
       `{
   // runtime env values
   "extraContainerEnvironment": {
@@ -114,7 +114,7 @@ describe("loadProjectExtraContainerEnvironment", () => {
 
   it("merges defaults < user < project for extraContainerEnvironment", () => {
     const projectDirectoryPath = createProjectDirectory();
-    const userConfigFilePath = join(mockHomedir(), ".config", "dock-opencode", "dock-opencode.json");
+    const userConfigFilePath = join(mockHomedir(), ".config", "open-docker-nest", "open-docker-nest.json");
     mkdirSync(dirname(userConfigFilePath), { recursive: true });
     writeFileSync(
       userConfigFilePath,
@@ -131,7 +131,7 @@ describe("loadProjectExtraContainerEnvironment", () => {
       { encoding: "utf8", flag: "w" },
     );
     writeFileSync(
-      join(projectDirectoryPath, "dock-opencode.json"),
+      join(projectDirectoryPath, "open-docker-nest.json"),
       JSON.stringify(
         {
           extraContainerEnvironment: {
@@ -154,7 +154,7 @@ describe("loadProjectExtraContainerEnvironment", () => {
 
   it("fails for invalid user config structure", () => {
     const projectDirectoryPath = createProjectDirectory();
-    const userConfigFilePath = join(mockHomedir(), ".config", "dock-opencode", "dock-opencode.json");
+    const userConfigFilePath = join(mockHomedir(), ".config", "open-docker-nest", "open-docker-nest.json");
     mkdirSync(dirname(userConfigFilePath), { recursive: true });
     writeFileSync(userConfigFilePath, JSON.stringify({ extraContainerEnvironment: 42 }));
 
@@ -163,21 +163,21 @@ describe("loadProjectExtraContainerEnvironment", () => {
 
   it("fails for invalid project config structure", () => {
     const projectDirectoryPath = createProjectDirectory();
-    writeFileSync(join(projectDirectoryPath, "dock-opencode.json"), JSON.stringify({ extraContainerEnvironment: 42 }));
+    writeFileSync(join(projectDirectoryPath, "open-docker-nest.json"), JSON.stringify({ extraContainerEnvironment: 42 }));
 
     expect(() => loadProjectExtraContainerEnvironment(projectDirectoryPath, {})).toThrow(/Config validation failed/);
   });
 
   it("fails for malformed JSONC document in .json file", () => {
     const projectDirectoryPath = createProjectDirectory();
-    writeFileSync(join(projectDirectoryPath, "dock-opencode.json"), "{\n  \"extraContainerEnvironment\": {\n");
+    writeFileSync(join(projectDirectoryPath, "open-docker-nest.json"), "{\n  \"extraContainerEnvironment\": {\n");
 
     expect(() => loadProjectExtraContainerEnvironment(projectDirectoryPath, {})).toThrow(/not valid JSON\/JSONC/);
   });
 
   it.skipIf(isRootRunner)("fails with actionable diagnostics when config exists but is unreadable", () => {
     const projectDirectoryPath = createProjectDirectory();
-    const configFilePath = join(projectDirectoryPath, "dock-opencode.json");
+    const configFilePath = join(projectDirectoryPath, "open-docker-nest.json");
     writeFileSync(configFilePath, JSON.stringify({ extraContainerEnvironment: {} }));
     chmodSync(configFilePath, 0o000);
 

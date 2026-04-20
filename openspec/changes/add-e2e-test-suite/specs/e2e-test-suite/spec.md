@@ -19,8 +19,8 @@ The system SHALL require a small set of representative happy-path E2E scenarios 
 
 #### Scenario: Wrapper-invoked OpenCode CLI/help smoke coverage uses one representative command
 - **GIVEN** wrapper-invoked OpenCode CLI/help smoke coverage in this suite is intentionally scoped down
-- **WHEN** Docker wrapper E2E smoke validation runs through `bin/opencode-docker`
-- **THEN** one representative command (`bin/opencode-docker -- opencode --help`) is covered
+- **WHEN** Docker wrapper E2E smoke validation runs through `bin/open-docker-nest`
+- **THEN** one representative command (`bin/open-docker-nest -- opencode --help`) is covered
 - **AND** full propose/explore/apply/archive workflow coverage is out of scope for this change
 
 ### Requirement: E2E assertions prioritize low brittleness

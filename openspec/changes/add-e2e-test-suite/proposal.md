@@ -8,7 +8,7 @@ The project currently lacks a structured, maintainable end-to-end smoke suite th
 - Define suite organization and test-selection guidance so each feature area has a small number of representative happy-path scenarios.
 - Standardize the execution workflow around the existing `bun run test:e2e` command and current E2E configuration.
 - Add implementation-ready planning/tasks for creating and maintaining representative E2E tests without expanding into broad error-path coverage.
-- Clarify the minimum intended smoke anchors: interactive shell mode (`--shell`), default command mode, command pass-through mode, and one representative wrapper-invoked OpenCode CLI/help command (`bin/opencode-docker -- opencode --help`).
+- Clarify the minimum intended smoke anchors: interactive shell mode (`--shell`), default command mode, command pass-through mode, and one representative wrapper-invoked OpenCode CLI/help command (`bin/open-docker-nest -- opencode --help`).
 
 ## Capabilities
 
@@ -18,7 +18,7 @@ The project currently lacks a structured, maintainable end-to-end smoke suite th
 
 ### Modified Capabilities
 
-- `dockerized-opencode-workflow`: Add requirement-level expectations that critical wrapper/OpenSpec flows are covered by representative happy-path E2E smoke tests and run via the established E2E command workflow.
+- `dockerized-open-docker-nest-workflow`: Add requirement-level expectations that critical wrapper/OpenSpec flows are covered by representative happy-path E2E smoke tests and run via the established E2E command workflow.
 
 ## Impact
 

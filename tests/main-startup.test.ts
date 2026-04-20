@@ -80,7 +80,7 @@ afterEach(() => {
   resolvePathMock.mockImplementation((value: string) => value);
   buildRuntimeContextMock.mockReturnValue(runtimeContextFixture);
   buildDockerRuntimePlanMock.mockReturnValue({
-    imageRef: "opencode-docker:latest",
+    imageRef: "open-docker-nest:latest",
     dockerRunArgs: ["--rm"],
     dockerClientEnvironment: {},
     commandToRun: ["opencode"],
@@ -91,7 +91,7 @@ describe("main startup ordering", () => {
   it("prints help without probing docker CLI", async () => {
     parseCliArgumentsMock.mockReturnValue({
       projectPath: "/workspace",
-      imageRef: "opencode-docker:latest",
+      imageRef: "open-docker-nest:latest",
       shellMode: false,
       hostDockerMode: false,
       passthroughCommand: [],
@@ -108,7 +108,7 @@ describe("main startup ordering", () => {
   it("probes docker CLI before execution when not in help mode", async () => {
     parseCliArgumentsMock.mockReturnValue({
       projectPath: "/workspace",
-      imageRef: "opencode-docker:latest",
+      imageRef: "open-docker-nest:latest",
       shellMode: false,
       hostDockerMode: false,
       passthroughCommand: ["opencode", "--help"],

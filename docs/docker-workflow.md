@@ -1,6 +1,6 @@
 # Dockerized OpenCode Workflow
 
-This repository supports running OpenCode/OpenSpec workflows inside a single Docker image using `bin/opencode-docker.js` as the authoritative entrypoint. `bin/opencode-docker` remains a thin compatibility shim.
+This repository supports running OpenCode/OpenSpec workflows inside a single Docker image using the published `open-docker-nest` command.
 
 ## Prerequisites
 
@@ -10,7 +10,7 @@ This repository supports running OpenCode/OpenSpec workflows inside a single Doc
 ## Build the image
 
 ```bash
-docker build -t opencode-docker:latest .
+docker build -t open-docker-nest:latest .
 ```
 
 The image installs `cache-ctrl`, Java 24 (`java`/`javac`), and a pinned Rust toolchain (`rustc`/`cargo`, default `1.84.0`) during build, with deterministic amd64/arm64 artifact selection, so runtime commands can rely on them without startup-time installation.
@@ -18,11 +18,10 @@ The image installs `cache-ctrl`, Java 24 (`java`/`javac`), and a pinned Rust too
 ## Wrapper usage
 
 ```bash
-bin/opencode-docker.js [--project <host-path>] [--image <image-ref>] [--shell] [--host-docker] [--] [command ...args]
+open-docker-nest [--project <host-path>] [--image <image-ref>] [--shell] [--host-docker] [--] [command ...args]
 ```
 
-- `bin/opencode-docker.js` is the published entrypoint.
-- `bin/opencode-docker` forwards directly to `bin/opencode-docker.js` for compatibility.
+- `open-docker-nest` is the published command (mapped to `bin/open-docker-nest.js` in `package.json`).
 - Default project mount is the current directory.
 - Override project mount with `--project <host-path>`.
 - Override image with `--image <image-ref>`.
@@ -37,9 +36,9 @@ bin/opencode-docker.js [--project <host-path>] [--image <image-ref>] [--shell] [
 Use this mode for OpenCode/shell/pass-through sessions that need Docker daemon access from inside the container:
 
 ```bash
-bin/opencode-docker.js --host-docker
-bin/opencode-docker.js --shell --host-docker
-bin/opencode-docker.js --host-docker -- docker version
+open-docker-nest --host-docker
+open-docker-nest --shell --host-docker
+open-docker-nest --host-docker -- docker version
 ```
 
 Behavior and scope:
@@ -86,7 +85,7 @@ test -z "${DOCKER_CONTEXT:-}" || test "${DOCKER_CONTEXT}" = "default"
 test -z "${DOCKER_HOST:-}" || test "${DOCKER_HOST}" = "unix:///var/run/docker.sock"
 
 # 3) Launch wrapper with session-wide host docker bridge and verify daemon reachability
-bin/opencode-docker.js --host-docker -- docker info --format '{{.ServerVersion}}'
+open-docker-nest --host-docker -- docker info --format '{{.ServerVersion}}'
 ```
 
 Expected result: command exits zero with a non-empty daemon version string.
@@ -128,12 +127,12 @@ On each run, the wrapper checks for `~/la_briguade` on the host:
 
 This config import behavior is independent from la-briguade plugin installation mode.
 
-### Project-level wrapper config (`dock-opencode.json`)
+### Project-level wrapper config (`open-docker-nest.json`)
 
 The wrapper loads two config levels and merges them in this order: defaults < user < project.
 
-- User config: `~/.config/dock-opencode/dock-opencode.json`
-- Project config: `<project-root>/dock-opencode.json`
+- User config: `~/.config/open-docker-nest/open-docker-nest.json`
+- Project config: `<project-root>/open-docker-nest.json`
 
 Both files keep the `.json` extension, and JSONC comments are supported.
 
@@ -224,35 +223,35 @@ When local-dev does not activate (or `CACHE_CTRL_LOCAL_MODE=off`), no cache-ctrl
 
 ### Migration from legacy persistence paths
 
-If you previously used `~/.opencode-docker/{config,state,share}`, migrate existing data into the new defaults before your next run:
+If you previously used `~/.open-docker-nest/{config,state,share}`, migrate existing data into the new defaults before your next run:
 
 ```bash
 mkdir -p ~/.config/opencode ~/.local/state/opencode ~/.local/share/opencode
-cp -a ~/.opencode-docker/config/. ~/.config/opencode/
-cp -a ~/.opencode-docker/state/. ~/.local/state/opencode/
-cp -a ~/.opencode-docker/share/. ~/.local/share/opencode/
+cp -a ~/.open-docker-nest/config/. ~/.config/opencode/
+cp -a ~/.open-docker-nest/state/. ~/.local/state/opencode/
+cp -a ~/.open-docker-nest/share/. ~/.local/share/opencode/
 ```
 
-After confirming data is present in the new locations, you can archive or remove `~/.opencode-docker`.
+After confirming data is present in the new locations, you can archive or remove `~/.open-docker-nest`.
 
 ## Examples
 
 Run OpenCode help:
 
 ```bash
-bin/opencode-docker -- opencode --help
+open-docker-nest -- opencode --help
 ```
 
 Start an interactive shell:
 
 ```bash
-bin/opencode-docker.js --shell
+open-docker-nest --shell
 ```
 
 Validate shell user + home contract:
 
 ```bash
-printf 'id -un\nprintf "%s\\n" "$HOME"\nexit\n' | script -q -c "bin/opencode-docker.js --shell" /dev/null
+printf 'id -un\nprintf "%s\\n" "$HOME"\nexit\n' | script -q -c "open-docker-nest --shell" /dev/null
 # Expected output includes:
 # opencode
 # /home/opencode
@@ -262,7 +261,7 @@ Validate shell-mode host ownership mapping:
 
 ```bash
 rm -f .tmp-shell-ownership-check
-printf 'echo shell-write > /workspace/.tmp-shell-ownership-check\nexit\n' | script -q -c "bin/opencode-docker.js --shell" /dev/null
+printf 'echo shell-write > /workspace/.tmp-shell-ownership-check\nexit\n' | script -q -c "open-docker-nest --shell" /dev/null
 ls -n .tmp-shell-ownership-check
 # Expected UID/GID match host `id -u` / `id -g` (and are not 0)
 ```
@@ -270,21 +269,21 @@ ls -n .tmp-shell-ownership-check
 Run OpenSpec command parity checks:
 
 ```bash
-bin/opencode-docker.js -- opencode --help
-bin/opencode-docker.js -- opencode run "/opsx-propose demo-change"
-bin/opencode-docker.js -- opencode run "/opsx-explore demo-change"
-bin/opencode-docker.js -- opencode run "/opsx-apply demo-change"
-bin/opencode-docker.js -- opencode run "/opsx-archive demo-change"
+open-docker-nest -- opencode --help
+open-docker-nest -- opencode run "/opsx-propose demo-change"
+open-docker-nest -- opencode run "/opsx-explore demo-change"
+open-docker-nest -- opencode run "/opsx-apply demo-change"
+open-docker-nest -- opencode run "/opsx-archive demo-change"
 ```
 
 Validate unchanged default and pass-through behavior:
 
 ```bash
 # Default no-arg mode still launches opencode (not implicit shell)
-timeout 8 bin/opencode-docker.js </dev/null
+timeout 8 open-docker-nest </dev/null
 
 # Direct command pass-through remains unchanged
-bin/opencode-docker.js -- /usr/bin/env bash -lc 'printf "%s\n" "$0" "$1" "$2"' passthrough-check alpha beta
+open-docker-nest -- /usr/bin/env bash -lc 'printf "%s\n" "$0" "$1" "$2"' passthrough-check alpha beta
 # Expected:
 # passthrough-check
 # alpha
@@ -294,7 +293,7 @@ bin/opencode-docker.js -- /usr/bin/env bash -lc 'printf "%s\n" "$0" "$1" "$2"' p
 Validate Java 24 and Rust availability as non-root `opencode` runtime user:
 
 ```bash
-bin/opencode-docker.js -- /usr/bin/env bash -lc 'java -version && javac -version && rustc --version && cargo --version'
+open-docker-nest -- /usr/bin/env bash -lc 'java -version && javac -version && rustc --version && cargo --version'
 ```
 
 ## Permissions and file ownership

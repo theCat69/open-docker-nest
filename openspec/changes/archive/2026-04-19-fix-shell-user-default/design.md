@@ -1,6 +1,6 @@
 ## Context
 
-`bin/opencode-docker --shell` currently selects `/bin/bash`, but the container entrypoint defaults to the image’s current runtime user when no explicit user switch is requested. In practice this yields an interactive session as `node` instead of `opencode`, which breaks the documented Docker workflow contract and can diverge from the `/home/opencode` mounts and non-root ownership expectations already used by default `opencode` execution. The change needs to correct shell-mode identity without changing default command mode, direct command pass-through, `/workspace` mounting, `/home/opencode` persistence mounts, or unrelated la-briguade behavior.
+`bin/open-docker-nest --shell` currently selects `/bin/bash`, but the container entrypoint defaults to the image’s current runtime user when no explicit user switch is requested. In practice this yields an interactive session as `node` instead of `opencode`, which breaks the documented Docker workflow contract and can diverge from the `/home/opencode` mounts and non-root ownership expectations already used by default `opencode` execution. The change needs to correct shell-mode identity without changing default command mode, direct command pass-through, `/workspace` mounting, `/home/opencode` persistence mounts, or unrelated la-briguade behavior.
 
 ## Goals / Non-Goals
 
@@ -37,5 +37,5 @@
 ## Risks / Trade-offs
 
 - **[Risk] Shell-specific user forcing could bypass existing non-root safeguards** → **Mitigation:** require shell mode to preserve the same non-root and host-ownership expectations as standard runtime execution.
-- **[Risk] Tightening shell semantics could unintentionally change pass-through behavior** → **Mitigation:** explicitly preserve unchanged forwarding for `bin/opencode-docker -- <command> ...args` and unchanged default `opencode` behavior when `--shell` is absent.
+- **[Risk] Tightening shell semantics could unintentionally change pass-through behavior** → **Mitigation:** explicitly preserve unchanged forwarding for `bin/open-docker-nest -- <command> ...args` and unchanged default `opencode` behavior when `--shell` is absent.
 - **[Trade-off] The spec becomes more explicit about one execution sub-mode** → **Mitigation:** keep the delta narrowly scoped to behavior that already exists and is already user-visible.

@@ -19,7 +19,7 @@ afterEach(() => {
 });
 
 function createCacheCtrlFixtureRoot(): { readonly rootPath: string; readonly binaryTargetPath: string; readonly skillTargetPath: string } {
-  const rootPath = mkdtempSync(join(tmpdir(), "dock-opencode-cache-ctrl-"));
+  const rootPath = mkdtempSync(join(tmpdir(), "open-docker-nest-cache-ctrl-"));
   temporaryDirectoriesToRemove.push(rootPath);
 
   const binDirectoryPath = join(rootPath, "bin");
@@ -40,7 +40,7 @@ function createCanonicalEntries(
   binaryTargetPath: string,
   skillTargetPath: string,
 ): { readonly binaryEntryPath: string; readonly skillEntryPath: string } {
-  const homeDirectoryPath = mkdtempSync(join(tmpdir(), "dock-opencode-cache-ctrl-home-"));
+  const homeDirectoryPath = mkdtempSync(join(tmpdir(), "open-docker-nest-cache-ctrl-home-"));
   temporaryDirectoriesToRemove.push(homeDirectoryPath);
 
   const binaryEntryPath = join(homeDirectoryPath, ".local", "bin", "cache-ctrl");

@@ -1,6 +1,6 @@
 ## Context
 
-Observed facts: the authoritative wrapper is `bin/opencode-docker.js`; `bin/opencode-docker` is a compatibility shim; the host wrapper currently launches containers through the host `docker` CLI; the image does not currently install Docker CLI; and the runtime plan does not mount Docker daemon access into the container. Existing workflow invariants include `/workspace` project mounting, non-root execution, fail-fast validation, optional local-dev bridges, and Windows support limited to core flows.
+Observed facts: the authoritative wrapper is `bin/open-docker-nest.js`; `bin/open-docker-nest` is a compatibility shim; the host wrapper currently launches containers through the host `docker` CLI; the image does not currently install Docker CLI; and the runtime plan does not mount Docker daemon access into the container. Existing workflow invariants include `/workspace` project mounting, non-root execution, fail-fast validation, optional local-dev bridges, and Windows support limited to core flows.
 
 Inference: enabling Docker-aware repo workflows from inside normal OpenCode sessions requires session-scoped in-container daemon access wiring rather than a wrapper-level one-shot command mode, because follow-on commands are launched after the session starts.
 

@@ -13,15 +13,15 @@ Build and environment setup for container image and local wrapper execution.
 
 ## Prerequisites
 - Docker daemon and CLI available on host.
-- Repository cloned locally with executable `bin/opencode-docker`.
+- Repository cloned locally with executable `bin/open-docker-nest`.
 
 ## Environment Setup
 - Build image from repository root.
 - Use host persistence directories `~/.config/opencode`, `~/.local/state/opencode`, and `~/.local/share/opencode` (auto-created by wrapper when missing).
 
 ## Build Commands
-- `docker build -t opencode-docker:latest .`
-- Optional override image at run-time: `bin/opencode-docker --image <image-ref> ...`
+- `docker build -t open-docker-nest:latest .`
+- Optional override image at run-time: `bin/open-docker-nest --image <image-ref> ...`
 
 ## Development Server
 - Not applicable (CLI container workflow, no long-running app server).

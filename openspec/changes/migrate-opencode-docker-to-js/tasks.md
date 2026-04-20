@@ -1,7 +1,7 @@
 # Tasks
 
 ## 1. Wrapper contract migration
-- [x] Implement `bin/opencode-docker.js` as the authoritative host wrapper for in-scope behavior.
+- [x] Implement `bin/open-docker-nest.js` as the authoritative host wrapper for in-scope behavior.
 - [x] Keep the executable adapter thin and delegate substantive behavior into modules under `./src/`.
 
 ## 2. JS source organization

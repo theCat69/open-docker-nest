@@ -32,7 +32,7 @@ Applies to production code and config changes in `bin/`, `docker/`, `Dockerfile`
 - Never silently ignore validation failures; terminate non-zero.
 
 ## Patterns & Architecture
-- Thin host wrapper (`bin/opencode-docker`) orchestrates container runtime and mounts.
+- Thin host wrapper (`bin/open-docker-nest`) orchestrates container runtime and mounts.
 - Container entrypoint (`docker/entrypoint.sh`) handles privilege drop and default command.
 - User mapping helper (`docker/user-map.sh`) isolates UID/GID remap and validation.
 - OpenSpec capability/spec lifecycle remains in `openspec/specs` with archival deltas under `openspec/changes/archive/`.

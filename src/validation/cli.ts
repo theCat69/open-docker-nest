@@ -6,7 +6,7 @@ import { fail } from "../shared/io.js";
 
 export function parseCliArguments(argv: readonly string[]): ParsedCliOptions {
   let projectPath = process.cwd();
-  let imageRef = process.env.OPENCODE_DOCKER_IMAGE ?? DEFAULT_IMAGE;
+  let imageRef = process.env.OPEN_DOCKER_NEST_IMAGE ?? DEFAULT_IMAGE;
   let shellMode = false;
   let hostDockerMode = false;
   let passthroughCommand: readonly string[] = [];

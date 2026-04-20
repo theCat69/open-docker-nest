@@ -4,7 +4,7 @@
 The system SHALL define a Dockerized workflow that is invoked from a host-side wrapper and runs against a host-mounted project directory.
 
 #### Scenario: Wrapper mounts host project by default
-- **GIVEN** a developer runs `bin/opencode-docker` from inside a project directory
+- **GIVEN** a developer runs `bin/open-docker-nest` from inside a project directory
 - **WHEN** no explicit project path is provided
 - **THEN** the wrapper uses the current working directory as the project mount source
 - **AND** mounts it into the container as the working project path
@@ -22,9 +22,9 @@ The system SHALL persist OpenCode config, state, and share directories across co
 - **GIVEN** no persistence path overrides are configured
 - **WHEN** the wrapper prepares container mounts
 - **THEN** it uses host directories:
-  - `~/.opencode-docker/config`
-  - `~/.opencode-docker/state`
-  - `~/.opencode-docker/share`
+  - `~/.open-docker-nest/config`
+  - `~/.open-docker-nest/state`
+  - `~/.open-docker-nest/share`
 - **AND** mounts them to:
   - `/home/opencode/.config/opencode`
   - `/home/opencode/.local/state/opencode`
@@ -46,17 +46,17 @@ The system SHALL persist OpenCode config, state, and share directories across co
 The system SHALL support both interactive shell sessions and direct command execution through a single wrapper contract.
 
 #### Scenario: Interactive shell mode
-- **GIVEN** a developer invokes `bin/opencode-docker --shell`
+- **GIVEN** a developer invokes `bin/open-docker-nest --shell`
 - **WHEN** the container starts
 - **THEN** an interactive shell session is opened in the mounted project context
 
 #### Scenario: Direct command mode
-- **GIVEN** a developer invokes `bin/opencode-docker -- <command> ...args`
+- **GIVEN** a developer invokes `bin/open-docker-nest -- <command> ...args`
 - **WHEN** the wrapper executes the container
 - **THEN** the provided command and arguments are passed through unchanged
 
 #### Scenario: Default command mode
-- **GIVEN** a developer invokes `bin/opencode-docker` with no command arguments and no `--shell`
+- **GIVEN** a developer invokes `bin/open-docker-nest` with no command arguments and no `--shell`
 - **WHEN** the wrapper runs
 - **THEN** the container executes `opencode` as the default command
 
@@ -65,7 +65,7 @@ The system SHALL define a minimum smoke set that demonstrates parity for key Ope
 
 #### Scenario: Required parity smoke commands
 - **GIVEN** a repository configured with OpenCode/OpenSpec commands
-- **WHEN** parity smoke validation is executed via `bin/opencode-docker`
+- **WHEN** parity smoke validation is executed via `bin/open-docker-nest`
 - **THEN** the minimum command set includes:
   - `opencode --help`
   - `opencode run "/opsx-propose <change-name>"`

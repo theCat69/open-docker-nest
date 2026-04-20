@@ -12,7 +12,7 @@
 ## 3. Documentation and Migration Guidance
 
 - [x] 3.1 Update Docker workflow documentation to describe the new default host persistence paths.
-- [x] 3.2 Add migration guidance for users with existing data under `~/.opencode-docker/{config,state,share}`.
+- [x] 3.2 Add migration guidance for users with existing data under `~/.open-docker-nest/{config,state,share}`.
 
 ## 4. Verification
 

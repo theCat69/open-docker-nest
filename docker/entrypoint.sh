@@ -40,14 +40,14 @@ if [[ -n "${OPENCODE_PREPEND_PATH:-}" ]]; then
 fi
 
 runtime_supplementary_groups="${OPENCODE_RUNTIME_GID}"
-if [[ -n "${OPENCODE_DOCKER_SOCKET_GID:-}" ]]; then
-  if ! [[ "${OPENCODE_DOCKER_SOCKET_GID}" =~ ^[0-9]+$ ]]; then
-    echo "Error: OPENCODE_DOCKER_SOCKET_GID must be numeric when set." >&2
+if [[ -n "${OPEN_DOCKER_NEST_SOCKET_GID:-}" ]]; then
+  if ! [[ "${OPEN_DOCKER_NEST_SOCKET_GID}" =~ ^[0-9]+$ ]]; then
+    echo "Error: OPEN_DOCKER_NEST_SOCKET_GID must be numeric when set." >&2
     exit 1
   fi
 
-  if [[ "${OPENCODE_DOCKER_SOCKET_GID}" != "${OPENCODE_RUNTIME_GID}" ]]; then
-    runtime_supplementary_groups="${runtime_supplementary_groups},${OPENCODE_DOCKER_SOCKET_GID}"
+  if [[ "${OPEN_DOCKER_NEST_SOCKET_GID}" != "${OPENCODE_RUNTIME_GID}" ]]; then
+    runtime_supplementary_groups="${runtime_supplementary_groups},${OPEN_DOCKER_NEST_SOCKET_GID}"
   fi
 fi
 

@@ -8,6 +8,6 @@ if (hostDockerMode) {
   const dockerSocketGroupId = getPathGroupId(HOST_DOCKER_SOCKET_PATH);
   dockerRunArgs.push("--volume", `${HOST_DOCKER_SOCKET_PATH}:${HOST_DOCKER_SOCKET_PATH}`);
   dockerRunArgs.push("--env", `DOCKER_HOST=${LOCAL_UNIX_DOCKER_HOST}`);
-  dockerRunArgs.push("--env", `OPENCODE_DOCKER_SOCKET_GID=${dockerSocketGroupId}`);
+  dockerRunArgs.push("--env", `OPEN_DOCKER_NEST_SOCKET_GID=${dockerSocketGroupId}`);
 }
 ```

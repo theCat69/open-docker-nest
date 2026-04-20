@@ -46,7 +46,7 @@ describe("docker wrapper mode smoke coverage", () => {
   });
 
   it("forwards pass-through command arguments unchanged", () => {
-    const fixtureProjectPath = createTemporaryDirectory("dock-opencode-e2e-pass-through-");
+    const fixtureProjectPath = createTemporaryDirectory("open-docker-nest-e2e-pass-through-");
     temporaryPathsToClean.push(fixtureProjectPath);
 
     const result = runWrapper(fixtureProjectPath, [
@@ -66,7 +66,7 @@ describe("docker wrapper mode smoke coverage", () => {
   });
 
   it("exposes Java 24 and Rust toolchains to the non-root runtime user", () => {
-    const fixtureProjectPath = createTemporaryDirectory("dock-opencode-e2e-toolchains-");
+    const fixtureProjectPath = createTemporaryDirectory("open-docker-nest-e2e-toolchains-");
     temporaryPathsToClean.push(fixtureProjectPath);
 
     const result = runWrapper(fixtureProjectPath, [
@@ -81,7 +81,7 @@ describe("docker wrapper mode smoke coverage", () => {
   });
 
   it("runs host-docker mode on Unix-like hosts and reaches host daemon from inside container", () => {
-    const fixtureProjectPath = createTemporaryDirectory("dock-opencode-e2e-host-docker-");
+    const fixtureProjectPath = createTemporaryDirectory("open-docker-nest-e2e-host-docker-");
     temporaryPathsToClean.push(fixtureProjectPath);
 
     const result = runWrapperWithEnvironmentOverrides(
@@ -95,7 +95,7 @@ describe("docker wrapper mode smoke coverage", () => {
   }, 120_000);
 
   it("fails fast with unsupported host diagnostics for host-docker non-local docker hosts", () => {
-    const fixtureProjectPath = createTemporaryDirectory("dock-opencode-e2e-host-docker-unsupported-");
+    const fixtureProjectPath = createTemporaryDirectory("open-docker-nest-e2e-host-docker-unsupported-");
     temporaryPathsToClean.push(fixtureProjectPath);
 
     const result = runWrapperWithEnvironmentOverrides(
@@ -109,7 +109,7 @@ describe("docker wrapper mode smoke coverage", () => {
   });
 
   it("fails fast with unsupported host diagnostics for host-docker non-default docker context", () => {
-    const fixtureProjectPath = createTemporaryDirectory("dock-opencode-e2e-host-docker-context-");
+    const fixtureProjectPath = createTemporaryDirectory("open-docker-nest-e2e-host-docker-context-");
     temporaryPathsToClean.push(fixtureProjectPath);
 
     const result = runWrapperWithEnvironmentOverrides(
@@ -123,7 +123,7 @@ describe("docker wrapper mode smoke coverage", () => {
   });
 
   it("fails fast for removed --repo-command flag with migration guidance", () => {
-    const fixtureProjectPath = createTemporaryDirectory("dock-opencode-e2e-removed-repo-command-");
+    const fixtureProjectPath = createTemporaryDirectory("open-docker-nest-e2e-removed-repo-command-");
     temporaryPathsToClean.push(fixtureProjectPath);
 
     const result = runWrapper(fixtureProjectPath, ["--repo-command", "--", "docker", "version"]);

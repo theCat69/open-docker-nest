@@ -1,4 +1,4 @@
-<!-- Focused excerpt from production wrapper logic (bin/opencode-docker); helper functions are defined elsewhere in the same file. -->
+<!-- Focused excerpt from production wrapper logic (bin/open-docker-nest); helper functions are defined elsewhere in the same file. -->
 ```bash
 prepare_la_briguade_config_mount "${host_la_briguade_config_dir}" "${CONTAINER_HOME_DIR}/${LA_BRIGUADE_HOST_CONFIG_RELATIVE}"
 

@@ -1,9 +1,9 @@
-export const SCRIPT_NAME = "opencode-docker";
-export const DEFAULT_IMAGE = "opencode-docker:latest";
+export const SCRIPT_NAME = "open-docker-nest";
+export const DEFAULT_IMAGE = "open-docker-nest:latest";
 export const CONTAINER_PROJECT_DIR = "/workspace";
 export const CONTAINER_HOME_DIR = "/home/opencode";
-export const DOCK_OPENCODE_CONFIG_DIRECTORY_NAME = "dock-opencode";
-export const DOCK_OPENCODE_CONFIG_FILENAME = "dock-opencode.json";
+export const OPEN_DOCKER_NEST_CONFIG_DIRECTORY_NAME = "open-docker-nest";
+export const OPEN_DOCKER_NEST_CONFIG_FILENAME = "open-docker-nest.json";
 export const LA_BRIGUADE_HOST_CONFIG_RELATIVE = "la_briguade";
 export const LA_BRIGUADE_LOCAL_MODE_DEFAULT = "auto" as const;
 export const LA_BRIGUADE_PLUGIN_ENTRY_RELATIVE = "plugins/index.js";

@@ -12,8 +12,8 @@ export interface CommandResult {
 
 const currentFilePath = fileURLToPath(import.meta.url);
 const repositoryRootPath = resolve(dirname(currentFilePath), "../../..");
-const wrapperScriptPath = join(repositoryRootPath, "bin/opencode-docker.js");
-const repositoryEntrypointPath = join(repositoryRootPath, "bin/opencode-docker");
+const wrapperScriptPath = join(repositoryRootPath, "bin/open-docker-nest.js");
+const repositoryEntrypointPath = join(repositoryRootPath, "bin/open-docker-nest");
 
 const baseEnvironment = {
   ...process.env,
@@ -118,7 +118,7 @@ export function runShellModeSmoke(projectPath: string): CommandResult {
 }
 
 export function createOpenSpecFixtureProject(): string {
-  const fixtureProjectPath = createTemporaryDirectory("dock-opencode-e2e-openspec-");
+  const fixtureProjectPath = createTemporaryDirectory("open-docker-nest-e2e-openspec-");
   cpSync(join(repositoryRootPath, ".opencode"), join(fixtureProjectPath, ".opencode"), {
     recursive: true,
   });

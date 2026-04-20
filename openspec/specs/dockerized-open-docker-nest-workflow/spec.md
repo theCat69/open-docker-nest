@@ -8,7 +8,7 @@ Define the Dockerized OpenCode workflow contract for wrapper behavior, runtime m
 The system SHALL define a Dockerized workflow that is invoked from a host-side wrapper and runs against a host-mounted project directory.
 
 #### Scenario: Wrapper mounts host project by default
-- **GIVEN** a developer runs `bin/opencode-docker.js` from inside a project directory
+- **GIVEN** a developer runs `bin/open-docker-nest.js` from inside a project directory
 - **WHEN** no explicit project path is provided
 - **THEN** the wrapper uses the current working directory as the project mount source
 - **AND** mounts it into the container as the working project path
@@ -50,17 +50,17 @@ The system SHALL persist OpenCode config, state, and share directories across co
 The system SHALL support both interactive shell sessions and direct command execution through a single wrapper contract.
 
 #### Scenario: Interactive shell mode
-- **GIVEN** a developer invokes `bin/opencode-docker.js --shell`
+- **GIVEN** a developer invokes `bin/open-docker-nest.js --shell`
 - **WHEN** the container starts
 - **THEN** an interactive shell session is opened in the mounted project context
 
 #### Scenario: Direct command mode
-- **GIVEN** a developer invokes `bin/opencode-docker.js -- <command> ...args`
+- **GIVEN** a developer invokes `bin/open-docker-nest.js -- <command> ...args`
 - **WHEN** the wrapper executes the container
 - **THEN** the provided command and arguments are passed through unchanged
 
 #### Scenario: Default command mode
-- **GIVEN** a developer invokes `bin/opencode-docker.js` with no command arguments and no `--shell`
+- **GIVEN** a developer invokes `bin/open-docker-nest.js` with no command arguments and no `--shell`
 - **WHEN** the wrapper runs
 - **THEN** the container executes `opencode` as the default command
 
@@ -68,7 +68,7 @@ The system SHALL support both interactive shell sessions and direct command exec
 The system SHALL provide an explicit `--host-docker` mode that grants host Docker daemon access to the launched in-container session only when a usable local Unix-socket daemon is available and the active Docker context is the default/local context.
 
 #### Scenario: Host-docker mode is restricted to supported local Unix-socket host/context
-- **GIVEN** a developer invokes `bin/opencode-docker.js --host-docker`
+- **GIVEN** a developer invokes `bin/open-docker-nest.js --host-docker`
 - **WHEN** `DOCKER_HOST` is non-local, `DOCKER_CONTEXT` is non-default, or `/var/run/docker.sock` is missing/inaccessible/unusable
 - **THEN** wrapper startup fails before `docker run`
 - **AND** diagnostics identify the unsupported host/context or socket prerequisite with remediation
@@ -81,30 +81,30 @@ The system SHALL provide an explicit `--host-docker` mode that grants host Docke
 - **AND** non-host-docker runs do not add that host Docker socket bridge
 
 #### Scenario: Native Windows host invocation is rejected for host-docker mode in this slice
-- **GIVEN** a developer invokes `bin/opencode-docker.js --host-docker` from a native Windows host
+- **GIVEN** a developer invokes `bin/open-docker-nest.js --host-docker` from a native Windows host
 - **WHEN** wrapper preflight validation runs
 - **THEN** wrapper startup fails before `docker run`
 - **AND** diagnostics state that Windows named-pipe/Docker Desktop bridging is follow-up work for host-docker mode
 
 #### Scenario: Linux invocation inside WSL follows Linux host-docker path when local socket exists
-- **GIVEN** a developer invokes `bin/opencode-docker.js --host-docker` from Linux inside WSL
+- **GIVEN** a developer invokes `bin/open-docker-nest.js --host-docker` from Linux inside WSL
 - **AND** a usable local `/var/run/docker.sock` is available in that Linux environment
 - **WHEN** preflight validation and runtime planning run
 - **THEN** host-docker mode uses the same local Unix-socket validation and mount flow as other Linux runs
 
 #### Scenario: Host-docker mode does not introduce a generic host-command bridge
-- **GIVEN** a developer invokes `bin/opencode-docker.js --host-docker`
+- **GIVEN** a developer invokes `bin/open-docker-nest.js --host-docker`
 - **WHEN** runtime planning and execution run
 - **THEN** command execution remains in-container through the standard entrypoint
 - **AND** the wrapper does not execute session commands directly on the host
 
 #### Scenario: Host-docker mode does not forward broader host Docker config or credentials in this slice
-- **GIVEN** a developer invokes `bin/opencode-docker.js --host-docker`
+- **GIVEN** a developer invokes `bin/open-docker-nest.js --host-docker`
 - **WHEN** runtime planning prepares mounts and environment
 - **THEN** the wrapper does not promise or add host Docker credential/config/context forwarding beyond the supported local daemon bridge
 
 #### Scenario: Host-docker mode does not translate sibling-container bind-mount source paths in this slice
-- **GIVEN** a developer invokes `bin/opencode-docker.js --host-docker`
+- **GIVEN** a developer invokes `bin/open-docker-nest.js --host-docker`
 - **WHEN** Docker workloads launched inside the session reference in-container `/workspace/...` paths as bind-mount sources
 - **THEN** the workflow does not rewrite those paths into host-visible paths
 - **AND** bind-mount path translation remains out of scope for this slice
@@ -129,7 +129,7 @@ The system SHALL install Java 24 and a pinned Rust toolchain in the container im
 
 #### Scenario: Java 24 and Rust are available to non-root opencode runtime
 - **GIVEN** the repository Docker image is built successfully
-- **WHEN** a container is started through `bin/opencode-docker.js` as the remapped non-root runtime user
+- **WHEN** a container is started through `bin/open-docker-nest.js` as the remapped non-root runtime user
 - **THEN** `java` and `javac` from Java 24 are available in the runtime command environment
 - **AND** `rustc` and `cargo` are available in the runtime command environment
 
@@ -144,7 +144,7 @@ The system SHALL define a minimum smoke set that demonstrates parity for key Ope
 
 #### Scenario: Required parity smoke commands
 - **GIVEN** a repository configured with OpenCode/OpenSpec commands
-- **WHEN** parity smoke validation is executed via `bin/opencode-docker.js`
+- **WHEN** parity smoke validation is executed via `bin/open-docker-nest.js`
 - **THEN** the minimum command set includes:
   - `opencode --help`
   - `opencode run "/opsx-propose <change-name>"`
@@ -162,7 +162,7 @@ The system SHALL install cache-ctrl in the Docker image so containerized OpenCod
 
 #### Scenario: Cache-ctrl is available in default runtime path
 - **GIVEN** the image is built from the repository Dockerfile
-- **WHEN** a container is started through `bin/opencode-docker.js`
+- **WHEN** a container is started through `bin/open-docker-nest.js`
 - **THEN** cache-ctrl is available to the runtime command environment
 - **AND** no additional startup installation step is required to use it
 
@@ -226,13 +226,13 @@ The system SHALL support importing user la-briguade configuration from `~/la_bri
 
 #### Scenario: User la-briguade configuration path is present
 - **GIVEN** `~/la_briguade` exists on the host
-- **WHEN** `bin/opencode-docker.js` prepares runtime mounts/configuration
+- **WHEN** `bin/open-docker-nest.js` prepares runtime mounts/configuration
 - **THEN** the wrapper uses that path as the la-briguade configuration source
 - **AND** maps it into the container at the same home-relative path `~/la_briguade`
 
 #### Scenario: User la-briguade configuration path is absent
 - **GIVEN** `~/la_briguade` does not exist on the host
-- **WHEN** `bin/opencode-docker.js` prepares runtime mounts/configuration
+- **WHEN** `bin/open-docker-nest.js` prepares runtime mounts/configuration
 - **THEN** startup continues without la-briguade config import mount
 - **AND** absence is not treated as a startup failure
 
@@ -335,11 +335,11 @@ The system SHALL keep regular/release la-briguade plugin installation behavior u
 - **AND** existing OpenCode plugin-array installation behavior remains unchanged
 - **AND** existing persistence and execution mode contracts remain intact
 
-### Requirement: Layered dock-opencode config supports validated extra container environment values
-The system SHALL support a minimal config surface using `dock-opencode.json` at both user and project levels, with merge precedence defaults < user < project and Zod as the schema source of truth for wrapper-consumed config.
+### Requirement: Layered open-docker-nest config supports validated extra container environment values
+The system SHALL support a minimal config surface using `open-docker-nest.json` at both user and project levels, with merge precedence defaults < user < project and Zod as the schema source of truth for wrapper-consumed config.
 
 #### Scenario: Wrapper loads and merges user and project config levels
-- **GIVEN** `~/.config/dock-opencode/dock-opencode.json` and/or `<project-root>/dock-opencode.json` exist
+- **GIVEN** `~/.config/open-docker-nest/open-docker-nest.json` and/or `<project-root>/open-docker-nest.json` exist
 - **WHEN** wrapper startup validation runs
 - **THEN** each present config file is validated against the Zod-defined project schema
 - **AND** merged config is resolved with precedence defaults < user < project

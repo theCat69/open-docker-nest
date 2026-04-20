@@ -1,4 +1,4 @@
-<!-- Focused excerpt from production wrapper logic (bin/opencode-docker); surrounding setup like SCRIPT_NAME/project_path declarations may be defined elsewhere in the source file. -->
+<!-- Focused excerpt from production wrapper logic (bin/open-docker-nest); surrounding setup like SCRIPT_NAME/project_path declarations may be defined elsewhere in the source file. -->
 ```bash
 fail() {
   local message="$1"

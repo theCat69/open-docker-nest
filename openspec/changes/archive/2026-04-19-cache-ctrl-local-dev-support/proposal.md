@@ -19,11 +19,11 @@ Defining `cache-ctrl` local-dev support closes that gap, reduces ad hoc local se
 
 ### Modified Capabilities
 
-- `dockerized-opencode-workflow` (`openspec/specs/dockerized-opencode-workflow/spec.md`): extend the existing workflow spec to cover `cache-ctrl` local-dev support, including host-backed skills linkage and local binary usage in local-dev mode while keeping non-local-dev behavior unchanged.
+- `dockerized-open-docker-nest-workflow` (`openspec/specs/dockerized-open-docker-nest-workflow/spec.md`): extend the existing workflow spec to cover `cache-ctrl` local-dev support, including host-backed skills linkage and local binary usage in local-dev mode while keeping non-local-dev behavior unchanged.
 
 ## Impact
 
-- Affected spec surface: `openspec/specs/dockerized-opencode-workflow/spec.md`.
+- Affected spec surface: `openspec/specs/dockerized-open-docker-nest-workflow/spec.md`.
 - Expected follow-on implementation touchpoints: Docker wrapper runtime mount/link wiring and any workflow documentation that describes local development behavior.
 - User impact: developers can validate local `cache-ctrl` changes through the standard Dockerized workflow without regressing regular runtime behavior.
 - Operational impact: default runs remain stable, while local-dev mode gains an explicit spec contract that protects fail-fast and non-root guarantees.

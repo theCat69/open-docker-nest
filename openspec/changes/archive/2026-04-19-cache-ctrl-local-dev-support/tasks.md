@@ -1,6 +1,6 @@
 ## 1. Spec Alignment and Local-Mode Contract
 
-- [x] 1.1 Confirm `bin/opencode-docker` exposes the cache-ctrl local-dev env contract from the spec: `CACHE_CTRL_LOCAL_MODE=auto|force|off` plus optional `CACHE_CTRL_LOCAL_PATH`, without adding new CLI flags.
+- [x] 1.1 Confirm `bin/open-docker-nest` exposes the cache-ctrl local-dev env contract from the spec: `CACHE_CTRL_LOCAL_MODE=auto|force|off` plus optional `CACHE_CTRL_LOCAL_PATH`, without adding new CLI flags.
 - [x] 1.2 Add cache-ctrl-specific wrapper constants for the canonical host inputs (`~/.local/bin/cache-ctrl`, `~/.config/opencode/skills/cache-ctrl-caller/SKILL.md`) and the in-container local binary target (`/home/opencode/.local/bin/cache-ctrl`).
 - [x] 1.3 Keep all cache-ctrl local-dev behavior behind resolved mode state so default runs remain on the image-installed `cache-ctrl` path when local mode is inactive.
 
@@ -32,5 +32,5 @@
 - [x] 5.2 Verify `auto` mode activates only when the canonical skill link and binary entry both resolve to the same readable checkout root, and otherwise warns then falls back cleanly.
 - [x] 5.3 Verify `force` mode fails fast before `docker run` for each prerequisite failure class: invalid mode value, missing binary path, broken skill symlink, unreadable target, inaccessible derived root, and `CACHE_CTRL_LOCAL_PATH` mismatch.
 - [x] 5.4 Verify active local-dev mode keeps host-backed cache-ctrl skill symlinks resolvable inside the container and resolves `cache-ctrl` from `/home/opencode/.local/bin/cache-ctrl` under the non-root runtime user.
-- [x] 5.5 Re-run Docker workflow smoke checks through `bin/opencode-docker` (`opencode --help`, `/opsx-propose`, `/opsx-explore`, `/opsx-apply`, `/opsx-archive`) to confirm command parity after cache-ctrl local-dev wiring.
+- [x] 5.5 Re-run Docker workflow smoke checks through `bin/open-docker-nest` (`opencode --help`, `/opsx-propose`, `/opsx-explore`, `/opsx-apply`, `/opsx-archive`) to confirm command parity after cache-ctrl local-dev wiring.
 - [x] 5.6 Verify files written under `/workspace` during cache-ctrl local-dev runs still retain host UID/GID ownership and that `CACHE_CTRL_LOCAL_MODE=off` remains the rollback path for disabling the new behavior.

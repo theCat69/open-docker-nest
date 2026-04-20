@@ -1,6 +1,6 @@
 # Why
 
-`bin/opencode-docker --shell` currently opens an interactive session as `node`, not `opencode`. This conflicts with the repository’s documented Docker workflow, creates an inconsistent user experience between shell mode and default command mode, and risks breaking expected home-directory and ownership behavior tied to `/home/opencode`. The change is needed to restore the intended contract: shell mode should run as `opencode` while preserving non-root execution, host-mounted `/workspace`, and correct host file ownership.
+`bin/open-docker-nest --shell` currently opens an interactive session as `node`, not `opencode`. This conflicts with the repository’s documented Docker workflow, creates an inconsistent user experience between shell mode and default command mode, and risks breaking expected home-directory and ownership behavior tied to `/home/opencode`. The change is needed to restore the intended contract: shell mode should run as `opencode` while preserving non-root execution, host-mounted `/workspace`, and correct host file ownership.
 
 # What Changes
 

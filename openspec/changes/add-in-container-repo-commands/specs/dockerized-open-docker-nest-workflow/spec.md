@@ -4,20 +4,20 @@
 The system SHALL provide an explicit `--host-docker` wrapper flag that grants host Docker daemon access to the entire launched in-container session only when a usable local Unix-socket daemon is available and the active Docker context is the default/local context.
 
 #### Scenario: Default OpenCode session gains host Docker access only when flagged
-- **GIVEN** a developer invokes `bin/opencode-docker.js --host-docker` on a supported host
+- **GIVEN** a developer invokes `bin/open-docker-nest.js --host-docker` on a supported host
 - **WHEN** the wrapper starts the container
 - **THEN** the standard OpenCode session starts inside `/workspace`
 - **AND** commands launched later from inside that session can use Docker through the configured in-container client and daemon bridge
 - **AND** execution still occurs through the standard container entrypoint as the remapped non-root runtime user
 
 #### Scenario: Shell sessions may opt in to host Docker access
-- **GIVEN** a developer invokes `bin/opencode-docker.js --shell --host-docker` on a supported host
+- **GIVEN** a developer invokes `bin/open-docker-nest.js --shell --host-docker` on a supported host
 - **WHEN** the wrapper starts the container
 - **THEN** the interactive shell session starts with host Docker available inside the container
 - **AND** the flag does not otherwise change shell-session startup behavior
 
 #### Scenario: Direct pass-through sessions may opt in to host Docker access
-- **GIVEN** a developer invokes `bin/opencode-docker.js --host-docker -- <command> ...args` on a supported host
+- **GIVEN** a developer invokes `bin/open-docker-nest.js --host-docker -- <command> ...args` on a supported host
 - **WHEN** the wrapper starts the container
 - **THEN** the provided command and arguments run unchanged inside the container
 - **AND** that session has host Docker access for the duration of the run

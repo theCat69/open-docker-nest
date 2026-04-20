@@ -12,13 +12,13 @@ The system SHALL include Bun-based E2E smoke validation for Dockerized OpenCode 
 #### Scenario: E2E minimum smoke anchors preserve wrapper execution-mode parity
 - **GIVEN** minimum E2E coverage is kept intentionally lightweight
 - **WHEN** Dockerized workflow happy-path E2E scenarios are selected
-- **THEN** the suite includes representative happy-path coverage for interactive shell mode (`bin/opencode-docker --shell`), default command mode (`bin/opencode-docker`), and command pass-through mode (`bin/opencode-docker -- <command> ...args`)
+- **THEN** the suite includes representative happy-path coverage for interactive shell mode (`bin/open-docker-nest --shell`), default command mode (`bin/open-docker-nest`), and command pass-through mode (`bin/open-docker-nest -- <command> ...args`)
 - **AND** the suite avoids broad negative-path expansion by default
 
 #### Scenario: E2E minimum smoke anchors preserve one representative wrapper-invoked OpenCode CLI/help command
 - **GIVEN** wrapper-invoked OpenCode CLI/help smoke coverage is intentionally minimal for this capability
 - **WHEN** workflow-level happy-path E2E scenarios are selected
-- **THEN** representative smoke coverage invokes one OpenCode CLI/help command through `bin/opencode-docker` (`bin/opencode-docker -- opencode --help`)
+- **THEN** representative smoke coverage invokes one OpenCode CLI/help command through `bin/open-docker-nest` (`bin/open-docker-nest -- opencode --help`)
 - **AND** assertions validate successful completion and externally visible workflow outcomes
 
 #### Scenario: E2E smoke suite runs with the standard repository command

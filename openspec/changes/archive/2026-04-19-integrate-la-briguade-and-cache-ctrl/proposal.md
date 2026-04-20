@@ -9,7 +9,7 @@ Separating these concerns in requirements prevents ad-hoc implementation choices
 
 ## What Changes
 
-- Modify Dockerized workflow requirements to require cache-ctrl installation in the Docker image used by `bin/opencode-docker`.
+- Modify Dockerized workflow requirements to require cache-ctrl installation in the Docker image used by `bin/open-docker-nest`.
 - Define behavior for importing user la-briguade user config from `~/la_briguade` into Dockerized runs as a config concern independent of plugin installation mode, mapped to the same home-relative in-container path `~/la_briguade`.
 - Set user config import default to auto-import when `~/la_briguade` exists, while treating path absence as non-fatal startup behavior.
 - Explicitly state that regular/release la-briguade plugin installation is handled by OpenCode plugin configuration and requires no repository-side wrapper or image changes.
@@ -30,10 +30,10 @@ Separating these concerns in requirements prevents ad-hoc implementation choices
 - None.
 
 ### Modified Capabilities
-- `dockerized-opencode-workflow`: Add requirements for cache-ctrl image availability, user config import from `~/la_briguade`, and local symlink plugin-development mode with auto-detect plus explicit override semantics.
+- `dockerized-open-docker-nest-workflow`: Add requirements for cache-ctrl image availability, user config import from `~/la_briguade`, and local symlink plugin-development mode with auto-detect plus explicit override semantics.
 
 ## Impact
 
-- Affected spec surface: `openspec/specs/dockerized-opencode-workflow/spec.md`.
-- Expected implementation touchpoints after apply: `Dockerfile`, `bin/opencode-docker`, runtime environment/mount wiring, and `docs/docker-workflow.md`.
+- Affected spec surface: `openspec/specs/dockerized-open-docker-nest-workflow/spec.md`.
+- Expected implementation touchpoints after apply: `Dockerfile`, `bin/open-docker-nest`, runtime environment/mount wiring, and `docs/docker-workflow.md`.
 - Runtime/dependency impact: cache-ctrl becomes a required image dependency; regular/release la-briguade plugin installation remains unchanged; user config import and local symlink plugin-dev behavior are explicitly defined as separate contracts.

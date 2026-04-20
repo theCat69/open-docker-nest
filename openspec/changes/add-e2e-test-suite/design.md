@@ -31,7 +31,7 @@ This change defines implementation-ready OpenSpec artifacts for adding lightweig
     - Alternative considered: broad scenario matrices (rejected as high maintenance and brittle).
 
 3. **Keep minimum workflow-mode parity explicit and lightweight**
-   - Decision: Require representative happy-path E2E coverage for the three key wrapper execution modes (interactive shell, default command, command pass-through) and preserve one representative wrapper-invoked OpenCode CLI/help smoke anchor explicitly invoked via `bin/opencode-docker` (`bin/opencode-docker -- opencode --help`).
+   - Decision: Require representative happy-path E2E coverage for the three key wrapper execution modes (interactive shell, default command, command pass-through) and preserve one representative wrapper-invoked OpenCode CLI/help smoke anchor explicitly invoked via `bin/open-docker-nest` (`bin/open-docker-nest -- opencode --help`).
    - Rationale: Protects core user-facing workflow behavior with minimal test count and stable assertions.
    - Alternative considered: validating only wrapper-invoked OpenCode CLI/help commands without wrapper mode anchors (rejected because it can miss regressions in interactive/default/pass-through behavior).
 

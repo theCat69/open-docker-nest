@@ -11,11 +11,11 @@ export function warn(message: string): void {
 
 export function printUsage(): void {
   process.stdout.write(`Usage:
-  bin/opencode-docker [--project <host-path>] [--image <image-ref>] [--shell] [--host-docker] [--] [command ...args]
+  bin/open-docker-nest [--project <host-path>] [--image <image-ref>] [--shell] [--host-docker] [--] [command ...args]
 
 Options:
   --project <host-path>  Host project directory to mount (default: current directory)
-  --image <image-ref>    Docker image reference (default: opencode-docker:latest)
+  --image <image-ref>    Docker image reference (default: open-docker-nest:latest)
   --shell                Start an interactive shell inside the container
   --host-docker          Enable host Docker daemon access for the entire in-container session (supported local Unix-socket hosts only)
   -h, --help             Show this help message

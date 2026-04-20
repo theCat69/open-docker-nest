@@ -1,6 +1,6 @@
 ## 1. Change Scaffolding and Spec Alignment
 
-- [x] 1.1 Create `openspec/changes/add-dockerized-opencode-workflow/specs/dockerized-opencode-workflow/spec.md` with requirements for project mount, persistence mounts, interactive terminal support, and command parity.
+- [x] 1.1 Create `openspec/changes/add-dockerized-open-docker-nest-workflow/specs/dockerized-open-docker-nest-workflow/spec.md` with requirements for project mount, persistence mounts, interactive terminal support, and command parity.
 - [x] 1.2 Validate artifact consistency: proposal, design, and spec all share the same scope boundaries (single image v1; no Kubernetes/remote-dev/CI).
 - [x] 1.3 Confirm OpenSpec status reports `proposal`, `design`, and `specs` as complete prerequisites for implementation.
 
@@ -13,7 +13,7 @@
 
 ## 3. Host Wrapper Command
 
-- [x] 3.1 Implement `bin/opencode-docker` to normalize `docker run` invocation and pass-through user commands.
+- [x] 3.1 Implement `bin/open-docker-nest` to normalize `docker run` invocation and pass-through user commands.
 - [x] 3.2 Add wrapper handling for project bind mount and persistent OpenCode config/state/share mounts.
 - [x] 3.3 Add wrapper mode for interactive terminal sessions and non-interactive command execution.
 - [x] 3.4 Add fail-fast validation for missing Docker runtime, invalid mount paths, and actionable error messages.

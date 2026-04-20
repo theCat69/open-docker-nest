@@ -18,7 +18,7 @@ afterEach(() => {
 });
 
 function createSymlinkEntry(): string {
-  const rootDirectoryPath = mkdtempSync(join(tmpdir(), "dock-opencode-windows-support-"));
+  const rootDirectoryPath = mkdtempSync(join(tmpdir(), "open-docker-nest-windows-support-"));
   temporaryDirectoriesToRemove.push(rootDirectoryPath);
 
   const targetPath = join(rootDirectoryPath, "target-file");

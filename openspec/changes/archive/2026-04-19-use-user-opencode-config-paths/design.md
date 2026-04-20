@@ -1,6 +1,6 @@
 ## Context
 
-The current Dockerized workflow persists OpenCode data in wrapper-owned host directories under `~/.opencode-docker/{config,state,share}`. This introduces a second persistence location that diverges from native OpenCode usage, where user data already lives in standard user paths. The change requires updating the persistence contract so Docker runs reuse the user’s real OpenCode directories while preserving existing wrapper guarantees (actionable validation failures, stable container mount targets, and command parity).
+The current Dockerized workflow persists OpenCode data in wrapper-owned host directories under `~/.open-docker-nest/{config,state,share}`. This introduces a second persistence location that diverges from native OpenCode usage, where user data already lives in standard user paths. The change requires updating the persistence contract so Docker runs reuse the user’s real OpenCode directories while preserving existing wrapper guarantees (actionable validation failures, stable container mount targets, and command parity).
 
 ## Goals / Non-Goals
 
@@ -21,7 +21,7 @@ The current Dockerized workflow persists OpenCode data in wrapper-owned host dir
    - **Decision:** Mount host paths `~/.config/opencode`, `~/.local/state/opencode`, and `~/.local/share/opencode` as the default persistence sources.
    - **Rationale:** These paths align Dockerized and native OpenCode usage, eliminating split state across parallel directory trees.
    - **Alternatives considered:**
-     - Keep `~/.opencode-docker/*`: rejected because it continues duplicating user state and configuration.
+     - Keep `~/.open-docker-nest/*`: rejected because it continues duplicating user state and configuration.
 
 2. **Keep container mount targets unchanged**
    - **Decision:** Continue mounting to `/home/opencode/.config/opencode`, `/home/opencode/.local/state/opencode`, and `/home/opencode/.local/share/opencode`.
@@ -36,20 +36,20 @@ The current Dockerized workflow persists OpenCode data in wrapper-owned host dir
      - Require pre-created directories only: rejected due to avoidable operator friction.
 
 4. **Scope requirement changes to persistence behavior only**
-   - **Decision:** Modify only the persistence requirement block in `dockerized-opencode-workflow`; leave project mount, execution modes, and parity command requirements unchanged.
+   - **Decision:** Modify only the persistence requirement block in `dockerized-open-docker-nest-workflow`; leave project mount, execution modes, and parity command requirements unchanged.
    - **Rationale:** The proposal is narrowly focused on path contract updates, so unrelated requirement churn is avoided.
    - **Alternatives considered:**
      - Rewrite full spec set: rejected because it obscures targeted behavioral change.
 
 ## Risks / Trade-offs
 
-- **[Risk] Existing users may still have historical data in `~/.opencode-docker/*` and perceive missing data after switch** → **Mitigation:** include migration guidance in implementation docs and preserve clear fallback/override messaging.
+- **[Risk] Existing users may still have historical data in `~/.open-docker-nest/*` and perceive missing data after switch** → **Mitigation:** include migration guidance in implementation docs and preserve clear fallback/override messaging.
 - **[Risk] Host environments with restricted home-directory writes can block directory preparation** → **Mitigation:** keep fail-fast messaging actionable, including failing path and required permission remediation.
 - **[Trade-off] Using real user directories increases coupling between native and Docker sessions** → **Mitigation:** this is intentional for continuity; preserve explicit mount contract and verification checks.
 
 ## Migration Plan
 
-1. Update wrapper persistence defaults from `~/.opencode-docker/*` to real user OpenCode paths.
+1. Update wrapper persistence defaults from `~/.open-docker-nest/*` to real user OpenCode paths.
 2. Keep runtime mount targets unchanged and validate ownership behavior remains correct.
 3. Update workflow documentation to describe new defaults and how to migrate old persisted data.
 4. Validate parity commands and persistence behavior using the updated mount contract.

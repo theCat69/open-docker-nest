@@ -1,11 +1,11 @@
 ## MODIFIED Requirements
 
 ### Requirement: Dockerized OpenCode workflow via JS host wrapper
-The system SHALL define a Dockerized workflow invoked from a host-side wrapper, with `bin/opencode-docker.js` as the authoritative host entrypoint for supported core flows across Linux, macOS, and Windows.
+The system SHALL define a Dockerized workflow invoked from a host-side wrapper, with `bin/open-docker-nest.js` as the authoritative host entrypoint for supported core flows across Linux, macOS, and Windows.
 
 #### Scenario: Core command modes remain cross-platform
 - **GIVEN** a supported host
-- **WHEN** the developer invokes default mode, `--shell`, or command pass-through through `bin/opencode-docker.js`
+- **WHEN** the developer invokes default mode, `--shell`, or command pass-through through `bin/open-docker-nest.js`
 - **THEN** the wrapper preserves existing command-selection, validation, mount-planning, env, TTY, and diagnostic semantics for in-scope flows.
 
 ### Requirement: JS wrapper implementation remains modular and source-organized

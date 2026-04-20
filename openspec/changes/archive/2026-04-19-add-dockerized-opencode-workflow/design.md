@@ -32,7 +32,7 @@ This repository follows an OpenSpec/OpenCode workflow with proposal/design/tasks
      - Multi-image split (CLI image + helper image): rejected for added build/maintenance overhead in v1.
 
 2. **Thin host wrapper as primary entrypoint**
-   - **Decision:** Introduce `bin/opencode-docker` as the host-facing command that normalizes docker run flags and forwards user commands.
+   - **Decision:** Introduce `bin/open-docker-nest` as the host-facing command that normalizes docker run flags and forwards user commands.
    - **Rationale:** Keeps invocation simple and consistent while centralizing run/mount/user options.
    - **Alternatives considered:**
      - Raw `docker run` docs-only approach: rejected due to high error rate and poor usability.
@@ -40,9 +40,9 @@ This repository follows an OpenSpec/OpenCode workflow with proposal/design/tasks
 3. **Explicit persistent mount contract**
    - **Decision:** Persist OpenCode config/state/share through dedicated host directories mounted into the container, in addition to project mount.
    - **Default host directories:**
-     - `~/.opencode-docker/config`
-     - `~/.opencode-docker/state`
-     - `~/.opencode-docker/share`
+     - `~/.open-docker-nest/config`
+     - `~/.open-docker-nest/state`
+     - `~/.open-docker-nest/share`
    - **Container mount targets:**
      - `/home/opencode/.config/opencode`
      - `/home/opencode/.local/state/opencode`
@@ -66,8 +66,8 @@ This repository follows an OpenSpec/OpenCode workflow with proposal/design/tasks
       - Require manual user flags every invocation: rejected as error-prone.
 
 6. **Concrete wrapper CLI contract**
-   - **Decision:** `bin/opencode-docker` is the stable host entrypoint with the following contract:
-     - `bin/opencode-docker [--project <host-path>] [--image <image-ref>] [--shell] [--] [command ...args]`
+   - **Decision:** `bin/open-docker-nest` is the stable host entrypoint with the following contract:
+     - `bin/open-docker-nest [--project <host-path>] [--image <image-ref>] [--shell] [--] [command ...args]`
      - Default `--project` is current working directory.
      - When `--shell` is set, open an interactive shell in the container rooted at mounted project.
      - Without `--shell`, pass all remaining args through as the container command.

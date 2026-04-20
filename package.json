@@ -1,11 +1,11 @@
 {
-  "name": "dock-opencode",
+  "name": "open-docker-nest",
   "version": "0.1.0",
   "module": "index.ts",
   "type": "module",
   "private": true,
   "bin": {
-    "opencode-docker": "bin/opencode-docker.js"
+    "open-docker-nest": "bin/open-docker-nest.js"
   },
   "scripts": {
     "build": "bunx tsc --noEmit",

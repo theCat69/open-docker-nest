@@ -1,10 +1,10 @@
 ## Why
 
-Users want to keep using normal `./bin/opencode-docker.js` sessions, then run repository commands from inside that session that can talk to host Docker when needed. The existing explicit `--repo-command` design is too narrow because it scopes Docker access to one wrapper-invoked command instead of the whole in-container session.
+Users want to keep using normal `./bin/open-docker-nest.js` sessions, then run repository commands from inside that session that can talk to host Docker when needed. The existing explicit `--repo-command` design is too narrow because it scopes Docker access to one wrapper-invoked command instead of the whole in-container session.
 
 ## What Changes
 
-- Replace the proposed `--repo-command` flow with a session-level `--host-docker` flag on `bin/opencode-docker.js`.
+- Replace the proposed `--repo-command` flow with a session-level `--host-docker` flag on `bin/open-docker-nest.js`.
 - When `--host-docker` is enabled, make host Docker available to the full in-container session so commands launched later inside OpenCode, `--shell`, or direct pass-through sessions can use Docker.
 - Preserve existing default, `--shell`, and direct pass-through behavior exactly as today when `--host-docker` is not requested.
 - Support a production-safe first slice for Linux/macOS local Unix-socket Docker hosts and Linux-in-WSL invocation when a usable local Docker socket path is available; address native Windows explicitly with clear constraints/phasing and fail-fast behavior instead of implied support.
@@ -19,7 +19,7 @@ None.
 
 ### Modified Capabilities
 
-- `dockerized-opencode-workflow`: add a session-level `--host-docker` mode that grants explicit in-container access to host Docker for supported environments, while preserving existing behavior when the flag is absent.
+- `dockerized-open-docker-nest-workflow`: add a session-level `--host-docker` mode that grants explicit in-container access to host Docker for supported environments, while preserving existing behavior when the flag is absent.
 
 ## Impact
 

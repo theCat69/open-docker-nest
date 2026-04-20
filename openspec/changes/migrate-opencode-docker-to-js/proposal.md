@@ -1,17 +1,17 @@
 # Why
 
-`bin/opencode-docker` is still the active wrapper in Bash while the published bin already points to `bin/opencode-docker.js`. This change keeps the migration focused on behavior parity for core Linux/macOS/Windows flows while also requiring a maintainable JavaScript implementation organized under `./src/` with separation of concerns inspired by cache-ctrl-style modularity.
+`bin/open-docker-nest` is still the active wrapper in Bash while the published bin already points to `bin/open-docker-nest.js`. This change keeps the migration focused on behavior parity for core Linux/macOS/Windows flows while also requiring a maintainable JavaScript implementation organized under `./src/` with separation of concerns inspired by cache-ctrl-style modularity.
 
 # What Changes
 
-- Move the active host-wrapper contract into `bin/opencode-docker.js` for default mode, `--shell`, command pass-through, mount planning, persistence planning, and actionable diagnostics.
+- Move the active host-wrapper contract into `bin/open-docker-nest.js` for default mode, `--shell`, command pass-through, mount planning, persistence planning, and actionable diagnostics.
 - Preserve existing Unix-like behavior for validation, TTY handling, env propagation, Docker execution, and advanced local-dev contracts.
 - Organize the JS implementation under `./src/` using concern-based modular boundaries and shared validation/error/type handling, with the executable file kept as a thin adapter rather than a monolithic implementation.
 - Keep Windows scope limited to core flows only; advanced local-dev parity remains out of scope there.
 
 # Capabilities
 
-- Modified: `dockerized-opencode-workflow`
+- Modified: `dockerized-open-docker-nest-workflow`
 
 # Impact
 

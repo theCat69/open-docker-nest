@@ -3,7 +3,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 
 import { fail } from "../shared/io.js";
-import { DOCK_OPENCODE_CONFIG_DIRECTORY_NAME, DOCK_OPENCODE_CONFIG_FILENAME } from "../shared/constants.js";
+import { OPEN_DOCKER_NEST_CONFIG_DIRECTORY_NAME, OPEN_DOCKER_NEST_CONFIG_FILENAME } from "../shared/constants.js";
 import { isFile } from "../validation/filesystem.js";
 import { projectConfigSchema, resolveExtraContainerEnvironment } from "./schema.js";
 
@@ -121,11 +121,11 @@ function readConfigDocumentIfPresent(configFilePath: string): RawProjectConfigDo
 }
 
 function resolveUserConfigPath(): string {
-  return join(homedir(), ".config", DOCK_OPENCODE_CONFIG_DIRECTORY_NAME, DOCK_OPENCODE_CONFIG_FILENAME);
+  return join(homedir(), ".config", OPEN_DOCKER_NEST_CONFIG_DIRECTORY_NAME, OPEN_DOCKER_NEST_CONFIG_FILENAME);
 }
 
 function resolveProjectConfigPath(projectRootPath: string): string {
-  return join(projectRootPath, DOCK_OPENCODE_CONFIG_FILENAME);
+  return join(projectRootPath, OPEN_DOCKER_NEST_CONFIG_FILENAME);
 }
 
 export function loadProjectExtraContainerEnvironment(

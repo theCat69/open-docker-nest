@@ -66,8 +66,8 @@ Outside local-dev mode, behavior must remain unchanged: the image-provided `cach
 
 ## Migration Plan
 
-1. Extend the `dockerized-opencode-workflow` spec with cache-ctrl local-dev requirements and scenarios.
-2. Update `bin/opencode-docker` to resolve cache-ctrl local mode, validate host inputs, and add gated mounts/env only when active.
+1. Extend the `dockerized-open-docker-nest-workflow` spec with cache-ctrl local-dev requirements and scenarios.
+2. Update `bin/open-docker-nest` to resolve cache-ctrl local mode, validate host inputs, and add gated mounts/env only when active.
 3. Update runtime startup so local-dev runs prepend `${HOME}/.local/bin` to `PATH` without changing non-local-dev runs.
 4. Update workflow documentation with setup, validation, and troubleshooting for cache-ctrl local-dev.
 5. Verify rollback safety by confirming `CACHE_CTRL_LOCAL_MODE=off` and unset local-dev inputs still use the image-installed cache-ctrl runtime.

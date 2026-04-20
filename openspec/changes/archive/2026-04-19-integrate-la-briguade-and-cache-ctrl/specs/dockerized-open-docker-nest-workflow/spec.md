@@ -5,7 +5,7 @@ The system SHALL install cache-ctrl in the Docker image so containerized OpenCod
 
 #### Scenario: Cache-ctrl is available in default runtime path
 - **GIVEN** the image is built from the repository Dockerfile
-- **WHEN** a container is started through `bin/opencode-docker`
+- **WHEN** a container is started through `bin/open-docker-nest`
 - **THEN** cache-ctrl is available to the runtime command environment
 - **AND** no additional startup installation step is required to use it
 
@@ -20,13 +20,13 @@ The system SHALL support importing user la-briguade configuration from `~/la_bri
 
 #### Scenario: User la-briguade configuration path is present
 - **GIVEN** `~/la_briguade` exists on the host
-- **WHEN** `bin/opencode-docker` prepares runtime mounts/configuration
+- **WHEN** `bin/open-docker-nest` prepares runtime mounts/configuration
 - **THEN** the wrapper uses that path as the la-briguade configuration source
 - **AND** maps it into the container at the same home-relative path `~/la_briguade`
 
 #### Scenario: User la-briguade configuration path is absent
 - **GIVEN** `~/la_briguade` does not exist on the host
-- **WHEN** `bin/opencode-docker` prepares runtime mounts/configuration
+- **WHEN** `bin/open-docker-nest` prepares runtime mounts/configuration
 - **THEN** startup continues without la-briguade config import mount
 - **AND** absence is not treated as a startup failure
 

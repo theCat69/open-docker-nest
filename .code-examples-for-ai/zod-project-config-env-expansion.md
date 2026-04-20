@@ -3,11 +3,11 @@
 const EMPTY_PROJECT_CONFIG = {};
 
 function resolveUserConfigPath(): string {
-  return join(homedir(), ".config", "dock-opencode", "dock-opencode.json");
+  return join(homedir(), ".config", "open-docker-nest", "open-docker-nest.json");
 }
 
 function resolveProjectConfigPath(projectRootPath: string): string {
-  return join(projectRootPath, "dock-opencode.json");
+  return join(projectRootPath, "open-docker-nest.json");
 }
 
 const projectConfigSchema = z

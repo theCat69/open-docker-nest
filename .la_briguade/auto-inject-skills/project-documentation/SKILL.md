@@ -21,7 +21,7 @@ Applies to Markdown docs in `docs/`, root guidance files, and OpenSpec artifacts
 
 ## API Documentation
 - This repo exposes CLI interfaces, not HTTP APIs.
-- Treat `bin/opencode-docker` usage contract and accepted options as the primary public interface.
+- Treat `bin/open-docker-nest` usage contract and accepted options as the primary public interface.
 
 ## Changelog
 - No dedicated changelog file detected.

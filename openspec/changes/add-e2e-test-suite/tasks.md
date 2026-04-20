@@ -7,7 +7,7 @@
 ## 2. Happy-Path Scenario Implementation
 
 - [x] 2.1 Add representative happy-path E2E tests for core Docker wrapper invocation flows: interactive shell mode (`--shell`), default command path, and command pass-through path.
-- [x] 2.2 Add representative happy-path E2E smoke coverage for one wrapper-invoked OpenCode CLI/help command explicitly invoked through `bin/opencode-docker` (`bin/opencode-docker -- opencode --help`); full propose/explore/apply/archive workflow coverage remains out of scope.
+- [x] 2.2 Add representative happy-path E2E smoke coverage for one wrapper-invoked OpenCode CLI/help command explicitly invoked through `bin/open-docker-nest` (`bin/open-docker-nest -- opencode --help`); full propose/explore/apply/archive workflow coverage remains out of scope.
 - [x] 2.3 Ensure scenario assertions validate stable external outcomes (success/completion and expected artifacts/state) rather than internal implementation details.
 
 ## 3. Low-Brittleness and Maintenance Guards
@@ -28,7 +28,7 @@
 - `bun run test` ✅ passed (`1` file, `1` test)
 - `bun run build` ✅ passed (TypeScript noEmit)
 - Wrapper behavior spot-checks remained unchanged during implementation:
-  - `bin/opencode-docker -- opencode --help` ✅
-  - `printf '...\n' | script -q -c "bin/opencode-docker --shell" /dev/null` ✅
-  - `timeout 8 bin/opencode-docker </dev/null` ✅ (expected timeout behavior)
-  - `bin/opencode-docker -- /usr/bin/env bash -lc 'printf ...' passthrough-check alpha beta` ✅
+  - `bin/open-docker-nest -- opencode --help` ✅
+  - `printf '...\n' | script -q -c "bin/open-docker-nest --shell" /dev/null` ✅
+  - `timeout 8 bin/open-docker-nest </dev/null` ✅ (expected timeout behavior)
+  - `bin/open-docker-nest -- /usr/bin/env bash -lc 'printf ...' passthrough-check alpha beta` ✅

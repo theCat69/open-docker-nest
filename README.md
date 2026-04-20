@@ -1,16 +1,15 @@
-# dock-opencode
+# open-docker-nest
 
 Run [OpenCode](https://github.com/anomalyco/opencode) inside Docker with host-project parity, persistent OpenCode data, and non-root file ownership.
 
 ## What this repository provides
 
-- An authoritative host entrypoint: `bin/opencode-docker.js`
-- A compatibility shim: `bin/opencode-docker` → `bin/opencode-docker.js`
+- Canonical CLI command: `open-docker-nest` (published from `package.json`)
 - A Docker image with `opencode`, `cache-ctrl`, Java 24, and a pinned Rust toolchain (`1.84.0`) installed
 - A `/workspace` mount model for running against your host project
 - Persistent host-backed OpenCode config/state/share directories across runs
 - Non-root execution via host UID/GID remapping
-- Layered `dock-opencode.json` config (user + project) for validated extra container environment wiring
+- Layered `open-docker-nest.json` config (user + project) for validated extra container environment wiring
 
 ## Prerequisites
 
@@ -20,17 +19,16 @@ Run [OpenCode](https://github.com/anomalyco/opencode) inside Docker with host-pr
 ## Build
 
 ```bash
-docker build -t opencode-docker:latest .
+docker build -t open-docker-nest:latest .
 ```
 
 ## Usage
 
 ```bash
-bin/opencode-docker.js [--project <host-path>] [--image <image-ref>] [--shell] [--host-docker] [--] [command ...args]
+open-docker-nest [--project <host-path>] [--image <image-ref>] [--shell] [--host-docker] [--] [command ...args]
 ```
 
-- `bin/opencode-docker.js` is the published entrypoint.
-- `bin/opencode-docker` remains available as a thin compatibility shim.
+- `open-docker-nest` is the published command.
 - `--shell` opens an interactive shell as user `opencode` with `HOME=/home/opencode`.
 - `--host-docker` enables host Docker daemon access for the entire in-container session (explicit high-privilege mode).
 - With no command args and no `--shell`, the wrapper still runs `opencode` by default.
@@ -42,9 +40,9 @@ bin/opencode-docker.js [--project <host-path>] [--image <image-ref>] [--shell] [
 Use this mode when tooling inside `/workspace` needs host Docker daemon access for a full OpenCode, shell, or pass-through session:
 
 ```bash
-bin/opencode-docker.js --host-docker
-bin/opencode-docker.js --shell --host-docker
-bin/opencode-docker.js --host-docker -- docker version
+open-docker-nest --host-docker
+open-docker-nest --shell --host-docker
+open-docker-nest --host-docker -- docker version
 ```
 
 Scope and safety contract:
@@ -69,25 +67,25 @@ Rollback: stop using `--host-docker` and use existing default/`--shell`/normal p
 Run the default `opencode` command:
 
 ```bash
-bin/opencode-docker.js
+open-docker-nest
 ```
 
 Run any OpenCode command with the same pass-through shape:
 
 ```bash
-bin/opencode-docker.js -- opencode --help
+open-docker-nest -- opencode --help
 ```
 
 Open an interactive shell in the container:
 
 ```bash
-bin/opencode-docker.js --shell
+open-docker-nest --shell
 ```
 
 Mount a different project directory:
 
 ```bash
-bin/opencode-docker.js --project /path/to/project -- opencode --help
+open-docker-nest --project /path/to/project -- opencode --help
 ```
 
 ## Windows support
@@ -113,12 +111,12 @@ The container starts as the `opencode` user and remaps runtime UID/GID from the 
 - If `~/la_briguade` exists and is readable, it is mounted into the container at `/home/opencode/la_briguade`.
 - Local la-briguade symlink workflows are supported through `LA_BRIGUADE_LOCAL_MODE` (`auto`, `force`, `off`) and optional `LA_BRIGUADE_LOCAL_PATH`; when active, the wrapper derives and mounts the local project root at `<resolved plugins/index.js target>/../..`.
 
-## Project config (`dock-opencode.json`)
+## Project config (`open-docker-nest.json`)
 
 The wrapper reads two config levels and merges them as: defaults < user < project.
 
-- User config: `~/.config/dock-opencode/dock-opencode.json`
-- Project config: `<project-root>/dock-opencode.json`
+- User config: `~/.config/open-docker-nest/open-docker-nest.json`
+- Project config: `<project-root>/open-docker-nest.json`
 
 Both files use `.json` naming, and JSONC comments are supported.
 
@@ -148,9 +146,9 @@ Generate JSON Schema (off hot path):
 bun run schema:generate
 ```
 
-Output: `schema/dock-opencode.schema.json`
+Output: `schema/open-docker-nest.schema.json`
 
 ## More detail
 
 - Operational workflow: `docs/docker-workflow.md`
-- Behavior/spec source of truth: `openspec/specs/dockerized-opencode-workflow/spec.md`
+- Behavior/spec source of truth: `openspec/specs/dockerized-open-docker-nest-workflow/spec.md`
