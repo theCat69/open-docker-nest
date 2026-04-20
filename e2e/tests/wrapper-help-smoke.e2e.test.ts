@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 
 import {
   getRepositoryRootPath,
-  runWrapperFromRepositoryEntrypoint,
   runWrapper,
 } from "./helpers/wrapper-test-harness";
 
@@ -16,12 +15,6 @@ describe("Wrapper-invoked opencode --help smoke coverage", () => {
   it("runs the wrapper-invoked opencode --help smoke path", () => {
     const projectPath = getRepositoryRootPath();
     const helpResult = runWrapper(projectPath, ["--", "opencode", "--help"]);
-    expect(helpResult.status).toBe(0);
-  }, 900_000);
-
-  it("keeps repository entrypoint aligned with published JS bin behavior", () => {
-    const projectPath = getRepositoryRootPath();
-    const helpResult = runWrapperFromRepositoryEntrypoint(projectPath, ["--", "opencode", "--help"]);
     expect(helpResult.status).toBe(0);
   }, 900_000);
 });

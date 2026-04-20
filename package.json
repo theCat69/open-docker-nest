@@ -1,11 +1,21 @@
 {
   "name": "open-docker-nest",
   "version": "0.1.0",
-  "module": "index.ts",
   "type": "module",
-  "private": true,
   "bin": {
     "open-docker-nest": "bin/open-docker-nest.js"
+  },
+  "engines": {
+    "bun": ">=1.0.0"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "docker/",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "build": "bunx tsc --noEmit",
