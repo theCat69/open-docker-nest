@@ -252,18 +252,25 @@ The system SHALL support importing user la-briguade configuration from `~/la_bri
 The system SHALL support a local symlink-based la-briguade plugin-development mode that uses `LA_BRIGUADE_LOCAL_MODE` (`auto`, `force`, `off`) as the explicit mode contract and supports optional `LA_BRIGUADE_LOCAL_PATH` as an explicit assertion of the derived host local project root path.
 
 #### Scenario: Auto-detect selects local symlink mode
-- **GIVEN** the project plugin target path exists in the mounted workspace and `/workspace/plugins/index.js` is a symlink to a host-managed local build artifact
+- **GIVEN** the host OpenCode config plugin entry `~/.config/opencode/plugins/index.js` is a symlink to a host-managed local build artifact
 - **WHEN** the wrapper initializes la-briguade integration without explicit override
 - **THEN** it enables local symlink mode automatically
 - **AND** uses local linkage behavior without changing default command syntax
 
 #### Scenario: Local-link mode mounts derived local project root from symlink target
 - **GIVEN** local symlink mode is active
-- **AND** `/workspace/plugins/index.js` points to a host absolute symlink target path
+- **AND** `~/.config/opencode/plugins/index.js` points to a host absolute symlink target path
 - **WHEN** the wrapper prepares Docker mounts
 - **THEN** it derives a host local project root by resolving `<symlink-target>/../..`
 - **AND** bind-mounts that derived host project-root directory into the same absolute path inside the container
 - **AND** wrapper preflight fails with actionable diagnostics if `<symlink-target>/../..` cannot be resolved to an accessible directory
+
+#### Scenario: Active local-link mode requires dist entry target shape
+- **GIVEN** local symlink mode is active
+- **AND** `~/.config/opencode/plugins/index.js` resolves to a host absolute symlink target path
+- **WHEN** wrapper preflight validation runs
+- **THEN** the resolved target MUST be `<la-briguade-repo>/dist/index.js`
+- **AND** wrapper startup fails before `docker run` with actionable diagnostics when target shape differs
 
 #### Scenario: Explicit override disables auto-detected local mode
 - **GIVEN** local symlink mode would be auto-detected
@@ -291,7 +298,7 @@ The system SHALL support a local symlink-based la-briguade plugin-development mo
 
 #### Scenario: LA_BRIGUADE_LOCAL_PATH must match derived project root in active local mode
 - **GIVEN** local-link mode resolves active (`LA_BRIGUADE_LOCAL_MODE=force` or `auto` with symlink match)
-- **AND** `./plugins/index.js` resolves to an absolute host symlink target path
+- **AND** `~/.config/opencode/plugins/index.js` resolves to an absolute host symlink target path
 - **AND** `LA_BRIGUADE_LOCAL_PATH` is set
 - **WHEN** wrapper preflight validation runs
 - **THEN** `LA_BRIGUADE_LOCAL_PATH` must exactly equal the derived local project root path (`<resolved-symlink-target>/../..`)
@@ -299,7 +306,7 @@ The system SHALL support a local symlink-based la-briguade plugin-development mo
 
 #### Scenario: Active local mode uses derived project root when LA_BRIGUADE_LOCAL_PATH is unset
 - **GIVEN** local-link mode resolves active (`LA_BRIGUADE_LOCAL_MODE=force` or `auto` with symlink match)
-- **AND** `./plugins/index.js` resolves to an absolute host symlink target path
+- **AND** `~/.config/opencode/plugins/index.js` resolves to an absolute host symlink target path
 - **AND** `LA_BRIGUADE_LOCAL_PATH` is unset
 - **WHEN** Docker mounts are prepared
 - **THEN** wrapper derives local project root at `<resolved-symlink-target>/../..` and uses it as local-link host source path
@@ -321,7 +328,7 @@ The system SHALL support a local symlink-based la-briguade plugin-development mo
 
 #### Scenario: Forced local mode validates expected plugin target path
 - **GIVEN** local plugin-dev mode is explicitly forced
-- **WHEN** `/workspace/plugins/index.js` is missing or is not a symlink
+- **WHEN** `~/.config/opencode/plugins/index.js` is missing or is not a symlink
 - **THEN** wrapper preflight fails before container startup
 - **AND** diagnostic output names the expected plugin target path and remediation to create/update the symlink
 

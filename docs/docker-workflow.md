@@ -198,7 +198,7 @@ The generated JSON Schema is for editor/tooling integration; runtime validation 
 
 ### Local symlink plugin-dev mode (auto/force/off)
 
-The wrapper supports a local plugin-dev contract for `plugins/index.js` symlink workflows.
+The wrapper supports a local plugin-dev contract for host OpenCode config symlink workflows.
 
 Environment contract:
 
@@ -207,13 +207,14 @@ Environment contract:
 
 Mode behavior:
 
-- `auto`: if `<project>/plugins/index.js` is a symlink, local-link mode activates automatically.
-- `force`: local-link mode is required; preflight fails fast if `plugins/index.js` is missing, not a symlink, or its resolved target is invalid/inaccessible.
+- `auto`: if `~/.config/opencode/plugins/index.js` is a symlink, local-link mode activates automatically.
+- `force`: local-link mode is required; preflight fails fast if `~/.config/opencode/plugins/index.js` is missing, not a symlink, or its resolved target is invalid/inaccessible.
 - `off`: local-link mode is disabled even if auto-detect would match.
 
 When local-link mode is active:
 
-- The wrapper resolves the absolute host symlink target from `plugins/index.js`.
+- The wrapper resolves the absolute host symlink target from `~/.config/opencode/plugins/index.js`.
+- The resolved target must be `<la-briguade-repo>/dist/index.js`; any other target path fails preflight.
 - It derives a local project root by walking `../..` from the resolved symlink target path and resolving to an absolute directory.
 - It bind-mounts that derived project root into the same absolute path in-container.
 - If `LA_BRIGUADE_LOCAL_PATH` is set, it must exactly match the derived project root; mismatch fails preflight.
@@ -347,8 +348,9 @@ Result: files created or edited in `/workspace` are owned by the invoking host u
 - `Project path does not exist`: pass a valid directory with `--project`.
 - `Unable to create persistence directory`: fix permissions/ownership for the reported path (or create it manually), then rerun.
 - `Invalid LA_BRIGUADE_LOCAL_MODE`: use one of `auto`, `force`, `off`.
-- `LA_BRIGUADE local-link mode requires .../plugins/index.js to be a symlink`: create/update `plugins/index.js` to point to your local la-briguade build output.
-- `Unable to derive la-briguade local project root...`: ensure `plugins/index.js` points into a local la-briguade layout where `<resolved-target>/../..` reaches the project root (or disable local mode).
+- `LA_BRIGUADE local-link mode requires .../.config/opencode/plugins/index.js to be a symlink`: create/update `~/.config/opencode/plugins/index.js` to point to your local la-briguade `dist/index.js` build output.
+- `Resolved la-briguade symlink target must point to '<la-briguade-repo>/dist/index.js'`: repoint `~/.config/opencode/plugins/index.js` to a local la-briguade `dist/index.js` build output.
+- `Unable to derive la-briguade local project root...`: ensure `~/.config/opencode/plugins/index.js` points into a local la-briguade layout where `<resolved-target>/../..` reaches the project root (or disable local mode).
 - `LA_BRIGUADE_LOCAL_PATH must exactly match...`: set `LA_BRIGUADE_LOCAL_PATH` to the derived project root path or unset it.
 - `Invalid CACHE_CTRL_LOCAL_MODE`: use one of `auto`, `force`, `off`.
 - `CACHE_CTRL local-dev auto mode did not activate...`: auto mode found invalid/missing/inconsistent local inputs and safely fell back to image-installed `cache-ctrl`; fix reported inputs or set `CACHE_CTRL_LOCAL_MODE=off` to disable probing.

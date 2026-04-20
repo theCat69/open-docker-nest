@@ -1,7 +1,7 @@
 import { join } from "node:path";
 
 import type { LocalMode } from "../shared/types.js";
-import { LA_BRIGUADE_PLUGIN_ENTRY_RELATIVE } from "../shared/constants.js";
+import { LA_BRIGUADE_HOST_PLUGIN_ENTRY_RELATIVE } from "../shared/constants.js";
 import { fail } from "../shared/io.js";
 import { isSymbolicLink } from "../validation/filesystem.js";
 
@@ -12,7 +12,7 @@ interface WindowsSupportInput {
   readonly localPathCacheCtrl: string;
   readonly cacheCtrlHostBinaryEntryPath: string;
   readonly cacheCtrlHostSkillEntryPath: string;
-  readonly resolvedProjectPath: string;
+  readonly hostConfigDirectoryPath: string;
   readonly hostDockerMode: boolean;
 }
 
@@ -29,7 +29,7 @@ export function enforceWindowsAdvancedModeSupport(input: WindowsSupportInput): v
     );
   }
 
-  const pluginEntryPath = join(input.resolvedProjectPath, LA_BRIGUADE_PLUGIN_ENTRY_RELATIVE);
+  const pluginEntryPath = join(input.hostConfigDirectoryPath, LA_BRIGUADE_HOST_PLUGIN_ENTRY_RELATIVE);
 
   const requestedLaBriguadeMode =
     input.localModeLaBriguade === "force" ||

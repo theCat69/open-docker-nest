@@ -179,7 +179,7 @@ export function buildDockerRuntimePlan(
       localPathCacheCtrl: runtimeContext.cacheCtrlLocalPath,
       cacheCtrlHostBinaryEntryPath: runtimeContext.cacheCtrlHostBinaryEntryPath,
       cacheCtrlHostSkillEntryPath: runtimeContext.cacheCtrlHostSkillEntryPath,
-      resolvedProjectPath: runtimeContext.resolvedProjectPath,
+      hostConfigDirectoryPath: runtimeContext.hostConfigDirectoryPath,
       hostDockerMode,
     });
   }
@@ -219,7 +219,7 @@ export function buildDockerRuntimePlan(
     ? ""
     : resolveLaBriguadeLocalProjectRoot(
         runtimeContext.laBriguadeLocalMode,
-        runtimeContext.resolvedProjectPath,
+        runtimeContext.hostConfigDirectoryPath,
         runtimeContext.laBriguadeLocalPath,
       );
   if (laBriguadeLocalProjectRoot.length > 0) {
