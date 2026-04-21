@@ -26,7 +26,7 @@ ARG DOCKER_BUILDX_AMD64_URL=https://github.com/docker/buildx/releases/download/v
 ARG DOCKER_BUILDX_AMD64_SHA256=9426a15411f35f635afef3f5d3bae53155c3e30d26dee430cc968e13d34be49f
 ARG DOCKER_BUILDX_ARM64_URL=https://github.com/docker/buildx/releases/download/v0.33.0/buildx-v0.33.0.linux-arm64
 ARG DOCKER_BUILDX_ARM64_SHA256=204dc28447d3bb48f42ed1ce5747e0885cd57e306506a39029311becdb1ef786
-ARG OPENCODE_VERSION=1.14.19
+ARG OPENCODE_VERSION=1.14.20
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
