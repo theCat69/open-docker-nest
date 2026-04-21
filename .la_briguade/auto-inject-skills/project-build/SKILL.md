@@ -20,7 +20,7 @@ Build and environment setup for container image and local wrapper execution.
 - Use host persistence directories `~/.config/opencode`, `~/.local/state/opencode`, and `~/.local/share/opencode` (auto-created by wrapper when missing).
 
 ## Build Commands
-- `docker build -t open-docker-nest:latest .`
+- `docker build -t felixdock/open-docker-nest:latest .`
 - Optional override image at run-time: `bin/open-docker-nest --image <image-ref> ...`
 
 ## Development Server

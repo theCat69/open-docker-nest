@@ -121,7 +121,14 @@ describe("buildDockerRuntimePlan", () => {
     const context = createRuntimeContextFixture();
     mockIsReadablePath.mockReturnValue(false);
 
-    const regularPlan = buildDockerRuntimePlan(context, "open-docker-nest:latest", "21", false, false, ["opencode", "--help"]);
+    const regularPlan = buildDockerRuntimePlan(
+      context,
+      "felixdock/open-docker-nest:latest",
+      "21",
+      false,
+      false,
+      ["opencode", "--help"],
+    );
 
     expect(regularPlan.dockerRunArgs).not.toContain("/var/run/docker.sock:/var/run/docker.sock");
 
@@ -131,7 +138,14 @@ describe("buildDockerRuntimePlan", () => {
     mockHasFileReadWriteAccess.mockReturnValue(true);
     mockGetPathGroupId.mockReturnValue(1234);
 
-    const hostDockerPlan = buildDockerRuntimePlan(context, "open-docker-nest:latest", "21", false, true, ["docker", "version"]);
+    const hostDockerPlan = buildDockerRuntimePlan(
+      context,
+      "felixdock/open-docker-nest:latest",
+      "21",
+      false,
+      true,
+      ["docker", "version"],
+    );
 
     expect(hostDockerPlan.dockerRunArgs).toContain("/var/run/docker.sock:/var/run/docker.sock");
     expect(hostDockerPlan.dockerRunArgs).toContain("DOCKER_HOST=unix:///var/run/docker.sock");
@@ -145,7 +159,7 @@ describe("buildDockerRuntimePlan", () => {
 
     const runtimePlan = buildDockerRuntimePlan(
       context,
-      "open-docker-nest:latest",
+      "felixdock/open-docker-nest:latest",
       "24",
       false,
       false,
@@ -160,7 +174,7 @@ describe("buildDockerRuntimePlan", () => {
     vi.stubEnv("DOCKER_HOST", "tcp://127.0.0.1:2375");
 
     expect(() =>
-      buildDockerRuntimePlan(context, "open-docker-nest:latest", "21", false, true, ["docker", "version"]),
+      buildDockerRuntimePlan(context, "felixdock/open-docker-nest:latest", "21", false, true, ["docker", "version"]),
     ).toThrow(/--host-docker currently supports only local Unix-socket Docker hosts/);
   });
 
@@ -169,7 +183,7 @@ describe("buildDockerRuntimePlan", () => {
     vi.stubEnv("DOCKER_CONTEXT", "remote-prod");
 
     expect(() =>
-      buildDockerRuntimePlan(context, "open-docker-nest:latest", "21", false, true, ["docker", "version"]),
+      buildDockerRuntimePlan(context, "felixdock/open-docker-nest:latest", "21", false, true, ["docker", "version"]),
     ).toThrow(/Unsupported DOCKER_CONTEXT/);
   });
 
@@ -183,7 +197,7 @@ describe("buildDockerRuntimePlan", () => {
     });
 
     expect(() =>
-      buildDockerRuntimePlan(context, "open-docker-nest:latest", "21", false, true, ["docker", "version"]),
+      buildDockerRuntimePlan(context, "felixdock/open-docker-nest:latest", "21", false, true, ["docker", "version"]),
     ).toThrow(/Active Docker context is unsupported: remote-prod/);
   });
 
@@ -208,7 +222,7 @@ describe("buildDockerRuntimePlan", () => {
       });
 
     expect(() =>
-      buildDockerRuntimePlan(context, "open-docker-nest:latest", "21", false, true, ["docker", "version"]),
+      buildDockerRuntimePlan(context, "felixdock/open-docker-nest:latest", "21", false, true, ["docker", "version"]),
     ).toThrow(/could not reach a usable host Docker daemon/);
   });
 
@@ -217,7 +231,7 @@ describe("buildDockerRuntimePlan", () => {
     mockPathExistsOrSymlink.mockReturnValue(false);
 
     expect(() =>
-      buildDockerRuntimePlan(context, "open-docker-nest:latest", "21", false, true, ["docker", "version"]),
+      buildDockerRuntimePlan(context, "felixdock/open-docker-nest:latest", "21", false, true, ["docker", "version"]),
     ).toThrow(/--host-docker requires a local Docker daemon socket at \/var\/run\/docker.sock, but it was not found/);
   });
 
@@ -229,7 +243,7 @@ describe("buildDockerRuntimePlan", () => {
     mockHasFileReadWriteAccess.mockReturnValue(false);
 
     expect(() =>
-      buildDockerRuntimePlan(context, "open-docker-nest:latest", "21", false, true, ["docker", "version"]),
+      buildDockerRuntimePlan(context, "felixdock/open-docker-nest:latest", "21", false, true, ["docker", "version"]),
     ).toThrow(/--host-docker cannot access \/var\/run\/docker.sock with read\/write permissions/);
   });
 
@@ -247,7 +261,7 @@ describe("buildDockerRuntimePlan", () => {
 
     const runtimePlan = buildDockerRuntimePlan(
       contextWithExtraEnvironment,
-      "open-docker-nest:latest",
+      "felixdock/open-docker-nest:latest",
       "21",
       false,
       false,

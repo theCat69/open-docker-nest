@@ -17,7 +17,7 @@ const processKillSpy = vi.spyOn(process, "kill").mockImplementation(() => true);
 import { executeDockerRun } from "../src/runtime/process.js";
 
 const samplePlan: DockerRuntimePlan = {
-  imageRef: "open-docker-nest:latest",
+  imageRef: "felixdock/open-docker-nest:latest",
   dockerRunArgs: ["--rm"],
   dockerClientEnvironment: {},
   commandToRun: ["opencode", "--help"],
@@ -60,7 +60,7 @@ describe("executeDockerRun", () => {
 
     expect(spawnSyncMock).toHaveBeenCalledWith(
       "docker",
-      ["run", "--rm", "open-docker-nest:latest", "opencode", "--help"],
+      ["run", "--rm", "felixdock/open-docker-nest:latest", "opencode", "--help"],
       expect.objectContaining({
         stdio: "inherit",
         env: expect.objectContaining({

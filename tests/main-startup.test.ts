@@ -81,7 +81,7 @@ afterEach(() => {
   resolvePathMock.mockImplementation((value: string) => value);
   buildRuntimeContextMock.mockReturnValue(runtimeContextFixture);
   buildDockerRuntimePlanMock.mockReturnValue({
-    imageRef: "open-docker-nest:latest",
+    imageRef: "felixdock/open-docker-nest:latest",
     dockerRunArgs: ["--rm"],
     dockerClientEnvironment: {},
     commandToRun: ["opencode"],
@@ -92,7 +92,7 @@ describe("main startup ordering", () => {
   it("prints help without probing docker CLI", async () => {
     parseCliArgumentsMock.mockReturnValue({
       projectPath: "/workspace",
-      imageRef: "open-docker-nest:latest",
+      imageRef: "felixdock/open-docker-nest:latest",
       javaVersion: "21",
       shellMode: false,
       hostDockerMode: false,
@@ -110,7 +110,7 @@ describe("main startup ordering", () => {
   it("probes docker CLI before execution when not in help mode", async () => {
     parseCliArgumentsMock.mockReturnValue({
       projectPath: "/workspace",
-      imageRef: "open-docker-nest:latest",
+      imageRef: "felixdock/open-docker-nest:latest",
       javaVersion: "24",
       shellMode: false,
       hostDockerMode: false,
@@ -123,7 +123,7 @@ describe("main startup ordering", () => {
     expect(ensureDockerCliAvailableMock).toHaveBeenCalledOnce();
     expect(buildDockerRuntimePlanMock).toHaveBeenCalledWith(
       runtimeContextFixture,
-      "open-docker-nest:latest",
+      "felixdock/open-docker-nest:latest",
       "24",
       false,
       false,

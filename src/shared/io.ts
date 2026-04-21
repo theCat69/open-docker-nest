@@ -1,5 +1,5 @@
 import { WrapperError } from "./errors.js";
-import { SCRIPT_NAME } from "./constants.js";
+import { DEFAULT_IMAGE, SCRIPT_NAME } from "./constants.js";
 
 export function fail(message: string): never {
   throw new WrapperError(`${SCRIPT_NAME}: ${message}`);
@@ -15,7 +15,7 @@ export function printUsage(): void {
 
 Options:
   --project <host-path>  Host project directory to mount (default: current directory)
-  --image <image-ref>    Docker image reference (default: open-docker-nest:latest)
+  --image <image-ref>    Docker image reference (default: ${DEFAULT_IMAGE})
   --java <21|24>         Select the default JDK inside the container for this run (default: 21)
   --shell                Start an interactive shell inside the container
   --host-docker          Enable host Docker daemon access for the entire in-container session (supported local Unix-socket hosts only)

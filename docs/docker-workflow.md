@@ -41,8 +41,14 @@ set -U fish_user_paths $HOME/.local/bin $fish_user_paths
 ## Build the image
 
 ```bash
-docker build -t open-docker-nest:latest .
+docker build -t felixdock/open-docker-nest:latest .
 ```
+
+This example builds a local image in your Docker daemon with the same tag as the published default reference.
+It does not publish or modify Docker Hub; it only controls local tag resolution for `felixdock/open-docker-nest:latest` on your host.
+
+Canonical default image: `felixdock/open-docker-nest:latest`.
+For reproducible runs, replace `latest` with a specific version tag or image digest.
 
 The image installs `cache-ctrl`, both Java 21 and Java 24 (`java`/`javac` via a runtime-selected default), and a pinned Rust toolchain (`rustc`/`cargo`, default `1.84.0`) during build, with deterministic amd64/arm64 artifact selection, so runtime commands can rely on them without startup-time installation.
 
@@ -55,6 +61,7 @@ The image installs `cache-ctrl`, both Java 21 and Java 24 (`java`/`javac` via a 
 - `open-docker-nest` is the published command (mapped to `bin/open-docker-nest.js` in `package.json`).
 - Default project mount is the current directory.
 - Override project mount with `--project <host-path>`.
+- Default image is `felixdock/open-docker-nest:latest`.
 - Override image with `--image <image-ref>`.
 - Choose the in-container default JDK with `--java <21|24>` (default: `21`).
 - `--shell` starts an interactive shell at `/workspace` as user `opencode` with `HOME=/home/opencode`.

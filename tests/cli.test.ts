@@ -1,8 +1,34 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { parseCliArguments } from "../src/validation/cli.js";
 
 describe("parseCliArguments", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("defaults to the canonical published Docker Hub image", () => {
+    const parsed = parseCliArguments([]);
+
+    expect(parsed.imageRef).toBe("felixdock/open-docker-nest:latest");
+  });
+
+  it("uses OPEN_DOCKER_NEST_IMAGE when provided", () => {
+    vi.stubEnv("OPEN_DOCKER_NEST_IMAGE", "example/custom:image");
+
+    const parsed = parseCliArguments([]);
+
+    expect(parsed.imageRef).toBe("example/custom:image");
+  });
+
+  it("prefers --image over OPEN_DOCKER_NEST_IMAGE", () => {
+    vi.stubEnv("OPEN_DOCKER_NEST_IMAGE", "example/custom:image");
+
+    const parsed = parseCliArguments(["--image", "felixdock/open-docker-nest:latest"]);
+
+    expect(parsed.imageRef).toBe("felixdock/open-docker-nest:latest");
+  });
+
   it("enables host-docker mode without requiring command payload shape", () => {
     const parsed = parseCliArguments(["--host-docker", "--", "docker", "version"]);
 

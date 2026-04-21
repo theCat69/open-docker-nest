@@ -53,8 +53,14 @@ set -U fish_user_paths $HOME/.local/bin $fish_user_paths
 ## Build
 
 ```bash
-docker build -t open-docker-nest:latest .
+docker build -t felixdock/open-docker-nest:latest .
 ```
+
+This command builds a local image in your Docker daemon using the same tag as the published default reference.
+It does not pull or overwrite Docker Hub content; it only defines what `felixdock/open-docker-nest:latest` resolves to on your machine.
+
+Canonical default image: `felixdock/open-docker-nest:latest`.
+For reproducible runs, replace `latest` with a specific version tag or image digest.
 
 ## Usage
 
