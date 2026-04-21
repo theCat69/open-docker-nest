@@ -93,6 +93,7 @@ describe("main startup ordering", () => {
     parseCliArgumentsMock.mockReturnValue({
       projectPath: "/workspace",
       imageRef: "open-docker-nest:latest",
+      javaVersion: "21",
       shellMode: false,
       hostDockerMode: false,
       passthroughCommand: [],
@@ -110,6 +111,7 @@ describe("main startup ordering", () => {
     parseCliArgumentsMock.mockReturnValue({
       projectPath: "/workspace",
       imageRef: "open-docker-nest:latest",
+      javaVersion: "24",
       shellMode: false,
       hostDockerMode: false,
       passthroughCommand: ["opencode", "--help"],
@@ -119,6 +121,14 @@ describe("main startup ordering", () => {
     await main();
 
     expect(ensureDockerCliAvailableMock).toHaveBeenCalledOnce();
+    expect(buildDockerRuntimePlanMock).toHaveBeenCalledWith(
+      runtimeContextFixture,
+      "open-docker-nest:latest",
+      "24",
+      false,
+      false,
+      ["opencode", "--help"],
+    );
     expect(executeDockerRunMock).toHaveBeenCalledOnce();
   });
 });

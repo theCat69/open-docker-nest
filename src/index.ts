@@ -44,6 +44,7 @@ export async function main(): Promise<void> {
   const runtimePlan = buildDockerRuntimePlan(
     runtimeContext,
     parsedCliOptions.imageRef,
+    parsedCliOptions.javaVersion,
     parsedCliOptions.shellMode,
     parsedCliOptions.hostDockerMode,
     parsedCliOptions.passthroughCommand,

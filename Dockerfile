@@ -2,6 +2,12 @@ FROM node:22-bookworm-slim
 
 ARG CACHE_CTRL_VERSION=1.5.1
 ARG BUN_VERSION=1.3.11
+ARG JAVA21_DIRNAME=jdk-21.0.10+7
+ARG JAVA21_AMD64_URL=https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.10%2B7/OpenJDK21U-jdk_x64_linux_hotspot_21.0.10_7.tar.gz
+ARG JAVA21_AMD64_SHA256=ea3b9bd464d6dd253e9a7accf59f7ccd2a36e4aa69640b7251e3370caef896a4
+ARG JAVA21_ARM64_URL=https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.10%2B7/OpenJDK21U-jdk_aarch64_linux_hotspot_21.0.10_7.tar.gz
+ARG JAVA21_ARM64_SHA256=357fee29fb0d5c079f6730db98b28942df13a6eed426f6c61cd4ad703ab27b9a
+ARG JAVA24_DIRNAME=jdk-24.0.2+12
 ARG JAVA24_AMD64_URL=https://github.com/adoptium/temurin24-binaries/releases/download/jdk-24.0.2%2B12/OpenJDK24U-jdk_x64_linux_hotspot_24.0.2_12.tar.gz
 ARG JAVA24_AMD64_SHA256=aea1cc55e51cf651c85f2f00ad021603fe269c4bb6493fa97a321ad770c9b096
 ARG JAVA24_ARM64_URL=https://github.com/adoptium/temurin24-binaries/releases/download/jdk-24.0.2%2B12/OpenJDK24U-jdk_aarch64_linux_hotspot_24.0.2_12.tar.gz
@@ -43,18 +49,29 @@ RUN npm install --global \
 
 RUN debian_arch="$(dpkg --print-architecture)" \
   && case "${debian_arch}" in \
-    amd64) java24_url="${JAVA24_AMD64_URL}"; java24_sha256="${JAVA24_AMD64_SHA256}" ;; \
-    arm64) java24_url="${JAVA24_ARM64_URL}"; java24_sha256="${JAVA24_ARM64_SHA256}" ;; \
-    *) echo "Error: unsupported architecture for Java 24 install: ${debian_arch}" >&2; exit 1 ;; \
+    amd64) \
+      java21_url="${JAVA21_AMD64_URL}"; java21_sha256="${JAVA21_AMD64_SHA256}"; \
+      java24_url="${JAVA24_AMD64_URL}"; java24_sha256="${JAVA24_AMD64_SHA256}" \
+      ;; \
+    arm64) \
+      java21_url="${JAVA21_ARM64_URL}"; java21_sha256="${JAVA21_ARM64_SHA256}"; \
+      java24_url="${JAVA24_ARM64_URL}"; java24_sha256="${JAVA24_ARM64_SHA256}" \
+      ;; \
+    *) echo "Error: unsupported architecture for Java install: ${debian_arch}" >&2; exit 1 ;; \
   esac \
+  && curl -fsSL "${java21_url}" -o /tmp/java21.tar.gz \
+  && echo "${java21_sha256}  /tmp/java21.tar.gz" | sha256sum -c - \
   && curl -fsSL "${java24_url}" -o /tmp/java24.tar.gz \
   && echo "${java24_sha256}  /tmp/java24.tar.gz" | sha256sum -c - \
   && mkdir -p /opt/java \
+  && tar -xzf /tmp/java21.tar.gz -C /opt/java \
   && tar -xzf /tmp/java24.tar.gz -C /opt/java \
-  && mv /opt/java/jdk-24.0.2+12 /opt/java/jdk-24 \
-  && ln -sf /opt/java/jdk-24/bin/java /usr/local/bin/java \
-  && ln -sf /opt/java/jdk-24/bin/javac /usr/local/bin/javac \
-  && rm /tmp/java24.tar.gz \
+  && mv "/opt/java/${JAVA21_DIRNAME}" /opt/java/jdk-21 \
+  && mv "/opt/java/${JAVA24_DIRNAME}" /opt/java/jdk-24 \
+  && ln -sfn /opt/java/jdk-21 /opt/java/default \
+  && ln -sf /opt/java/default/bin/java /usr/local/bin/java \
+  && ln -sf /opt/java/default/bin/javac /usr/local/bin/javac \
+  && rm /tmp/java21.tar.gz /tmp/java24.tar.gz \
   && java -version >/dev/null \
   && javac -version >/dev/null
 
@@ -74,7 +91,7 @@ RUN debian_arch="$(dpkg --print-architecture)" \
   && rustc --version >/dev/null \
   && cargo --version >/dev/null
 
-ENV JAVA_HOME=/opt/java/jdk-24
+ENV JAVA_HOME=/opt/java/default
 
 RUN if ! getent group opencode >/dev/null; then groupadd opencode; fi \
   && if ! id -u opencode >/dev/null 2>&1; then useradd --gid opencode --create-home --shell /bin/bash opencode; fi

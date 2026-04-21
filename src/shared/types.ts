@@ -1,8 +1,11 @@
+export type JavaVersion = "21" | "24";
+
 export type LocalMode = "auto" | "force" | "off";
 
 export interface ParsedCliOptions {
   readonly projectPath: string;
   readonly imageRef: string;
+  readonly javaVersion: JavaVersion;
   readonly shellMode: boolean;
   readonly hostDockerMode: boolean;
   readonly passthroughCommand: readonly string[];

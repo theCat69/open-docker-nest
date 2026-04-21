@@ -1,12 +1,21 @@
 import {
   DEFAULT_IMAGE,
 } from "../shared/constants.js";
-import type { ParsedCliOptions } from "../shared/types.js";
+import type { JavaVersion, ParsedCliOptions } from "../shared/types.js";
 import { fail } from "../shared/io.js";
+
+function parseJavaVersion(value: string): JavaVersion {
+  if (value === "21" || value === "24") {
+    return value;
+  }
+
+  fail(`--java must be one of: 21, 24. Received: ${value}`);
+}
 
 export function parseCliArguments(argv: readonly string[]): ParsedCliOptions {
   let projectPath = process.cwd();
   let imageRef = process.env.OPEN_DOCKER_NEST_IMAGE ?? DEFAULT_IMAGE;
+  let javaVersion: JavaVersion = "21";
   let shellMode = false;
   let hostDockerMode = false;
   let passthroughCommand: readonly string[] = [];
@@ -37,6 +46,16 @@ export function parseCliArguments(argv: readonly string[]): ParsedCliOptions {
         }
 
         imageRef = value;
+        index += 2;
+        break;
+      }
+      case "--java": {
+        const value = argv[index + 1];
+        if (value === undefined) {
+          fail("--java requires a value");
+        }
+
+        javaVersion = parseJavaVersion(value);
         index += 2;
         break;
       }
@@ -71,6 +90,7 @@ export function parseCliArguments(argv: readonly string[]): ParsedCliOptions {
   return {
     projectPath,
     imageRef,
+    javaVersion,
     shellMode,
     hostDockerMode,
     passthroughCommand,

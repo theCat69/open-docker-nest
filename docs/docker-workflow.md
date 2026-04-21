@@ -44,23 +44,37 @@ set -U fish_user_paths $HOME/.local/bin $fish_user_paths
 docker build -t open-docker-nest:latest .
 ```
 
-The image installs `cache-ctrl`, Java 24 (`java`/`javac`), and a pinned Rust toolchain (`rustc`/`cargo`, default `1.84.0`) during build, with deterministic amd64/arm64 artifact selection, so runtime commands can rely on them without startup-time installation.
+The image installs `cache-ctrl`, both Java 21 and Java 24 (`java`/`javac` via a runtime-selected default), and a pinned Rust toolchain (`rustc`/`cargo`, default `1.84.0`) during build, with deterministic amd64/arm64 artifact selection, so runtime commands can rely on them without startup-time installation.
 
 ## Wrapper usage
 
 ```bash
-open-docker-nest [--project <host-path>] [--image <image-ref>] [--shell] [--host-docker] [--] [command ...args]
+ open-docker-nest [--project <host-path>] [--image <image-ref>] [--java <21|24>] [--shell] [--host-docker] [--] [command ...args]
 ```
 
 - `open-docker-nest` is the published command (mapped to `bin/open-docker-nest.js` in `package.json`).
 - Default project mount is the current directory.
 - Override project mount with `--project <host-path>`.
 - Override image with `--image <image-ref>`.
+- Choose the in-container default JDK with `--java <21|24>` (default: `21`).
 - `--shell` starts an interactive shell at `/workspace` as user `opencode` with `HOME=/home/opencode`.
 - `--host-docker` enables host Docker daemon access for the entire in-container session.
 - `--repo-command` is removed; use `--host-docker`.
 - Without `--shell` and without command args, default command is `opencode`.
 - Any command after `--` is passed through unchanged.
+
+### Java version selection
+
+Use the wrapper flag to choose which installed JDK is the default for that container run:
+
+```bash
+open-docker-nest -- /usr/bin/env bash -lc 'java -version && printf "%s\n" "$JAVA_HOME"'
+open-docker-nest --java 24 -- /usr/bin/env bash -lc 'java -version && printf "%s\n" "$JAVA_HOME"'
+```
+
+- Default behavior uses Java 21.
+- `--java 24` switches the active `java`, `javac`, and `JAVA_HOME` to Java 24 for that run.
+- Direct `docker run` usage can also override with `-e OPEN_DOCKER_NEST_JAVA_VERSION=24`.
 
 ### Host Docker mode (`--host-docker`)
 
@@ -322,10 +336,11 @@ open-docker-nest -- /usr/bin/env bash -lc 'printf "%s\n" "$0" "$1" "$2"' passthr
 # beta
 ```
 
-Validate Java 24 and Rust availability as non-root `opencode` runtime user:
+Validate Java 21 default, Java 24 opt-in, and Rust availability as non-root `opencode` runtime user:
 
 ```bash
-open-docker-nest -- /usr/bin/env bash -lc 'java -version && javac -version && rustc --version && cargo --version'
+open-docker-nest -- /usr/bin/env bash -lc 'java -version && javac -version && printf "%s\n" "$JAVA_HOME" && rustc --version && cargo --version'
+open-docker-nest --java 24 -- /usr/bin/env bash -lc 'java -version && javac -version && printf "%s\n" "$JAVA_HOME"'
 ```
 
 ## Permissions and file ownership

@@ -5,7 +5,7 @@ Run [OpenCode](https://github.com/anomalyco/opencode) inside Docker with host-pr
 ## What this repository provides
 
 - Canonical CLI command: `open-docker-nest` (published from `package.json`)
-- A Docker image with `opencode`, `cache-ctrl`, Java 24, and a pinned Rust toolchain (`1.84.0`) installed
+- A Docker image with `opencode`, `cache-ctrl`, Java 21 as the default JDK, Java 24 as an opt-in JDK, and a pinned Rust toolchain (`1.84.0`) installed
 - A `/workspace` mount model for running against your host project
 - Persistent host-backed OpenCode config/state/share directories across runs
 - Non-root execution via host UID/GID remapping
@@ -59,10 +59,11 @@ docker build -t open-docker-nest:latest .
 ## Usage
 
 ```bash
-open-docker-nest [--project <host-path>] [--image <image-ref>] [--shell] [--host-docker] [--] [command ...args]
+open-docker-nest [--project <host-path>] [--image <image-ref>] [--java <21|24>] [--shell] [--host-docker] [--] [command ...args]
 ```
 
 - `open-docker-nest` is the published command.
+- `--java <21|24>` selects the default JDK inside the container for that run (default: `21`).
 - `--shell` opens an interactive shell as user `opencode` with `HOME=/home/opencode`.
 - `--host-docker` enables host Docker daemon access for the entire in-container session (explicit high-privilege mode).
 - With no command args and no `--shell`, the wrapper still runs `opencode` by default.
@@ -120,6 +121,12 @@ Mount a different project directory:
 
 ```bash
 open-docker-nest --project /path/to/project -- opencode --help
+```
+
+Switch the in-container default JDK to Java 24 for one run:
+
+```bash
+open-docker-nest --java 24 -- /usr/bin/env bash -lc 'java -version && printf "%s\n" "$JAVA_HOME"'
 ```
 
 ## Windows support

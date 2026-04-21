@@ -8,7 +8,7 @@ import {
   LA_BRIGUADE_HOST_CONFIG_RELATIVE,
   LOCAL_UNIX_DOCKER_HOST,
 } from "../shared/constants.js";
-import type { DockerRuntimePlan, RuntimeContext } from "../shared/types.js";
+import type { DockerRuntimePlan, JavaVersion, RuntimeContext } from "../shared/types.js";
 import { fail, warn } from "../shared/io.js";
 import {
   getPathGroupId,
@@ -167,6 +167,7 @@ function validateHostDockerPrerequisites(): void {
 export function buildDockerRuntimePlan(
   runtimeContext: RuntimeContext,
   imageRef: string,
+  javaVersion: JavaVersion,
   shellMode: boolean,
   hostDockerMode: boolean,
   passthroughCommand: readonly string[],
@@ -199,6 +200,8 @@ export function buildDockerRuntimePlan(
     `HOST_UID=${runtimeContext.hostUid}`,
     "--env",
     `HOST_GID=${runtimeContext.hostGid}`,
+    "--env",
+    `OPEN_DOCKER_NEST_JAVA_VERSION=${javaVersion}`,
     "--volume",
     `${runtimeContext.resolvedProjectPath}:${CONTAINER_PROJECT_DIR}`,
     "--volume",

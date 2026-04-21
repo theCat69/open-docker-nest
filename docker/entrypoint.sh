@@ -2,6 +2,25 @@
 set -euo pipefail
 
 OPENCODE_USER="${OPENCODE_USER:-opencode}"
+OPEN_DOCKER_NEST_JAVA_VERSION="${OPEN_DOCKER_NEST_JAVA_VERSION:-21}"
+
+case "${OPEN_DOCKER_NEST_JAVA_VERSION}" in
+  21|24)
+    selected_java_home="/opt/java/jdk-${OPEN_DOCKER_NEST_JAVA_VERSION}"
+    ;;
+  *)
+    echo "Error: OPEN_DOCKER_NEST_JAVA_VERSION must be one of: 21, 24." >&2
+    exit 1
+    ;;
+esac
+
+if [[ ! -d "${selected_java_home}" ]]; then
+  echo "Error: selected Java home does not exist in-container: ${selected_java_home}." >&2
+  exit 1
+fi
+
+ln -sfn "${selected_java_home}" /opt/java/default
+export JAVA_HOME="/opt/java/default"
 
 eval "$(/usr/local/bin/opencode-user-map --print-env)"
 
