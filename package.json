@@ -16,7 +16,7 @@
   "bugs": {
     "url": "https://github.com/theCat69/open-docker-nest/issues"
   },
-  "license": "UNLICENSED",
+  "license": "MIT",
   "type": "module",
   "bin": {
     "open-docker-nest": "bin/open-docker-nest.js"
@@ -27,8 +27,8 @@
   "files": [
     "bin/",
     "src/",
-    "docker/",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
     "build": "bunx tsc --noEmit",
