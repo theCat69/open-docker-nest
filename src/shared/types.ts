@@ -28,6 +28,7 @@ export interface RuntimeContext {
   readonly hostConfigDirectoryPath: string;
   readonly hostStateDirectoryPath: string;
   readonly hostShareDirectoryPath: string;
+  readonly hostCacheDirectoryPath: string;
   readonly hostLaBriguadeConfigDirectoryPath: string;
   readonly laBriguadeLocalMode: LocalMode;
   readonly laBriguadeLocalPath: string;

@@ -28,6 +28,7 @@ export function buildRuntimeContext(resolvedProjectPath: string): RuntimeContext
     hostConfigDirectoryPath: join(hostHomeDirectory, ".config", "opencode"),
     hostStateDirectoryPath: join(hostHomeDirectory, ".local", "state", "opencode"),
     hostShareDirectoryPath: join(hostHomeDirectory, ".local", "share", "opencode"),
+    hostCacheDirectoryPath: join(hostHomeDirectory, ".cache", "open-docker-nest"),
     hostLaBriguadeConfigDirectoryPath: join(hostHomeDirectory, LA_BRIGUADE_HOST_CONFIG_RELATIVE),
     laBriguadeLocalMode,
     laBriguadeLocalPath: process.env.LA_BRIGUADE_LOCAL_PATH ?? "",

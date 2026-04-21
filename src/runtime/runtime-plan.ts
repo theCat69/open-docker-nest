@@ -207,6 +207,8 @@ export function buildDockerRuntimePlan(
     `${runtimeContext.hostStateDirectoryPath}:/home/opencode/.local/state/opencode`,
     "--volume",
     `${runtimeContext.hostShareDirectoryPath}:${CONTAINER_HOME_DIR}/.local/share/opencode`,
+    "--volume",
+    `${runtimeContext.hostCacheDirectoryPath}:${CONTAINER_HOME_DIR}/.cache/opencode`,
   ];
 
   prepareLaBriguadeConfigMount(
@@ -218,10 +220,10 @@ export function buildDockerRuntimePlan(
   const laBriguadeLocalProjectRoot = runtimeContext.isWindows
     ? ""
     : resolveLaBriguadeLocalProjectRoot(
-        runtimeContext.laBriguadeLocalMode,
-        runtimeContext.hostConfigDirectoryPath,
-        runtimeContext.laBriguadeLocalPath,
-      );
+      runtimeContext.laBriguadeLocalMode,
+      runtimeContext.hostConfigDirectoryPath,
+      runtimeContext.laBriguadeLocalPath,
+    );
   if (laBriguadeLocalProjectRoot.length > 0) {
     dockerRunArgs.push("--volume", `${laBriguadeLocalProjectRoot}:${laBriguadeLocalProjectRoot}`);
   }
@@ -229,15 +231,15 @@ export function buildDockerRuntimePlan(
   const cacheCtrlLocalState = runtimeContext.isWindows
     ? { active: false, projectRoot: "", binaryTarget: "" }
     : resolveCacheCtrlLocalState(
-        runtimeContext.cacheCtrlLocalMode,
-        runtimeContext.cacheCtrlLocalPath,
-        runtimeContext.cacheCtrlHostBinaryEntryPath,
-        runtimeContext.cacheCtrlHostSkillEntryPath,
-      );
+      runtimeContext.cacheCtrlLocalMode,
+      runtimeContext.cacheCtrlLocalPath,
+      runtimeContext.cacheCtrlHostBinaryEntryPath,
+      runtimeContext.cacheCtrlHostSkillEntryPath,
+    );
   if (cacheCtrlLocalState.active) {
     dockerRunArgs.push("--volume", `${cacheCtrlLocalState.projectRoot}:${cacheCtrlLocalState.projectRoot}`);
     dockerRunArgs.push("--env", `OPENCODE_CACHE_CTRL_LOCAL_TARGET=${cacheCtrlLocalState.binaryTarget}`);
-    dockerRunArgs.push("--env", `OPENCODE_PREPEND_PATH=${CACHE_CTRL_CONTAINER_BIN_DIR}`);
+    // dockerRunArgs.push("--env", `OPENCODE_PREPEND_PATH=${CACHE_CTRL_CONTAINER_BIN_DIR}`);
   }
 
   for (const environmentVariableName of Object.keys(runtimeContext.extraContainerEnvironment)) {

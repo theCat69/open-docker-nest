@@ -53,6 +53,7 @@ const runtimeContextFixture: RuntimeContext = {
   hostConfigDirectoryPath: "/tmp/config",
   hostStateDirectoryPath: "/tmp/state",
   hostShareDirectoryPath: "/tmp/share",
+  hostCacheDirectoryPath: "/tmp/cache",
   hostLaBriguadeConfigDirectoryPath: "/tmp/la_briguade",
   laBriguadeLocalMode: "off",
   laBriguadeLocalPath: "",

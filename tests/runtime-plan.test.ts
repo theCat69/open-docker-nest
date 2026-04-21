@@ -84,6 +84,7 @@ function createRuntimeContextFixture(): RuntimeContext {
   const configPath = join(rootDirectoryPath, "config");
   const statePath = join(rootDirectoryPath, "state");
   const sharePath = join(rootDirectoryPath, "share");
+  const cachePath = join(rootDirectoryPath, "cache");
 
   mkdirSync(projectPath, { recursive: true });
   mkdirSync(configPath, { recursive: true });
@@ -101,6 +102,7 @@ function createRuntimeContextFixture(): RuntimeContext {
     hostConfigDirectoryPath: configPath,
     hostStateDirectoryPath: statePath,
     hostShareDirectoryPath: sharePath,
+    hostCacheDirectoryPath: cachePath,
     hostLaBriguadeConfigDirectoryPath: join(rootDirectoryPath, "la_briguade"),
     laBriguadeLocalMode: "off",
     laBriguadeLocalPath: "",

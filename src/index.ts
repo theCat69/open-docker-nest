@@ -39,6 +39,7 @@ export async function main(): Promise<void> {
   ensureDirectory(runtimeContext.hostConfigDirectoryPath);
   ensureDirectory(runtimeContext.hostStateDirectoryPath);
   ensureDirectory(runtimeContext.hostShareDirectoryPath);
+  ensureDirectory(runtimeContext.hostCacheDirectoryPath);
 
   const runtimePlan = buildDockerRuntimePlan(
     runtimeContext,
