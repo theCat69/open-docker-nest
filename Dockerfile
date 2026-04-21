@@ -16,6 +16,16 @@ ARG RUSTUP_VERSION=1.28.2
 ARG RUSTUP_INIT_AMD64_SHA256=20a06e644b0d9bd2fbdbfd52d42540bdde820ea7df86e92e533c073da0cdd43c
 ARG RUSTUP_INIT_ARM64_SHA256=e3853c5a252fca15252d07cb23a1bdd9377a8c6f3efa01531109281ae47f841c
 ARG RUST_TOOLCHAIN=1.84.0
+ARG DOCKER_CLI_VERSION=29.4.1
+ARG DOCKER_CLI_AMD64_URL=https://download.docker.com/linux/static/stable/x86_64/docker-29.4.1.tgz
+ARG DOCKER_CLI_AMD64_SHA256=0fb3d2b72414ab862d68517f0b17b78c93c149d1c5c461acb969aacde1a2189d
+ARG DOCKER_CLI_ARM64_URL=https://download.docker.com/linux/static/stable/aarch64/docker-29.4.1.tgz
+ARG DOCKER_CLI_ARM64_SHA256=53cfa1de79155f27643014a84f1de94e2185239726b179b5c30523d62e565bb0
+ARG DOCKER_BUILDX_VERSION=v0.33.0
+ARG DOCKER_BUILDX_AMD64_URL=https://github.com/docker/buildx/releases/download/v0.33.0/buildx-v0.33.0.linux-amd64
+ARG DOCKER_BUILDX_AMD64_SHA256=9426a15411f35f635afef3f5d3bae53155c3e30d26dee430cc968e13d34be49f
+ARG DOCKER_BUILDX_ARM64_URL=https://github.com/docker/buildx/releases/download/v0.33.0/buildx-v0.33.0.linux-arm64
+ARG DOCKER_BUILDX_ARM64_SHA256=204dc28447d3bb48f42ed1ce5747e0885cd57e306506a39029311becdb1ef786
 ARG OPENCODE_VERSION=1.14.19
 
 RUN apt-get update \
@@ -23,34 +33,49 @@ RUN apt-get update \
     bash \
     ca-certificates \
     curl \
-    gnupg \
     git \
     openssh-client \
     tini \
     util-linux \
     ripgrep \
     jq \
-    unzip \
-    xz-utils \
-    zip \
-  && install -m 0755 -d /etc/apt/keyrings \
-  && curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg \
-  && chmod a+r /etc/apt/keyrings/docker.gpg \
-  && . /etc/os-release \
-  && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian ${VERSION_CODENAME} stable" > /etc/apt/sources.list.d/docker.list \
-  && apt-get update \
-  && apt-get install -y --no-install-recommends docker-ce-cli \
-  && docker --version >/dev/null \
-  && rm -rf /var/lib/apt/lists/*
+  && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/* /var/cache/apt/*.bin
 
-RUN npm install --global "bun@${BUN_VERSION}" \
-  && ln -sf /usr/local/lib/node_modules/bun/bin/bun.exe /usr/local/bin/bun \
-  && bun --version >/dev/null
+RUN debian_arch="$(dpkg --print-architecture)" \
+  && case "${debian_arch}" in \
+    amd64) docker_cli_url="${DOCKER_CLI_AMD64_URL}"; docker_cli_sha256="${DOCKER_CLI_AMD64_SHA256}" ;; \
+    arm64) docker_cli_url="${DOCKER_CLI_ARM64_URL}"; docker_cli_sha256="${DOCKER_CLI_ARM64_SHA256}" ;; \
+    *) echo "Error: unsupported architecture for Docker CLI install: ${debian_arch}" >&2; exit 1 ;; \
+  esac \
+  && curl -fsSL "${docker_cli_url}" -o /tmp/docker.tgz \
+  && echo "${docker_cli_sha256}  /tmp/docker.tgz" | sha256sum -c - \
+  && tar -xzf /tmp/docker.tgz -C /tmp \
+  && install -m 0755 /tmp/docker/docker /usr/local/bin/docker \
+  && rm -rf /tmp/docker /tmp/docker.tgz \
+  && docker --version >/dev/null
+
+RUN buildx_plugin_dir=/usr/local/libexec/docker/cli-plugins \
+  && debian_arch="$(dpkg --print-architecture)" \
+  && case "${debian_arch}" in \
+    amd64) docker_buildx_url="${DOCKER_BUILDX_AMD64_URL}"; docker_buildx_sha256="${DOCKER_BUILDX_AMD64_SHA256}" ;; \
+    arm64) docker_buildx_url="${DOCKER_BUILDX_ARM64_URL}"; docker_buildx_sha256="${DOCKER_BUILDX_ARM64_SHA256}" ;; \
+    *) echo "Error: unsupported architecture for Docker Buildx install: ${debian_arch}" >&2; exit 1 ;; \
+  esac \
+  && install -m 0755 -d "${buildx_plugin_dir}" \
+  && curl -fsSL "${docker_buildx_url}" -o "${buildx_plugin_dir}/docker-buildx" \
+  && echo "${docker_buildx_sha256}  ${buildx_plugin_dir}/docker-buildx" | sha256sum -c - \
+  && chmod +x "${buildx_plugin_dir}/docker-buildx" \
+  && docker buildx version >/dev/null
 
 RUN npm install --global \
+  "bun@${BUN_VERSION}" \
   "opencode-ai@${OPENCODE_VERSION}" \
   "@thecat69/cache-ctrl@${CACHE_CTRL_VERSION}" \
-  && cache-ctrl version >/dev/null
+  && ln -sf /usr/local/lib/node_modules/bun/bin/bun.exe /usr/local/bin/bun \
+  && bun --version >/dev/null \
+  && cache-ctrl version >/dev/null \
+  && npm cache clean --force \
+  && rm -rf /root/.npm /tmp/npm-* /tmp/.npm-*
 
 RUN debian_arch="$(dpkg --print-architecture)" \
   && case "${debian_arch}" in \
