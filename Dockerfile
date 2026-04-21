@@ -10,6 +10,7 @@ ARG RUSTUP_VERSION=1.28.2
 ARG RUSTUP_INIT_AMD64_SHA256=20a06e644b0d9bd2fbdbfd52d42540bdde820ea7df86e92e533c073da0cdd43c
 ARG RUSTUP_INIT_ARM64_SHA256=e3853c5a252fca15252d07cb23a1bdd9377a8c6f3efa01531109281ae47f841c
 ARG RUST_TOOLCHAIN=1.84.0
+ARG OPENCODE_VERSION=1.14.19
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
@@ -36,7 +37,7 @@ RUN npm install --global "bun@${BUN_VERSION}" \
   && bun --version >/dev/null
 
 RUN npm install --global \
-  "opencode-ai@1.14.17" \
+  "opencode-ai@${OPENCODE_VERSION}" \
   "@thecat69/cache-ctrl@${CACHE_CTRL_VERSION}" \
   && cache-ctrl version >/dev/null
 
