@@ -1,4 +1,4 @@
-FROM node:22-bookworm-slim
+FROM node:24-bookworm-slim
 
 ARG CACHE_CTRL_VERSION=1.5.1
 ARG BUN_VERSION=1.3.11
@@ -28,6 +28,11 @@ RUN apt-get update \
     openssh-client \
     tini \
     util-linux \
+    ripgrep \
+    jq \
+    unzip \
+    xz-utils \
+    zip \
   && install -m 0755 -d /etc/apt/keyrings \
   && curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg \
   && chmod a+r /etc/apt/keyrings/docker.gpg \
