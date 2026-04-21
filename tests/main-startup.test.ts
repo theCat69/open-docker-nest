@@ -11,6 +11,7 @@ const ensureDirectoryMock = vi.hoisted(() => vi.fn());
 const resolvePathMock = vi.hoisted(() => vi.fn((value: string) => value));
 const buildRuntimeContextMock = vi.hoisted(() => vi.fn<() => RuntimeContext>());
 const buildDockerRuntimePlanMock = vi.hoisted(() => vi.fn());
+const warnAboutImplicitDefaultImageStateMock = vi.hoisted(() => vi.fn());
 
 vi.mock("../src/validation/cli.js", () => ({
   parseCliArguments: parseCliArgumentsMock,
@@ -45,6 +46,10 @@ vi.mock("../src/runtime/runtime-plan.js", () => ({
   buildDockerRuntimePlan: buildDockerRuntimePlanMock,
 }));
 
+vi.mock("../src/runtime/default-image-warning.js", () => ({
+  warnAboutImplicitDefaultImageState: warnAboutImplicitDefaultImageStateMock,
+}));
+
 import { main } from "../src/index.js";
 
 const runtimeContextFixture: RuntimeContext = {
@@ -76,6 +81,7 @@ afterEach(() => {
   resolvePathMock.mockReset();
   buildRuntimeContextMock.mockReset();
   buildDockerRuntimePlanMock.mockReset();
+  warnAboutImplicitDefaultImageStateMock.mockReset();
 
   isDirectoryMock.mockReturnValue(true);
   resolvePathMock.mockImplementation((value: string) => value);
@@ -93,6 +99,7 @@ describe("main startup ordering", () => {
     parseCliArgumentsMock.mockReturnValue({
       projectPath: "/workspace",
       imageRef: "felixdock/open-docker-nest:latest",
+      imageSelectionSource: "default",
       javaVersion: "21",
       shellMode: false,
       hostDockerMode: false,
@@ -111,6 +118,7 @@ describe("main startup ordering", () => {
     parseCliArgumentsMock.mockReturnValue({
       projectPath: "/workspace",
       imageRef: "felixdock/open-docker-nest:latest",
+      imageSelectionSource: "default",
       javaVersion: "24",
       shellMode: false,
       hostDockerMode: false,
@@ -121,6 +129,7 @@ describe("main startup ordering", () => {
     await main();
 
     expect(ensureDockerCliAvailableMock).toHaveBeenCalledOnce();
+    expect(warnAboutImplicitDefaultImageStateMock).toHaveBeenCalledOnce();
     expect(buildDockerRuntimePlanMock).toHaveBeenCalledWith(
       runtimeContextFixture,
       "felixdock/open-docker-nest:latest",
@@ -130,5 +139,39 @@ describe("main startup ordering", () => {
       ["opencode", "--help"],
     );
     expect(executeDockerRunMock).toHaveBeenCalledOnce();
+  });
+
+  it("skips implicit default-image warning for explicit image selections", async () => {
+    parseCliArgumentsMock.mockReturnValue({
+      projectPath: "/workspace",
+      imageRef: "example/custom:image",
+      imageSelectionSource: "cli",
+      javaVersion: "21",
+      shellMode: false,
+      hostDockerMode: false,
+      passthroughCommand: [],
+      helpRequested: false,
+    });
+
+    await main();
+
+    expect(warnAboutImplicitDefaultImageStateMock).not.toHaveBeenCalled();
+  });
+
+  it("skips implicit default-image warning for environment image selection", async () => {
+    parseCliArgumentsMock.mockReturnValue({
+      projectPath: "/workspace",
+      imageRef: "example/custom:image",
+      imageSelectionSource: "environment",
+      javaVersion: "21",
+      shellMode: false,
+      hostDockerMode: false,
+      passthroughCommand: [],
+      helpRequested: false,
+    });
+
+    await main();
+
+    expect(warnAboutImplicitDefaultImageStateMock).not.toHaveBeenCalled();
   });
 });

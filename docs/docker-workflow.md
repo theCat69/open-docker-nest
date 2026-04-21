@@ -63,6 +63,9 @@ The image installs `cache-ctrl`, both Java 21 and Java 24 (`java`/`javac` via a 
 - Override project mount with `--project <host-path>`.
 - Default image is `felixdock/open-docker-nest:latest`.
 - Override image with `--image <image-ref>`.
+- Image selection provenance is tracked as: implicit `default`, `OPEN_DOCKER_NEST_IMAGE` `environment`, or `--image` `cli`.
+- On implicit default-image runs only (no `--image`, no `OPEN_DOCKER_NEST_IMAGE`), the wrapper may emit non-blocking warnings when `felixdock/open-docker-nest:latest` is missing locally or appears outdated from a short best-effort canonical-image check.
+- These warnings are advisory, never auto-pull, and never block startup.
 - Choose the in-container default JDK with `--java <21|24>` (default: `21`).
 - `--shell` starts an interactive shell at `/workspace` as user `opencode` with `HOME=/home/opencode`.
 - `--host-docker` enables host Docker daemon access for the entire in-container session.

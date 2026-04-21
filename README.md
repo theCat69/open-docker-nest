@@ -75,6 +75,7 @@ open-docker-nest [--project <host-path>] [--image <image-ref>] [--java <21|24>] 
 - With no command args and no `--shell`, the wrapper still runs `opencode` by default.
 - Commands provided after `--` are passed through unchanged (`-- <command> ...args`).
 - `--repo-command` is removed; use `--host-docker` for session-wide host Docker access.
+- On implicit default-image runs (no `--image`, no `OPEN_DOCKER_NEST_IMAGE`), the wrapper may emit non-blocking warnings if `felixdock/open-docker-nest:latest` is missing locally or appears outdated. It never auto-pulls.
 
 ### Host Docker mode (`--host-docker`)
 

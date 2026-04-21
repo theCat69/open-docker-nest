@@ -6,6 +6,7 @@ import { ensureDirectory } from "./validation/filesystem.js";
 import { buildRuntimeContext } from "./runtime/context.js";
 import { buildDockerRuntimePlan } from "./runtime/runtime-plan.js";
 import { ensureDockerCliAvailable, executeDockerRun } from "./runtime/process.js";
+import { warnAboutImplicitDefaultImageState } from "./runtime/default-image-warning.js";
 import { printUsage, fail } from "./shared/io.js";
 import { resolvePath } from "./shared/path-utils.js";
 
@@ -32,6 +33,10 @@ export async function main(): Promise<void> {
   }
 
   ensureDockerCliAvailable();
+
+  if (parsedCliOptions.imageSelectionSource === "default") {
+    warnAboutImplicitDefaultImageState();
+  }
 
   const resolvedProjectPath = validateProjectPath(parsedCliOptions.projectPath);
   const runtimeContext = buildRuntimeContext(resolvedProjectPath);

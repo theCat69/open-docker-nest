@@ -1,7 +1,11 @@
 import {
   DEFAULT_IMAGE,
 } from "../shared/constants.js";
-import type { JavaVersion, ParsedCliOptions } from "../shared/types.js";
+import type {
+  ImageSelectionSource,
+  JavaVersion,
+  ParsedCliOptions,
+} from "../shared/types.js";
 import { fail } from "../shared/io.js";
 
 function parseJavaVersion(value: string): JavaVersion {
@@ -14,7 +18,9 @@ function parseJavaVersion(value: string): JavaVersion {
 
 export function parseCliArguments(argv: readonly string[]): ParsedCliOptions {
   let projectPath = process.cwd();
-  let imageRef = process.env.OPEN_DOCKER_NEST_IMAGE ?? DEFAULT_IMAGE;
+  const environmentImageRef = process.env.OPEN_DOCKER_NEST_IMAGE;
+  let imageRef = environmentImageRef ?? DEFAULT_IMAGE;
+  let imageSelectionSource: ImageSelectionSource = environmentImageRef === undefined ? "default" : "environment";
   let javaVersion: JavaVersion = "21";
   let shellMode = false;
   let hostDockerMode = false;
@@ -46,6 +52,7 @@ export function parseCliArguments(argv: readonly string[]): ParsedCliOptions {
         }
 
         imageRef = value;
+        imageSelectionSource = "cli";
         index += 2;
         break;
       }
@@ -90,6 +97,7 @@ export function parseCliArguments(argv: readonly string[]): ParsedCliOptions {
   return {
     projectPath,
     imageRef,
+    imageSelectionSource,
     javaVersion,
     shellMode,
     hostDockerMode,

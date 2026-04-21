@@ -11,6 +11,7 @@ describe("parseCliArguments", () => {
     const parsed = parseCliArguments([]);
 
     expect(parsed.imageRef).toBe("felixdock/open-docker-nest:latest");
+    expect(parsed.imageSelectionSource).toBe("default");
   });
 
   it("uses OPEN_DOCKER_NEST_IMAGE when provided", () => {
@@ -19,6 +20,7 @@ describe("parseCliArguments", () => {
     const parsed = parseCliArguments([]);
 
     expect(parsed.imageRef).toBe("example/custom:image");
+    expect(parsed.imageSelectionSource).toBe("environment");
   });
 
   it("prefers --image over OPEN_DOCKER_NEST_IMAGE", () => {
@@ -27,6 +29,7 @@ describe("parseCliArguments", () => {
     const parsed = parseCliArguments(["--image", "felixdock/open-docker-nest:latest"]);
 
     expect(parsed.imageRef).toBe("felixdock/open-docker-nest:latest");
+    expect(parsed.imageSelectionSource).toBe("cli");
   });
 
   it("enables host-docker mode without requiring command payload shape", () => {

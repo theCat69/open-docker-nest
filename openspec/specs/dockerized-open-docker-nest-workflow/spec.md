@@ -64,6 +64,29 @@ The system SHALL support both interactive shell sessions and direct command exec
 - **WHEN** the wrapper runs
 - **THEN** the container executes `opencode` as the default command
 
+### Requirement: Image selection provenance and default-image warning behavior
+The system SHALL track image selection provenance as `default`, `environment`, or `cli`, and SHALL scope canonical default-image warnings to implicit default-image runs only.
+
+#### Scenario: Image selection provenance is explicit and ordered
+- **GIVEN** wrapper startup resolves the container image reference
+- **WHEN** no override is supplied
+- **THEN** provenance is `default` and the canonical default image reference is used
+- **AND** when `OPEN_DOCKER_NEST_IMAGE` is set, provenance is `environment`
+- **AND** when `--image <image-ref>` is supplied, provenance is `cli`
+
+#### Scenario: Implicit default-image run may emit advisory canonical-image warnings
+- **GIVEN** image provenance is `default`
+- **WHEN** startup performs local and short best-effort canonical-image checks
+- **THEN** the wrapper MAY warn if the canonical default image is missing locally
+- **AND** the wrapper MAY warn if the local canonical default image appears outdated
+- **AND** these warnings are advisory and do not block startup
+- **AND** the wrapper does not auto-pull images
+
+#### Scenario: Explicit image selection bypasses canonical default-image warning path
+- **GIVEN** image provenance is `environment` or `cli`
+- **WHEN** startup runs
+- **THEN** canonical default-image missing/outdated warnings are not emitted for that run
+
 ### Requirement: Explicit host-docker mode enables Docker-aware in-container sessions
 The system SHALL provide an explicit `--host-docker` mode that grants host Docker daemon access to the launched in-container session only when a usable local Unix-socket daemon is available and the active Docker context is the default/local context.
 
