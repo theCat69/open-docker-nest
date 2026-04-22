@@ -6,35 +6,25 @@ Use architecture-aware pinned URLs/checksums and SHA-256 verification before ext
 ARG JAVA21_DIRNAME=jdk-21.0.10+7
 ARG JAVA21_AMD64_URL=https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.10%2B7/OpenJDK21U-jdk_x64_linux_hotspot_21.0.10_7.tar.gz
 ARG JAVA21_AMD64_SHA256=ea3b9bd464d6dd253e9a7accf59f7ccd2a36e4aa69640b7251e3370caef896a4
-ARG JAVA21_ARM64_URL=https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.10%2B7/OpenJDK21U-jdk_aarch64_linux_hotspot_21.0.10_7.tar.gz
-ARG JAVA21_ARM64_SHA256=357fee29fb0d5c079f6730db98b28942df13a6eed426f6c61cd4ad703ab27b9a
-ARG JAVA24_DIRNAME=jdk-24.0.2+12
-ARG JAVA24_AMD64_URL=https://github.com/adoptium/temurin24-binaries/releases/download/jdk-24.0.2%2B12/OpenJDK24U-jdk_x64_linux_hotspot_24.0.2_12.tar.gz
-ARG JAVA24_AMD64_SHA256=aea1cc55e51cf651c85f2f00ad021603fe269c4bb6493fa97a321ad770c9b096
-ARG JAVA24_ARM64_URL=https://github.com/adoptium/temurin24-binaries/releases/download/jdk-24.0.2%2B12/OpenJDK24U-jdk_aarch64_linux_hotspot_24.0.2_12.tar.gz
-ARG JAVA24_ARM64_SHA256=6f8725d186d05c627176db9c46c732a6ef3ba41d9e9b3775c4727fc8ac642bb2
+ARG JAVA25_DIRNAME=jdk-25.0.3+9
+ARG JAVA25_AMD64_URL=https://github.com/adoptium/temurin25-binaries/releases/download/jdk-25.0.3%2B9/OpenJDK25U-jdk_x64_linux_hotspot_25.0.3_9.tar.gz
+ARG JAVA25_AMD64_SHA256=69264a7a211bf5029830d07bc3370f879769d62ebc5b5488e90c9343a2da0e1f
 
 RUN debian_arch="$(dpkg --print-architecture)" \
-  && case "${debian_arch}" in \
-    amd64) \
-      java21_url="${JAVA21_AMD64_URL}"; java21_sha256="${JAVA21_AMD64_SHA256}"; \
-      java24_url="${JAVA24_AMD64_URL}"; java24_sha256="${JAVA24_AMD64_SHA256}" \
-      ;; \
-    arm64) \
-      java21_url="${JAVA21_ARM64_URL}"; java21_sha256="${JAVA21_ARM64_SHA256}"; \
-      java24_url="${JAVA24_ARM64_URL}"; java24_sha256="${JAVA24_ARM64_SHA256}" \
-      ;; \
-    *) echo "Error: unsupported architecture for Java install: ${debian_arch}" >&2; exit 1 ;; \
-  esac \
+  && if [ "${debian_arch}" != "amd64" ]; then echo "Error: Java toolchains are supported only for amd64 image builds. Received architecture: ${debian_arch}." >&2; exit 1; fi \
+  && java21_url="${JAVA21_AMD64_URL}" \
+  && java21_sha256="${JAVA21_AMD64_SHA256}" \
+  && java25_url="${JAVA25_AMD64_URL}" \
+  && java25_sha256="${JAVA25_AMD64_SHA256}" \
   && curl -fsSL "${java21_url}" -o /tmp/java21.tar.gz \
   && echo "${java21_sha256}  /tmp/java21.tar.gz" | sha256sum -c - \
-  && curl -fsSL "${java24_url}" -o /tmp/java24.tar.gz \
-  && echo "${java24_sha256}  /tmp/java24.tar.gz" | sha256sum -c - \
+  && curl -fsSL "${java25_url}" -o /tmp/java25.tar.gz \
+  && echo "${java25_sha256}  /tmp/java25.tar.gz" | sha256sum -c - \
   && mkdir -p /opt/java \
   && tar -xzf /tmp/java21.tar.gz -C /opt/java \
-  && tar -xzf /tmp/java24.tar.gz -C /opt/java \
+  && tar -xzf /tmp/java25.tar.gz -C /opt/java \
   && mv "/opt/java/${JAVA21_DIRNAME}" /opt/java/jdk-21 \
-  && mv "/opt/java/${JAVA24_DIRNAME}" /opt/java/jdk-24 \
+  && mv "/opt/java/${JAVA25_DIRNAME}" /opt/java/jdk-25 \
   && ln -sfn /opt/java/jdk-21 /opt/java/default
 ```
 

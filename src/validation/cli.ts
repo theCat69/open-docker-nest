@@ -9,11 +9,11 @@ import type {
 import { fail } from "../shared/io.js";
 
 function parseJavaVersion(value: string): JavaVersion {
-  if (value === "21" || value === "24") {
+  if (value === "21" || value === "25") {
     return value;
   }
 
-  fail(`--java must be one of: 21, 24. Received: ${value}`);
+  fail(`--java must be one of: 21, 25. Received: ${value}`);
 }
 
 export function parseCliArguments(argv: readonly string[]): ParsedCliOptions {

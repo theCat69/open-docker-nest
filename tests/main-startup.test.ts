@@ -119,7 +119,7 @@ describe("main startup ordering", () => {
       projectPath: "/workspace",
       imageRef: "felixdock/open-docker-nest:latest",
       imageSelectionSource: "default",
-      javaVersion: "24",
+      javaVersion: "25",
       shellMode: false,
       hostDockerMode: false,
       passthroughCommand: ["opencode", "--help"],
@@ -133,7 +133,7 @@ describe("main startup ordering", () => {
     expect(buildDockerRuntimePlanMock).toHaveBeenCalledWith(
       runtimeContextFixture,
       "felixdock/open-docker-nest:latest",
-      "24",
+      "25",
       false,
       false,
       ["opencode", "--help"],

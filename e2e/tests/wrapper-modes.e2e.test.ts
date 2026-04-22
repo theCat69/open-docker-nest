@@ -65,11 +65,13 @@ describe("docker wrapper mode smoke coverage", () => {
     expect(outputLines).toEqual(["passthrough-check", "alpha", "beta"]);
   });
 
-  it("exposes Java 24 and Rust toolchains to the non-root runtime user", () => {
+  it("exposes Java 25 and Rust toolchains to the non-root runtime user", () => {
     const fixtureProjectPath = createTemporaryDirectory("open-docker-nest-e2e-toolchains-");
     temporaryPathsToClean.push(fixtureProjectPath);
 
     const result = runWrapper(fixtureProjectPath, [
+      "--java",
+      "25",
       "--",
       "/usr/bin/env",
       "bash",

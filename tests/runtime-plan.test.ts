@@ -160,13 +160,13 @@ describe("buildDockerRuntimePlan", () => {
     const runtimePlan = buildDockerRuntimePlan(
       context,
       "felixdock/open-docker-nest:latest",
-      "24",
+      "25",
       false,
       false,
       ["java", "-version"],
     );
 
-    expect(runtimePlan.dockerRunArgs).toContain("OPEN_DOCKER_NEST_JAVA_VERSION=24");
+    expect(runtimePlan.dockerRunArgs).toContain("OPEN_DOCKER_NEST_JAVA_VERSION=25");
   });
 
   it("rejects unsupported non-local docker host for host-docker mode", () => {

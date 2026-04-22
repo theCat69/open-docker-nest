@@ -5,7 +5,7 @@ Run [OpenCode](https://github.com/anomalyco/opencode) inside Docker with host-pr
 ## What this repository provides
 
 - Canonical CLI command: `open-docker-nest` (published from `package.json`)
-- A Docker image with `opencode`, `cache-ctrl`, Java 21 as the default JDK, Java 24 as an opt-in JDK, and a pinned Rust toolchain (`1.84.0`) installed
+- A Docker image with `opencode`, `cache-ctrl`, Java 21 as the default JDK, Java 25 as an opt-in JDK, and a pinned Rust toolchain (`1.84.0`) installed
 - A `/workspace` mount model for running against your host project
 - Persistent host-backed OpenCode config/state/share directories across runs
 - Non-root execution via host UID/GID remapping
@@ -82,8 +82,16 @@ This command builds a local image in your Docker daemon using the same tag as th
 It does not pull or overwrite Docker Hub content; it only defines what `felixdock/open-docker-nest:latest` resolves to on your machine.
 Local builds use the Dockerfile's checked-in default pinned toolchain arguments.
 
-The Docker Hub publish workflow may rebuild with newer pinned versions of `cache-ctrl`, Bun, Java 21, Java 24, Rust/rustup, Docker CLI, and Docker Buildx resolved at publish time and passed as Docker build args.
+The Docker Hub publish workflow may rebuild with newer pinned versions of `cache-ctrl`, Bun, Java 21, Java 25, Rust/rustup, Docker CLI, and Docker Buildx resolved at publish time and passed as Docker build args.
 When that happens, the workflow uploads the resolved versions as CI artifacts for traceability.
+
+Java-enabled image builds currently target `linux/amd64` only. On arm64 hosts, build with emulation if needed:
+
+```bash
+docker build --platform linux/amd64 -t felixdock/open-docker-nest:latest .
+```
+
+The Docker Hub publish workflow also publishes `linux/amd64` only.
 
 Canonical default image: `felixdock/open-docker-nest:latest`.
 For reproducible runs, replace `latest` with a specific version tag or image digest.
@@ -91,11 +99,11 @@ For reproducible runs, replace `latest` with a specific version tag or image dig
 ## Usage
 
 ```bash
-open-docker-nest [--project <host-path>] [--image <image-ref>] [--java <21|24>] [--shell] [--host-docker] [--] [command ...args]
+open-docker-nest [--project <host-path>] [--image <image-ref>] [--java <21|25>] [--shell] [--host-docker] [--] [command ...args]
 ```
 
 - `open-docker-nest` is the published command.
-- `--java <21|24>` selects the default JDK inside the container for that run (default: `21`).
+- `--java <21|25>` selects the default JDK inside the container for that run (default: `21`).
 - `--shell` opens an interactive shell as user `opencode` with `HOME=/home/opencode`.
 - `--host-docker` enables host Docker daemon access for the entire in-container session (explicit high-privilege mode).
 - With no command args and no `--shell`, the wrapper still runs `opencode` by default.
@@ -156,10 +164,10 @@ Mount a different project directory:
 open-docker-nest --project /path/to/project -- opencode --help
 ```
 
-Switch the in-container default JDK to Java 24 for one run:
+Switch the in-container default JDK to Java 25 for one run:
 
 ```bash
-open-docker-nest --java 24 -- /usr/bin/env bash -lc 'java -version && printf "%s\n" "$JAVA_HOME"'
+open-docker-nest --java 25 -- /usr/bin/env bash -lc 'java -version && printf "%s\n" "$JAVA_HOME"'
 ```
 
 ## Windows support

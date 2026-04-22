@@ -91,11 +91,6 @@ function parseSha256Digest(value, label) {
   return match[1].toLowerCase();
 }
 
-function intersectVersions(leftVersions, rightVersions) {
-  const rightVersionSet = new Set(rightVersions);
-  return leftVersions.filter((version) => rightVersionSet.has(version));
-}
-
 function selectReleaseAsset(release, assetName) {
   const asset = release.assets?.find((candidate) => candidate.name === assetName);
   if (!asset) {
@@ -140,31 +135,39 @@ async function assertNpmPackageVersionExists(packageName, version) {
 }
 
 async function resolveJavaRelease(majorVersion) {
-  const baseUrl = `https://api.adoptium.net/v3/binary/latest/${majorVersion}/ga/linux`;
-  const endBaseUrl = `jdk/hotspot/normal/eclipse?project=jdk`;
-  const amd64Url = `${baseUrl}/x64/${endBaseUrl}`;
-  const arm64Url = `${baseUrl}/arm/${endBaseUrl}`;
+  const assetsUrl = new URL(`https://api.adoptium.net/v3/assets/latest/${majorVersion}/hotspot`);
+  assetsUrl.searchParams.set("architecture", "x64");
+  assetsUrl.searchParams.set("heap_size", "normal");
+  assetsUrl.searchParams.set("image_type", "jdk");
+  assetsUrl.searchParams.set("os", "linux");
+  assetsUrl.searchParams.set("project", "jdk");
+  assetsUrl.searchParams.set("vendor", "eclipse");
 
-  const [amd64Assets, arm64Assets] = await Promise.all([
-    fetchJson(amd64Url),
-    fetchJson(arm64Url),
-  ]);
+  const assets = await fetchJson(assetsUrl.toString());
+  const amd64 = assets[0];
 
-  const amd64 = amd64Assets[0];
-  const arm64 = arm64Assets[0];
-
-  if (!amd64 || !arm64) {
-    throw new Error(`Missing Adoptium GA assets for Java ${majorVersion}`);
+  if (!amd64) {
+    throw new Error(`Missing Adoptium x64 GA asset for Java ${majorVersion}`);
   }
 
   const releaseName = amd64.release_name;
-  if (!releaseName || releaseName !== arm64.release_name) {
-    throw new Error(`Mismatched Adoptium release names for Java ${majorVersion}`);
+  if (typeof releaseName !== "string" || releaseName.length === 0) {
+    throw new Error(`Missing Adoptium release name for Java ${majorVersion}`);
   }
 
   const openJdkVersion = amd64.version?.openjdk_version;
-  if (!openJdkVersion || openJdkVersion !== arm64.version?.openjdk_version) {
-    throw new Error(`Mismatched Adoptium versions for Java ${majorVersion}`);
+  if (typeof openJdkVersion !== "string" || openJdkVersion.length === 0) {
+    throw new Error(`Missing Adoptium OpenJDK version for Java ${majorVersion}`);
+  }
+
+  const amd64Package = amd64.binary?.package;
+  if (
+    typeof amd64Package?.link !== "string"
+    || amd64Package.link.length === 0
+    || typeof amd64Package.checksum !== "string"
+    || amd64Package.checksum.length === 0
+  ) {
+    throw new Error(`Missing Adoptium package metadata for Java ${majorVersion} x64`);
   }
 
   return {
@@ -172,14 +175,9 @@ async function resolveJavaRelease(majorVersion) {
     resolvedVersion: openJdkVersion,
     dirname: releaseName,
     amd64: {
-      url: amd64.binary?.package?.link,
-      sha256: amd64.binary?.package?.checksum,
-      packageName: amd64.binary?.package?.name,
-    },
-    arm64: {
-      url: arm64.binary?.package?.link,
-      sha256: arm64.binary?.package?.checksum,
-      packageName: arm64.binary?.package?.name,
+      url: amd64Package.link,
+      sha256: amd64Package.checksum,
+      packageName: amd64Package.name ?? null,
     },
   };
 }
@@ -206,12 +204,7 @@ async function resolveRustupRelease() {
   const release = await resolveGithubLatestRelease('rust-lang', 'rustup');
   const version = release.tag_name.replace(/^v/, '');
   const amd64Url = `https://static.rust-lang.org/rustup/archive/${version}/x86_64-unknown-linux-gnu/rustup-init`;
-  const arm64Url = `https://static.rust-lang.org/rustup/archive/${version}/aarch64-unknown-linux-gnu/rustup-init`;
-
-  const [amd64Sha256, arm64Sha256] = await Promise.all([
-    sha256ForUrl(amd64Url),
-    sha256ForUrl(arm64Url),
-  ]);
+  const amd64Sha256 = await sha256ForUrl(amd64Url);
 
   return {
     version,
@@ -220,47 +213,29 @@ async function resolveRustupRelease() {
       url: amd64Url,
       sha256: amd64Sha256,
     },
-    arm64: {
-      url: arm64Url,
-      sha256: arm64Sha256,
-    },
   };
 }
 
 async function resolveDockerCliRelease() {
   const amd64ListingUrl = 'https://download.docker.com/linux/static/stable/x86_64/';
-  const arm64ListingUrl = 'https://download.docker.com/linux/static/stable/aarch64/';
-  const [amd64Listing, arm64Listing] = await Promise.all([
-    fetchText(amd64ListingUrl),
-    fetchText(arm64ListingUrl),
-  ]);
+  const amd64Listing = await fetchText(amd64ListingUrl);
   const amd64Versions = [...new Set([...amd64Listing.matchAll(/docker-(\d+\.\d+\.\d+)\.tgz/g)].map((match) => match[1]))];
-  const arm64Versions = [...new Set([...arm64Listing.matchAll(/docker-(\d+\.\d+\.\d+)\.tgz/g)].map((match) => match[1]))];
-  const versions = intersectVersions(amd64Versions, arm64Versions).sort(compareSemverDescending);
+  const versions = amd64Versions.sort(compareSemverDescending);
   const version = versions[0];
 
   if (!version) {
-    throw new Error(`Could not determine a shared latest Docker CLI version from ${amd64ListingUrl} and ${arm64ListingUrl}`);
+    throw new Error(`Could not determine the latest Docker CLI version from ${amd64ListingUrl}`);
   }
 
   const amd64Url = `https://download.docker.com/linux/static/stable/x86_64/docker-${version}.tgz`;
-  const arm64Url = `https://download.docker.com/linux/static/stable/aarch64/docker-${version}.tgz`;
-
-  const [amd64Sha256, arm64Sha256] = await Promise.all([
-    sha256ForUrl(amd64Url),
-    sha256ForUrl(arm64Url),
-  ]);
+  const amd64Sha256 = await sha256ForUrl(amd64Url);
 
   return {
     version,
-    source: `${amd64ListingUrl} + ${arm64ListingUrl}`,
+    source: amd64ListingUrl,
     amd64: {
       url: amd64Url,
       sha256: amd64Sha256,
-    },
-    arm64: {
-      url: arm64Url,
-      sha256: arm64Sha256,
     },
   };
 }
@@ -269,9 +244,7 @@ async function resolveDockerBuildxRelease() {
   const release = await resolveGithubLatestRelease('docker', 'buildx');
   const version = release.tag_name;
   const amd64AssetName = `buildx-${version}.linux-amd64`;
-  const arm64AssetName = `buildx-${version}.linux-arm64`;
   const amd64Asset = selectReleaseAsset(release, amd64AssetName);
-  const arm64Asset = selectReleaseAsset(release, arm64AssetName);
 
   return {
     version,
@@ -279,10 +252,6 @@ async function resolveDockerBuildxRelease() {
     amd64: {
       url: amd64Asset.browser_download_url,
       sha256: parseSha256Digest(amd64Asset.digest, amd64AssetName),
-    },
-    arm64: {
-      url: arm64Asset.browser_download_url,
-      sha256: parseSha256Digest(arm64Asset.digest, arm64AssetName),
     },
   };
 }
@@ -311,11 +280,11 @@ async function appendGithubOutputs(entries) {
 
 await assertNpmPackageVersionExists('opencode-ai', opencodeVersion);
 
-const [cacheCtrl, bun, java21, java24, rustToolchain, rustup, dockerCli, dockerBuildx] = await Promise.all([
+const [cacheCtrl, bun, java21, java25, rustToolchain, rustup, dockerCli, dockerBuildx] = await Promise.all([
   resolveNpmLatestVersion('@thecat69/cache-ctrl'),
   resolveNpmLatestVersion('bun'),
   resolveJavaRelease(21),
-  resolveJavaRelease(24),
+  resolveJavaRelease(25),
   resolveRustToolchainVersion(),
   resolveRustupRelease(),
   resolveDockerCliRelease(),
@@ -328,27 +297,18 @@ const buildArgsEntries = [
   ['JAVA21_DIRNAME', java21.dirname],
   ['JAVA21_AMD64_URL', java21.amd64.url],
   ['JAVA21_AMD64_SHA256', java21.amd64.sha256],
-  ['JAVA21_ARM64_URL', java21.arm64.url],
-  ['JAVA21_ARM64_SHA256', java21.arm64.sha256],
-  ['JAVA24_DIRNAME', java24.dirname],
-  ['JAVA24_AMD64_URL', java24.amd64.url],
-  ['JAVA24_AMD64_SHA256', java24.amd64.sha256],
-  ['JAVA24_ARM64_URL', java24.arm64.url],
-  ['JAVA24_ARM64_SHA256', java24.arm64.sha256],
+  ['JAVA25_DIRNAME', java25.dirname],
+  ['JAVA25_AMD64_URL', java25.amd64.url],
+  ['JAVA25_AMD64_SHA256', java25.amd64.sha256],
   ['RUSTUP_VERSION', rustup.version],
   ['RUSTUP_INIT_AMD64_SHA256', rustup.amd64.sha256],
-  ['RUSTUP_INIT_ARM64_SHA256', rustup.arm64.sha256],
   ['RUST_TOOLCHAIN', rustToolchain.version],
   ['DOCKER_CLI_VERSION', dockerCli.version],
   ['DOCKER_CLI_AMD64_URL', dockerCli.amd64.url],
   ['DOCKER_CLI_AMD64_SHA256', dockerCli.amd64.sha256],
-  ['DOCKER_CLI_ARM64_URL', dockerCli.arm64.url],
-  ['DOCKER_CLI_ARM64_SHA256', dockerCli.arm64.sha256],
   ['DOCKER_BUILDX_VERSION', dockerBuildx.version],
   ['DOCKER_BUILDX_AMD64_URL', dockerBuildx.amd64.url],
   ['DOCKER_BUILDX_AMD64_SHA256', dockerBuildx.amd64.sha256],
-  ['DOCKER_BUILDX_ARM64_URL', dockerBuildx.arm64.url],
-  ['DOCKER_BUILDX_ARM64_SHA256', dockerBuildx.arm64.sha256],
   ['OPENCODE_VERSION', opencodeVersion],
 ];
 
@@ -363,7 +323,7 @@ const resolvedVersions = {
   bun,
   java: {
     java21,
-    java24,
+    java25,
   },
   rust: {
     toolchain: rustToolchain,
@@ -393,7 +353,7 @@ await appendGithubOutputs([
   ['cache_ctrl_version', cacheCtrl.version],
   ['bun_version', bun.version],
   ['java21_version', java21.resolvedVersion],
-  ['java24_version', java24.resolvedVersion],
+  ['java25_version', java25.resolvedVersion],
   ['rust_toolchain_version', rustToolchain.version],
   ['rustup_version', rustup.version],
   ['docker_cli_version', dockerCli.version],

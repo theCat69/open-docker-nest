@@ -11,12 +11,12 @@ export function warn(message: string): void {
 
 export function printUsage(): void {
   process.stdout.write(`Usage:
-  open-docker-nest [--project <host-path>] [--image <image-ref>] [--java <21|24>] [--shell] [--host-docker] [--] [command ...args]
+  open-docker-nest [--project <host-path>] [--image <image-ref>] [--java <21|25>] [--shell] [--host-docker] [--] [command ...args]
 
 Options:
   --project <host-path>  Host project directory to mount (default: current directory)
   --image <image-ref>    Docker image reference (default: ${DEFAULT_IMAGE})
-  --java <21|24>         Select the default JDK inside the container for this run (default: 21)
+  --java <21|25>         Select the default JDK inside the container for this run (default: 21)
   --shell                Start an interactive shell inside the container
   --host-docker          Enable host Docker daemon access for the entire in-container session (supported local Unix-socket hosts only)
   -h, --help             Show this help message

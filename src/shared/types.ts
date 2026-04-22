@@ -1,4 +1,4 @@
-export type JavaVersion = "21" | "24";
+export type JavaVersion = "21" | "25";
 
 export type LocalMode = "auto" | "force" | "off";
 

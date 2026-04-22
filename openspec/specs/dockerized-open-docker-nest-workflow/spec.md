@@ -147,8 +147,8 @@ The system SHALL include Docker CLI in the container image so in-container host-
 - **THEN** the build fails non-zero
 - **AND** host-docker mode is not shipped with a partial runtime dependency state
 
-### Requirement: Docker image includes Java 21 by default, Java 24 opt-in, and a pinned Rust runtime toolchain
-The system SHALL install both Java 21 and Java 24 plus a pinned Rust toolchain in the container image so non-root wrapper sessions can use both toolchains without runtime bootstrap steps, with Java 21 as the default JDK and Java 24 selectable explicitly per run.
+### Requirement: Docker image includes Java 21 by default, Java 25 opt-in, and a pinned Rust runtime toolchain
+The system SHALL install both Java 21 and Java 25 plus a pinned Rust toolchain in amd64 container images so non-root wrapper sessions can use both toolchains without runtime bootstrap steps, with Java 21 as the default JDK and Java 25 selectable explicitly per run.
 
 #### Scenario: Java 21 default and Rust are available to non-root opencode runtime
 - **GIVEN** the repository Docker image is built successfully
@@ -156,14 +156,19 @@ The system SHALL install both Java 21 and Java 24 plus a pinned Rust toolchain i
 - **THEN** `java` and `javac` from Java 21 are available in the runtime command environment by default
 - **AND** `rustc` and `cargo` are available in the runtime command environment
 
-#### Scenario: Java 24 can be selected explicitly for a container run
+#### Scenario: Java 25 can be selected explicitly for a container run
 - **GIVEN** the repository Docker image is built successfully
-- **WHEN** a developer invokes `bin/open-docker-nest.js --java 24 -- <command>`
-- **THEN** `java`, `javac`, and `JAVA_HOME` resolve to Java 24 for that run
+- **WHEN** a developer invokes `bin/open-docker-nest.js --java 25 -- <command>`
+- **THEN** `java`, `javac`, and `JAVA_HOME` resolve to Java 25 for that run
 - **AND** Java 21 remains installed in the image
 
+#### Scenario: Arm64 Java image builds are rejected
+- **GIVEN** the repository Docker image is built for `linux/arm64`
+- **WHEN** the Java toolchain installation step runs
+- **THEN** the build fails non-zero with unsupported architecture guidance
+
 #### Scenario: Java installation or Rust installation failure stops image build
-- **GIVEN** Java 21, Java 24, or Rust cannot be installed during Docker build
+- **GIVEN** Java 21, Java 25, or Rust cannot be installed during Docker build
 - **WHEN** the image build executes
 - **THEN** the build fails non-zero
 - **AND** runtime execution does not proceed with a partial toolchain dependency state

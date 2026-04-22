@@ -69,17 +69,17 @@ This example builds a local image in your Docker daemon with the same tag as the
 It does not publish or modify Docker Hub; it only controls local tag resolution for `felixdock/open-docker-nest:latest` on your host.
 Local builds use the Dockerfile's checked-in default pinned toolchain arguments.
 
-The Docker Hub publish workflow may resolve fresher pinned versions of `cache-ctrl`, Bun, Java 21, Java 24, Rust/rustup, Docker CLI, and Docker Buildx at publish time, inject them as Docker build args, and upload the resolved version set as CI artifacts.
+The Docker Hub publish workflow may resolve fresher pinned versions of `cache-ctrl`, Bun, Java 21, Java 25, Rust/rustup, Docker CLI, and Docker Buildx at publish time, inject them as Docker build args, and upload the resolved version set as CI artifacts.
 
 Canonical default image: `felixdock/open-docker-nest:latest`.
 For reproducible runs, replace `latest` with a specific version tag or image digest.
 
-The image installs `cache-ctrl`, both Java 21 and Java 24 (`java`/`javac` via a runtime-selected default), and a pinned Rust toolchain (`rustc`/`cargo`, default `1.84.0`) during build, with deterministic amd64/arm64 artifact selection, so runtime commands can rely on them without startup-time installation.
+The image installs `cache-ctrl`, both Java 21 and Java 25 (`java`/`javac` via a runtime-selected default), and a pinned Rust toolchain (`rustc`/`cargo`, default `1.84.0`) during build. The Docker Hub publish workflow publishes `linux/amd64` only, and local arm64 builds must use amd64 emulation.
 
 ## Wrapper usage
 
 ```bash
- open-docker-nest [--project <host-path>] [--image <image-ref>] [--java <21|24>] [--shell] [--host-docker] [--] [command ...args]
+ open-docker-nest [--project <host-path>] [--image <image-ref>] [--java <21|25>] [--shell] [--host-docker] [--] [command ...args]
 ```
 
 - `open-docker-nest` is the published command (mapped to `bin/open-docker-nest.js` in `package.json`).
@@ -90,7 +90,7 @@ The image installs `cache-ctrl`, both Java 21 and Java 24 (`java`/`javac` via a 
 - Image selection provenance is tracked as: implicit `default`, `OPEN_DOCKER_NEST_IMAGE` `environment`, or `--image` `cli`.
 - On implicit default-image runs only (no `--image`, no `OPEN_DOCKER_NEST_IMAGE`), the wrapper may emit non-blocking warnings when `felixdock/open-docker-nest:latest` is missing locally or appears outdated from a short best-effort canonical-image check.
 - These warnings are advisory, never auto-pull, and never block startup.
-- Choose the in-container default JDK with `--java <21|24>` (default: `21`).
+- Choose the in-container default JDK with `--java <21|25>` (default: `21`).
 - `--shell` starts an interactive shell at `/workspace` as user `opencode` with `HOME=/home/opencode`.
 - `--host-docker` enables host Docker daemon access for the entire in-container session.
 - `--repo-command` is removed; use `--host-docker`.
@@ -103,12 +103,12 @@ Use the wrapper flag to choose which installed JDK is the default for that conta
 
 ```bash
 open-docker-nest -- /usr/bin/env bash -lc 'java -version && printf "%s\n" "$JAVA_HOME"'
-open-docker-nest --java 24 -- /usr/bin/env bash -lc 'java -version && printf "%s\n" "$JAVA_HOME"'
+open-docker-nest --java 25 -- /usr/bin/env bash -lc 'java -version && printf "%s\n" "$JAVA_HOME"'
 ```
 
 - Default behavior uses Java 21.
-- `--java 24` switches the active `java`, `javac`, and `JAVA_HOME` to Java 24 for that run.
-- Direct `docker run` usage can also override with `-e OPEN_DOCKER_NEST_JAVA_VERSION=24`.
+- `--java 25` switches the active `java`, `javac`, and `JAVA_HOME` to Java 25 for that run.
+- Direct `docker run` usage can also override with `-e OPEN_DOCKER_NEST_JAVA_VERSION=25`.
 
 ### Host Docker mode (`--host-docker`)
 
@@ -370,11 +370,11 @@ open-docker-nest -- /usr/bin/env bash -lc 'printf "%s\n" "$0" "$1" "$2"' passthr
 # beta
 ```
 
-Validate Java 21 default, Java 24 opt-in, and Rust availability as non-root `opencode` runtime user:
+Validate Java 21 default, Java 25 opt-in, and Rust availability as non-root `opencode` runtime user:
 
 ```bash
 open-docker-nest -- /usr/bin/env bash -lc 'java -version && javac -version && printf "%s\n" "$JAVA_HOME" && rustc --version && cargo --version'
-open-docker-nest --java 24 -- /usr/bin/env bash -lc 'java -version && javac -version && printf "%s\n" "$JAVA_HOME"'
+open-docker-nest --java 25 -- /usr/bin/env bash -lc 'java -version && javac -version && printf "%s\n" "$JAVA_HOME"'
 ```
 
 ## Permissions and file ownership

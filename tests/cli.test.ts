@@ -60,10 +60,10 @@ describe("parseCliArguments", () => {
     expect(parsed.javaVersion).toBe("21");
   });
 
-  it("accepts an explicit Java 24 selection", () => {
-    const parsed = parseCliArguments(["--java", "24", "--", "java", "-version"]);
+  it("accepts an explicit Java 25 selection", () => {
+    const parsed = parseCliArguments(["--java", "25", "--", "java", "-version"]);
 
-    expect(parsed.javaVersion).toBe("24");
+    expect(parsed.javaVersion).toBe("25");
     expect(parsed.passthroughCommand).toEqual(["java", "-version"]);
   });
 
@@ -72,7 +72,7 @@ describe("parseCliArguments", () => {
   });
 
   it("fails fast when --java receives an unsupported version", () => {
-    expect(() => parseCliArguments(["--java", "17"])).toThrow(/--java must be one of: 21, 24/);
+    expect(() => parseCliArguments(["--java", "17"])).toThrow(/--java must be one of: 21, 25/);
   });
 
   it("fails fast when removed --repo-command flag is used", () => {

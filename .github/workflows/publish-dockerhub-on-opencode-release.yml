@@ -52,9 +52,6 @@ jobs:
             core.setOutput("raw_tag", rawTag);
             core.setOutput("version", version);
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -120,7 +117,7 @@ jobs:
           file: ./Dockerfile
           pull: true
           push: true
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           build-args: ${{ steps.tool_versions.outputs.build_args }}
           tags: |
             ${{ env.IMAGE_NAME }}:${{ steps.release.outputs.version }}
@@ -137,7 +134,7 @@ jobs:
             io.open-docker-nest.cache-ctrl.version=${{ steps.tool_versions.outputs.cache_ctrl_version }}
             io.open-docker-nest.bun.version=${{ steps.tool_versions.outputs.bun_version }}
             io.open-docker-nest.java21.version=${{ steps.tool_versions.outputs.java21_version }}
-            io.open-docker-nest.java24.version=${{ steps.tool_versions.outputs.java24_version }}
+            io.open-docker-nest.java25.version=${{ steps.tool_versions.outputs.java25_version }}
             io.open-docker-nest.rust.toolchain.version=${{ steps.tool_versions.outputs.rust_toolchain_version }}
             io.open-docker-nest.rustup.version=${{ steps.tool_versions.outputs.rustup_version }}
             io.open-docker-nest.docker-cli.version=${{ steps.tool_versions.outputs.docker_cli_version }}
@@ -156,7 +153,7 @@ jobs:
           CACHE_CTRL_VERSION: ${{ steps.tool_versions.outputs.cache_ctrl_version }}
           BUN_VERSION: ${{ steps.tool_versions.outputs.bun_version }}
           JAVA21_VERSION: ${{ steps.tool_versions.outputs.java21_version }}
-          JAVA24_VERSION: ${{ steps.tool_versions.outputs.java24_version }}
+          JAVA25_VERSION: ${{ steps.tool_versions.outputs.java25_version }}
           RUST_TOOLCHAIN_VERSION: ${{ steps.tool_versions.outputs.rust_toolchain_version }}
           RUSTUP_VERSION: ${{ steps.tool_versions.outputs.rustup_version }}
           DOCKER_CLI_VERSION: ${{ steps.tool_versions.outputs.docker_cli_version }}
@@ -175,7 +172,7 @@ jobs:
               echo "- cache-ctrl: \`${CACHE_CTRL_VERSION}\`"
               echo "- bun: \`${BUN_VERSION}\`"
               echo "- Java 21: \`${JAVA21_VERSION}\`"
-              echo "- Java 24: \`${JAVA24_VERSION}\`"
+              echo "- Java 25: \`${JAVA25_VERSION}\`"
               echo "- Rust toolchain: \`${RUST_TOOLCHAIN_VERSION}\`"
               echo "- rustup: \`${RUSTUP_VERSION}\`"
               echo "- Docker CLI: \`${DOCKER_CLI_VERSION}\`"

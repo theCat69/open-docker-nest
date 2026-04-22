@@ -5,11 +5,11 @@ OPENCODE_USER="${OPENCODE_USER:-opencode}"
 OPEN_DOCKER_NEST_JAVA_VERSION="${OPEN_DOCKER_NEST_JAVA_VERSION:-21}"
 
 case "${OPEN_DOCKER_NEST_JAVA_VERSION}" in
-  21|24)
+  21|25)
     selected_java_home="/opt/java/jdk-${OPEN_DOCKER_NEST_JAVA_VERSION}"
     ;;
   *)
-    echo "Error: OPEN_DOCKER_NEST_JAVA_VERSION must be one of: 21, 24." >&2
+    echo "Error: OPEN_DOCKER_NEST_JAVA_VERSION must be one of: 21, 25." >&2
     exit 1
     ;;
 esac
