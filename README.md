@@ -85,13 +85,7 @@ Local builds use the Dockerfile's checked-in default pinned toolchain arguments.
 The Docker Hub publish workflow may rebuild with newer pinned versions of `cache-ctrl`, Bun, Java 21, Java 25, Rust/rustup, Docker CLI, and Docker Buildx resolved at publish time and passed as Docker build args.
 When that happens, the workflow uploads the resolved versions as CI artifacts for traceability.
 
-Java-enabled image builds currently target `linux/amd64` only. On arm64 hosts, build with emulation if needed:
-
-```bash
-docker build --platform linux/amd64 -t felixdock/open-docker-nest:latest .
-```
-
-The Docker Hub publish workflow also publishes `linux/amd64` only.
+The image and Docker Hub publish workflow support `linux/amd64` only. Arm64 is unsupported.
 
 Canonical default image: `felixdock/open-docker-nest:latest`.
 For reproducible runs, replace `latest` with a specific version tag or image digest.

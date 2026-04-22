@@ -80,7 +80,7 @@ describe("warnAboutImplicitDefaultImageState", () => {
     expect(warnMock.mock.calls[0]?.[0]).toMatch(/may be outdated locally/);
   });
 
-  it("skips outdated warning on ambiguous multi-arch remote manifest data", () => {
+  it("skips outdated warning on ambiguous remote manifest data", () => {
     spawnSyncMock
       .mockReturnValueOnce({
         status: 0,

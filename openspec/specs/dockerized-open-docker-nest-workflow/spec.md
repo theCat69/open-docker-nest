@@ -147,8 +147,8 @@ The system SHALL include Docker CLI in the container image so in-container host-
 - **THEN** the build fails non-zero
 - **AND** host-docker mode is not shipped with a partial runtime dependency state
 
-### Requirement: Docker image includes Java 21 by default, Java 25 opt-in, and a pinned Rust runtime toolchain
-The system SHALL install both Java 21 and Java 25 plus a pinned Rust toolchain in amd64 container images so non-root wrapper sessions can use both toolchains without runtime bootstrap steps, with Java 21 as the default JDK and Java 25 selectable explicitly per run.
+### Requirement: Docker image support is limited to amd64 with Java 21 by default, Java 25 opt-in, and a pinned Rust runtime toolchain
+The system SHALL support amd64 container images only, and SHALL install both Java 21 and Java 25 plus a pinned Rust toolchain so non-root wrapper sessions can use both toolchains without runtime bootstrap steps, with Java 21 as the default JDK and Java 25 selectable explicitly per run.
 
 #### Scenario: Java 21 default and Rust are available to non-root opencode runtime
 - **GIVEN** the repository Docker image is built successfully
@@ -162,9 +162,9 @@ The system SHALL install both Java 21 and Java 25 plus a pinned Rust toolchain i
 - **THEN** `java`, `javac`, and `JAVA_HOME` resolve to Java 25 for that run
 - **AND** Java 21 remains installed in the image
 
-#### Scenario: Arm64 Java image builds are rejected
-- **GIVEN** the repository Docker image is built for `linux/arm64`
-- **WHEN** the Java toolchain installation step runs
+#### Scenario: Non-amd64 image builds are rejected
+- **GIVEN** the repository Docker image is built for a non-amd64 architecture
+- **WHEN** image build validation runs
 - **THEN** the build fails non-zero with unsupported architecture guidance
 
 #### Scenario: Java installation or Rust installation failure stops image build

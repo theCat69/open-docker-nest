@@ -47,7 +47,7 @@ function parseShaDigest(candidate: unknown): string | null {
   return typeof candidate === "string" && SHA256_DIGEST_PATTERN.test(candidate) ? candidate : null;
 }
 
-function tryReadSingleManifestDigest(remoteManifest: Record<string, unknown>): string | null {
+function tryReadSingleManifestArrayDigest(remoteManifest: Record<string, unknown>): string | null {
   const manifestsValue = remoteManifest.manifests;
   if (!Array.isArray(manifestsValue)) {
     return null;
@@ -81,9 +81,9 @@ function tryReadHighConfidenceRemoteDigest(remoteManifestJson: string): string |
       return null;
     }
 
-    const hasManifestList = Array.isArray(parsedManifest.manifests);
-    if (hasManifestList) {
-      return tryReadSingleManifestDigest(parsedManifest);
+    const hasManifestArray = Array.isArray(parsedManifest.manifests);
+    if (hasManifestArray) {
+      return tryReadSingleManifestArrayDigest(parsedManifest);
     }
 
     return tryReadDescriptorDigest(parsedManifest);

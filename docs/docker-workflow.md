@@ -74,7 +74,7 @@ The Docker Hub publish workflow may resolve fresher pinned versions of `cache-ct
 Canonical default image: `felixdock/open-docker-nest:latest`.
 For reproducible runs, replace `latest` with a specific version tag or image digest.
 
-The image installs `cache-ctrl`, both Java 21 and Java 25 (`java`/`javac` via a runtime-selected default), and a pinned Rust toolchain (`rustc`/`cargo`, default `1.84.0`) during build. The Docker Hub publish workflow publishes `linux/amd64` only, and local arm64 builds must use amd64 emulation.
+The image installs `cache-ctrl`, both Java 21 and Java 25 (`java`/`javac` via a runtime-selected default), and a pinned Rust toolchain (`rustc`/`cargo`, default `1.84.0`) during build. The image and Docker Hub publish workflow support `linux/amd64` only. Arm64 is unsupported.
 
 ## Wrapper usage
 
