@@ -140,9 +140,10 @@ async function assertNpmPackageVersionExists(packageName, version) {
 }
 
 async function resolveJavaRelease(majorVersion) {
-  const baseUrl = `https://api.adoptium.net/v3/assets/latest/${majorVersion}/hotspot`;
-  const amd64Url = `${baseUrl}?architecture=x64&heap_size=normal&image_type=jdk&os=linux&project=jdk&vendor=eclipse`;
-  const arm64Url = `${baseUrl}?architecture=aarch64&heap_size=normal&image_type=jdk&os=linux&project=jdk&vendor=eclipse`;
+  const baseUrl = `https://api.adoptium.net/v3/binary/latest/${majorVersion}/ga/linux`;
+  const endBaseUrl = `jdk/hotspot/normal/eclipse?project=jdk`;
+  const amd64Url = `${baseUrl}/x64/${endBaseUrl}`;
+  const arm64Url = `${baseUrl}/arm/${endBaseUrl}`;
 
   const [amd64Assets, arm64Assets] = await Promise.all([
     fetchJson(amd64Url),
