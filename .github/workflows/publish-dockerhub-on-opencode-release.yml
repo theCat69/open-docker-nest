@@ -6,12 +6,6 @@ on:
   schedule:
     - cron: "17 * * * *"
   workflow_dispatch:
-    inputs:
-      force:
-        description: Force a rebuild even if the version tag already exists on Docker Hub
-        required: false
-        default: false
-        type: boolean
 
 concurrency:
   group: publish-dockerhub-on-opencode-release
@@ -73,17 +67,10 @@ jobs:
       - name: Decide whether a rebuild is needed
         id: decision
         env:
-          FORCE_BUILD: ${{ github.event.inputs.force || 'false' }}
           IMAGE_NAME: ${{ env.IMAGE_NAME }}
           VERSION: ${{ steps.release.outputs.version }}
         run: |
           set -euo pipefail
-
-          if [ "${FORCE_BUILD}" = "true" ]; then
-            echo "should_build=true" >> "$GITHUB_OUTPUT"
-            echo "reason=forced" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
 
           if docker buildx imagetools inspect "${IMAGE_NAME}:${VERSION}" >/dev/null 2>&1; then
             echo "should_build=false" >> "$GITHUB_OUTPUT"
@@ -104,6 +91,27 @@ jobs:
             --tag "${IMAGE_NAME}:latest" \
             "${IMAGE_NAME}:${VERSION}"
 
+      - name: Resolve pinned tool versions for rebuild
+        if: steps.decision.outputs.should_build == 'true'
+        id: tool_versions
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          OPENCODE_VERSION: ${{ steps.release.outputs.version }}
+          OUTPUT_JSON_PATH: ${{ runner.temp }}/docker-build-versions.json
+          OUTPUT_BUILD_ARGS_PATH: ${{ runner.temp }}/docker-build-args.txt
+        run: |
+          set -euo pipefail
+          node .github/scripts/resolve-docker-build-versions.mjs
+
+      - name: Upload resolved version pins
+        if: steps.decision.outputs.should_build == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-build-versions-${{ steps.release.outputs.version }}
+          path: |
+            ${{ runner.temp }}/docker-build-versions.json
+            ${{ runner.temp }}/docker-build-args.txt
+
       - name: Build and push Docker image
         if: steps.decision.outputs.should_build == 'true'
         uses: docker/build-push-action@v7
@@ -113,8 +121,7 @@ jobs:
           pull: true
           push: true
           platforms: linux/amd64,linux/arm64
-          build-args: |
-            OPENCODE_VERSION=${{ steps.release.outputs.version }}
+          build-args: ${{ steps.tool_versions.outputs.build_args }}
           tags: |
             ${{ env.IMAGE_NAME }}:${{ steps.release.outputs.version }}
             ${{ env.IMAGE_NAME }}:latest
@@ -127,6 +134,14 @@ jobs:
             org.opencontainers.image.version=${{ steps.release.outputs.version }}
             org.opencontainers.image.revision=${{ github.sha }}
             io.open-docker-nest.opencode.version=${{ steps.release.outputs.version }}
+            io.open-docker-nest.cache-ctrl.version=${{ steps.tool_versions.outputs.cache_ctrl_version }}
+            io.open-docker-nest.bun.version=${{ steps.tool_versions.outputs.bun_version }}
+            io.open-docker-nest.java21.version=${{ steps.tool_versions.outputs.java21_version }}
+            io.open-docker-nest.java24.version=${{ steps.tool_versions.outputs.java24_version }}
+            io.open-docker-nest.rust.toolchain.version=${{ steps.tool_versions.outputs.rust_toolchain_version }}
+            io.open-docker-nest.rustup.version=${{ steps.tool_versions.outputs.rustup_version }}
+            io.open-docker-nest.docker-cli.version=${{ steps.tool_versions.outputs.docker_cli_version }}
+            io.open-docker-nest.docker-buildx.version=${{ steps.tool_versions.outputs.docker_buildx_version }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           provenance: true
@@ -138,6 +153,14 @@ jobs:
           VERSION: ${{ steps.release.outputs.version }}
           SHOULD_BUILD: ${{ steps.decision.outputs.should_build }}
           REASON: ${{ steps.decision.outputs.reason }}
+          CACHE_CTRL_VERSION: ${{ steps.tool_versions.outputs.cache_ctrl_version }}
+          BUN_VERSION: ${{ steps.tool_versions.outputs.bun_version }}
+          JAVA21_VERSION: ${{ steps.tool_versions.outputs.java21_version }}
+          JAVA24_VERSION: ${{ steps.tool_versions.outputs.java24_version }}
+          RUST_TOOLCHAIN_VERSION: ${{ steps.tool_versions.outputs.rust_toolchain_version }}
+          RUSTUP_VERSION: ${{ steps.tool_versions.outputs.rustup_version }}
+          DOCKER_CLI_VERSION: ${{ steps.tool_versions.outputs.docker_cli_version }}
+          DOCKER_BUILDX_VERSION: ${{ steps.tool_versions.outputs.docker_buildx_version }}
         run: |
           {
             echo "## Docker publish summary"
@@ -146,6 +169,18 @@ jobs:
             echo "- OpenCode version: \`${VERSION}\`"
             echo "- Rebuilt image: \`${SHOULD_BUILD}\`"
             echo "- Decision reason: \`${REASON}\`"
+            if [ "${SHOULD_BUILD}" = "true" ]; then
+              echo ""
+              echo "Resolved tool versions:"
+              echo "- cache-ctrl: \`${CACHE_CTRL_VERSION}\`"
+              echo "- bun: \`${BUN_VERSION}\`"
+              echo "- Java 21: \`${JAVA21_VERSION}\`"
+              echo "- Java 24: \`${JAVA24_VERSION}\`"
+              echo "- Rust toolchain: \`${RUST_TOOLCHAIN_VERSION}\`"
+              echo "- rustup: \`${RUSTUP_VERSION}\`"
+              echo "- Docker CLI: \`${DOCKER_CLI_VERSION}\`"
+              echo "- Docker Buildx: \`${DOCKER_BUILDX_VERSION}\`"
+            fi
             echo ""
             echo "Published tags:"
             echo "- \`${IMAGE_NAME}:${VERSION}\`"

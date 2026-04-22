@@ -67,6 +67,9 @@ docker build -t felixdock/open-docker-nest:latest .
 
 This example builds a local image in your Docker daemon with the same tag as the published default reference.
 It does not publish or modify Docker Hub; it only controls local tag resolution for `felixdock/open-docker-nest:latest` on your host.
+Local builds use the Dockerfile's checked-in default pinned toolchain arguments.
+
+The Docker Hub publish workflow may resolve fresher pinned versions of `cache-ctrl`, Bun, Java 21, Java 24, Rust/rustup, Docker CLI, and Docker Buildx at publish time, inject them as Docker build args, and upload the resolved version set as CI artifacts.
 
 Canonical default image: `felixdock/open-docker-nest:latest`.
 For reproducible runs, replace `latest` with a specific version tag or image digest.

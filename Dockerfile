@@ -1,5 +1,7 @@
 FROM node:24-bookworm-slim
 
+# These defaults keep local builds deterministic. The publish workflow may
+# override them with freshly resolved pinned versions during CI rebuilds.
 ARG CACHE_CTRL_VERSION=1.5.1
 ARG BUN_VERSION=1.3.11
 ARG JAVA21_DIRNAME=jdk-21.0.10+7
@@ -122,6 +124,9 @@ RUN debian_arch="$(dpkg --print-architecture)" \
   && cargo --version >/dev/null
 
 ENV JAVA_HOME=/opt/java/default
+# Opencode enable LSP and EXA
+ENV OPENCODE_EXPERIMENTAL_LSP_TOOL=true
+ENV OPENCODE_ENABLE_EXA=1 
 
 RUN if ! getent group opencode >/dev/null; then groupadd opencode; fi \
   && if ! id -u opencode >/dev/null 2>&1; then useradd --gid opencode --create-home --shell /bin/bash opencode; fi

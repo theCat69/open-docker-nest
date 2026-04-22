@@ -80,6 +80,10 @@ docker build -t felixdock/open-docker-nest:latest .
 
 This command builds a local image in your Docker daemon using the same tag as the published default reference.
 It does not pull or overwrite Docker Hub content; it only defines what `felixdock/open-docker-nest:latest` resolves to on your machine.
+Local builds use the Dockerfile's checked-in default pinned toolchain arguments.
+
+The Docker Hub publish workflow may rebuild with newer pinned versions of `cache-ctrl`, Bun, Java 21, Java 24, Rust/rustup, Docker CLI, and Docker Buildx resolved at publish time and passed as Docker build args.
+When that happens, the workflow uploads the resolved versions as CI artifacts for traceability.
 
 Canonical default image: `felixdock/open-docker-nest:latest`.
 For reproducible runs, replace `latest` with a specific version tag or image digest.
