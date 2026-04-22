@@ -201,14 +201,21 @@ async function resolveRustToolchainVersion() {
 }
 
 async function resolveRustupRelease() {
-  const release = await resolveGithubLatestRelease('rust-lang', 'rustup');
-  const version = release.tag_name.replace(/^v/, '');
+  const releaseManifestUrl = 'https://static.rust-lang.org/rustup/release-stable.toml';
+  const releaseManifest = await fetchText(releaseManifestUrl);
+  const versionLine = releaseManifest.match(/^version = '([^']+)'$/m);
+
+  if (!versionLine) {
+    throw new Error(`Could not find rustup version in ${releaseManifestUrl}`);
+  }
+
+  const version = extractFirstSemver(versionLine[1], 'rustup stable release manifest');
   const amd64Url = `https://static.rust-lang.org/rustup/archive/${version}/x86_64-unknown-linux-gnu/rustup-init`;
   const amd64Sha256 = await sha256ForUrl(amd64Url);
 
   return {
     version,
-    releaseUrl: release.html_url,
+    source: releaseManifestUrl,
     amd64: {
       url: amd64Url,
       sha256: amd64Sha256,
