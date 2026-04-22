@@ -14,9 +14,31 @@ Run [OpenCode](https://github.com/anomalyco/opencode) inside Docker with host-pr
 ## Prerequisites
 
 - Docker
-- A local clone of this repository
+- Node.js + npm (only if you want to install the published CLI from npm)
+- Bun
 
-## Local development install (POSIX)
+## Install
+
+Install the published CLI from npm:
+
+```bash
+npm install --global open-docker-nest
+```
+
+Or run it without a global install:
+
+```bash
+npx open-docker-nest --help
+```
+
+The default container image is published on Docker Hub as `felixdock/open-docker-nest:latest`.
+If you want to pre-pull it explicitly:
+
+```bash
+docker pull felixdock/open-docker-nest:latest
+```
+
+## Local development install from a repository clone (POSIX)
 
 This repository includes non-interactive local-dev scripts that install/uninstall `open-docker-nest` in `~/.local/bin` using a symlink to this clone's `bin/open-docker-nest.js`.
 
@@ -201,17 +223,15 @@ Output: `schema/open-docker-nest.schema.json`
 - Operational workflow: `docs/docker-workflow.md`
 - Behavior/spec source of truth: `openspec/specs/dockerized-open-docker-nest-workflow/spec.md`
 
-## npm packaging readiness (assessment)
+## Published package and image
 
-This repository is **not ready for public npm publication** in its current state and does **not** publish automatically:
+`open-docker-nest` is published for public use:
 
-- `package.json` exposes the CLI via `bin.open-docker-nest`.
-- `prepublishOnly` gates publish with `typecheck`, unit tests, and e2e tests.
-- `files` whitelists the publish surface (`bin/`, `src/`, `docker/`, `README.md`).
-- `license` is currently `UNLICENSED`, and no `LICENSE` file is present.
-- `publishConfig.access` is intentionally omitted to avoid signaling public publish intent before licensing is decided.
+- npm package: `open-docker-nest`
+- Docker Hub default image: `felixdock/open-docker-nest:latest`
+- Package license: `MIT`
 
-Before any public publish, explicitly choose and document licensing (including adding a `LICENSE` file), then run this manual checklist:
+Repository publication checks still run through `prepublishOnly`:
 
 ```bash
 bun run typecheck

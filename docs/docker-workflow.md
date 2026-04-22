@@ -5,7 +5,28 @@ This repository supports running OpenCode/OpenSpec workflows inside a single Doc
 ## Prerequisites
 
 - Docker CLI/runtime installed and running.
-- Local clone of this repository.
+- Node.js + npm (only if you want to install the published CLI from npm).
+
+## Install
+
+Install the published CLI from npm:
+
+```bash
+npm install --global open-docker-nest
+```
+
+Or run it without a global install:
+
+```bash
+npx open-docker-nest --help
+```
+
+The default runtime image is published on Docker Hub as `felixdock/open-docker-nest:latest`.
+You can pre-pull it explicitly if desired:
+
+```bash
+docker pull felixdock/open-docker-nest:latest
+```
 
 ## Local development install / uninstall (POSIX)
 
