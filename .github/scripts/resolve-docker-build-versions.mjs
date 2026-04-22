@@ -140,7 +140,7 @@ async function assertNpmPackageVersionExists(packageName, version) {
 }
 
 async function resolveJavaRelease(majorVersion) {
-  const baseUrl = `https://api.adoptium.net/v3/assets/latest/${majorVersion}/ga`;
+  const baseUrl = `https://api.adoptium.net/v3/assets/latest/${majorVersion}/hotspot`;
   const amd64Url = `${baseUrl}?architecture=x64&heap_size=normal&image_type=jdk&os=linux&project=jdk&vendor=eclipse`;
   const arm64Url = `${baseUrl}?architecture=aarch64&heap_size=normal&image_type=jdk&os=linux&project=jdk&vendor=eclipse`;
 
@@ -156,6 +156,11 @@ async function resolveJavaRelease(majorVersion) {
     throw new Error(`Missing Adoptium GA assets for Java ${majorVersion}`);
   }
 
+  const releaseName = amd64.release_name;
+  if (!releaseName || releaseName !== arm64.release_name) {
+    throw new Error(`Mismatched Adoptium release names for Java ${majorVersion}`);
+  }
+
   const openJdkVersion = amd64.version?.openjdk_version;
   if (!openJdkVersion || openJdkVersion !== arm64.version?.openjdk_version) {
     throw new Error(`Mismatched Adoptium versions for Java ${majorVersion}`);
@@ -164,7 +169,7 @@ async function resolveJavaRelease(majorVersion) {
   return {
     majorVersion: String(majorVersion),
     resolvedVersion: openJdkVersion,
-    dirname: `jdk-${openJdkVersion}`,
+    dirname: releaseName,
     amd64: {
       url: amd64.binary?.package?.link,
       sha256: amd64.binary?.package?.checksum,
