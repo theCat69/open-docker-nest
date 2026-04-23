@@ -13,6 +13,7 @@ import { fail, warn } from "../shared/io.js";
 import {
   getPathGroupId,
   hasFileReadWriteAccess,
+  isFile,
   isBrokenSymlink,
   isReadableDirectory,
   isReadablePath,
@@ -47,6 +48,39 @@ function prepareLaBriguadeConfigMount(
   }
 
   dockerRunArgs.push("--volume", `${hostSourcePath}:${containerTargetPath}`);
+}
+
+function prepareHostGitConfigMount(
+  hostSourcePath: string,
+  containerTargetPath: string,
+  dockerRunArgs: string[],
+): void {
+  if (!pathExistsOrSymlink(hostSourcePath)) {
+    return;
+  }
+
+  if (isBrokenSymlink(hostSourcePath)) {
+    warn(
+      `Skipping host gitconfig import from ${hostSourcePath}: path is a broken symlink. Remediation: fix symlink target or remove the path if unused.`,
+    );
+    return;
+  }
+
+  if (!isFile(hostSourcePath)) {
+    warn(
+      `Skipping host gitconfig import from ${hostSourcePath}: source exists but is not a regular file. Remediation: replace it with a regular file (or symlink to one), or remove the path if unused.`,
+    );
+    return;
+  }
+
+  if (!isReadablePath(hostSourcePath)) {
+    warn(
+      `Skipping host gitconfig import from ${hostSourcePath}: source exists but is not readable. Remediation: grant read permissions or remove the path if unused.`,
+    );
+    return;
+  }
+
+  dockerRunArgs.push("--volume", `${hostSourcePath}:${containerTargetPath}:ro`);
 }
 
 function resolveCommandToRun(
@@ -213,6 +247,8 @@ export function buildDockerRuntimePlan(
     "--volume",
     `${runtimeContext.hostCacheDirectoryPath}:${CONTAINER_HOME_DIR}/.cache/opencode`,
   ];
+
+  prepareHostGitConfigMount(runtimeContext.hostGitConfigFilePath, `${CONTAINER_HOME_DIR}/.gitconfig`, dockerRunArgs);
 
   prepareLaBriguadeConfigMount(
     runtimeContext.hostLaBriguadeConfigDirectoryPath,

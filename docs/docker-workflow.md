@@ -206,6 +206,16 @@ On each run, the wrapper checks for `~/la_briguade` on the host:
 
 This config import behavior is independent from la-briguade plugin installation mode.
 
+### Optional host Git config import
+
+On each run, the wrapper checks for `~/.gitconfig` on the host:
+
+- If present, a regular file (or symlink resolving to one), and readable, it is bind-mounted read-only to `/home/opencode/.gitconfig`.
+- If absent, startup continues (non-fatal).
+- If present but invalid/inaccessible (for example broken symlink, wrong type, or permission issue), startup continues and prints actionable diagnostics.
+
+This mount is intentionally narrow: it forwards only `~/.gitconfig` and does not automatically import other host Git helpers, credential stores, or host-specific tooling paths.
+
 ### Project-level wrapper config (`open-docker-nest.json`)
 
 The wrapper loads two config levels and merges them in this order: defaults < user < project.

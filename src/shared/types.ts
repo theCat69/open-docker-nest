@@ -31,6 +31,7 @@ export interface DockerRuntimePlan {
 export interface RuntimeContext {
   readonly resolvedProjectPath: string;
   readonly extraContainerEnvironment: Readonly<Record<string, string>>;
+  readonly hostGitConfigFilePath: string;
   readonly hostConfigDirectoryPath: string;
   readonly hostStateDirectoryPath: string;
   readonly hostShareDirectoryPath: string;

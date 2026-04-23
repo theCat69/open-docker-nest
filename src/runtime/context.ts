@@ -25,6 +25,7 @@ export function buildRuntimeContext(resolvedProjectPath: string): RuntimeContext
   return {
     resolvedProjectPath,
     extraContainerEnvironment,
+    hostGitConfigFilePath: join(hostHomeDirectory, ".gitconfig"),
     hostConfigDirectoryPath: join(hostHomeDirectory, ".config", "opencode"),
     hostStateDirectoryPath: join(hostHomeDirectory, ".local", "state", "opencode"),
     hostShareDirectoryPath: join(hostHomeDirectory, ".local", "share", "opencode"),

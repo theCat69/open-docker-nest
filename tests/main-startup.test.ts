@@ -55,6 +55,7 @@ import { main } from "../src/index.js";
 const runtimeContextFixture: RuntimeContext = {
   resolvedProjectPath: "/workspace",
   extraContainerEnvironment: {},
+  hostGitConfigFilePath: "/tmp/.gitconfig",
   hostConfigDirectoryPath: "/tmp/config",
   hostStateDirectoryPath: "/tmp/state",
   hostShareDirectoryPath: "/tmp/share",

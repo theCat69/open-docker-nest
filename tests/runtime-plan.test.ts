@@ -13,6 +13,7 @@ const mockHasFileReadWriteAccess = vi.hoisted(() => vi.fn());
 const mockGetPathGroupId = vi.hoisted(() => vi.fn());
 const mockIsReadablePath = vi.hoisted(() => vi.fn());
 const mockIsReadableDirectory = vi.hoisted(() => vi.fn());
+const mockIsFile = vi.hoisted(() => vi.fn());
 
 vi.mock("node:child_process", () => ({
   spawnSync: mockSpawnSync,
@@ -26,6 +27,7 @@ vi.mock("../src/validation/filesystem.js", () => ({
   getPathGroupId: mockGetPathGroupId,
   isReadablePath: mockIsReadablePath,
   isReadableDirectory: mockIsReadableDirectory,
+  isFile: mockIsFile,
 }));
 
 vi.mock("../src/runtime/la-briguade-local.js", () => ({
@@ -74,6 +76,7 @@ afterEach(() => {
   mockGetPathGroupId.mockReset();
   mockIsReadablePath.mockReset();
   mockIsReadableDirectory.mockReset();
+  mockIsFile.mockReset();
 });
 
 function createRuntimeContextFixture(): RuntimeContext {
@@ -99,6 +102,7 @@ function createRuntimeContextFixture(): RuntimeContext {
   return {
     resolvedProjectPath: projectPath,
     extraContainerEnvironment: {},
+    hostGitConfigFilePath: join(rootDirectoryPath, ".gitconfig"),
     hostConfigDirectoryPath: configPath,
     hostStateDirectoryPath: statePath,
     hostShareDirectoryPath: sharePath,
@@ -117,8 +121,65 @@ function createRuntimeContextFixture(): RuntimeContext {
 }
 
 describe("buildDockerRuntimePlan", () => {
+  it("mounts host gitconfig as read-only when present and readable", () => {
+    const context = createRuntimeContextFixture();
+    mockPathExistsOrSymlink.mockReturnValue(true);
+    mockIsBrokenSymlink.mockReturnValue(false);
+    mockIsFile.mockReturnValue(true);
+    mockIsReadablePath.mockReturnValue(true);
+
+    const runtimePlan = buildDockerRuntimePlan(
+      context,
+      "felixdock/open-docker-nest:latest",
+      "21",
+      false,
+      false,
+      ["opencode", "--help"],
+    );
+
+    expect(runtimePlan.dockerRunArgs).toContain(`${context.hostGitConfigFilePath}:/home/opencode/.gitconfig:ro`);
+  });
+
+  it("does not mount host gitconfig when missing", () => {
+    const context = createRuntimeContextFixture();
+    mockPathExistsOrSymlink.mockReturnValue(false);
+    mockIsFile.mockReturnValue(false);
+    mockIsReadablePath.mockReturnValue(false);
+
+    const runtimePlan = buildDockerRuntimePlan(
+      context,
+      "felixdock/open-docker-nest:latest",
+      "21",
+      false,
+      false,
+      ["opencode", "--help"],
+    );
+
+    expect(runtimePlan.dockerRunArgs).not.toContain(`${context.hostGitConfigFilePath}:/home/opencode/.gitconfig:ro`);
+  });
+
+  it("does not mount host gitconfig when the source exists but is not a regular file", () => {
+    const context = createRuntimeContextFixture();
+    mockPathExistsOrSymlink.mockReturnValue(true);
+    mockIsBrokenSymlink.mockReturnValue(false);
+    mockIsFile.mockReturnValue(false);
+    mockIsReadablePath.mockReturnValue(true);
+
+    const runtimePlan = buildDockerRuntimePlan(
+      context,
+      "felixdock/open-docker-nest:latest",
+      "21",
+      false,
+      false,
+      ["opencode", "--help"],
+    );
+
+    expect(runtimePlan.dockerRunArgs).not.toContain(`${context.hostGitConfigFilePath}:/home/opencode/.gitconfig:ro`);
+  });
+
   it("adds docker socket bridge only when host-docker mode is active", () => {
     const context = createRuntimeContextFixture();
+    mockIsFile.mockReturnValue(false);
     mockIsReadablePath.mockReturnValue(false);
 
     const regularPlan = buildDockerRuntimePlan(
@@ -155,6 +216,7 @@ describe("buildDockerRuntimePlan", () => {
 
   it("passes the selected Java version into the container environment", () => {
     const context = createRuntimeContextFixture();
+    mockIsFile.mockReturnValue(false);
     mockIsReadablePath.mockReturnValue(false);
 
     const runtimePlan = buildDockerRuntimePlan(
@@ -249,6 +311,7 @@ describe("buildDockerRuntimePlan", () => {
 
   it("adds validated project extra container environment values", () => {
     const context = createRuntimeContextFixture();
+    mockIsFile.mockReturnValue(false);
     mockIsReadablePath.mockReturnValue(false);
 
     const contextWithExtraEnvironment: RuntimeContext = {
