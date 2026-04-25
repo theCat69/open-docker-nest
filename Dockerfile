@@ -94,11 +94,14 @@ RUN rustup_arch="x86_64-unknown-linux-gnu" \
   && echo "${RUSTUP_INIT_AMD64_SHA256}  /tmp/rustup-init" | sha256sum -c - \
   && chmod +x /tmp/rustup-init \
   && RUSTUP_HOME=/usr/local/rustup CARGO_HOME=/usr/local/cargo /tmp/rustup-init -y --profile minimal --default-toolchain "${RUST_TOOLCHAIN}" --no-modify-path \
+  && RUSTUP_HOME=/usr/local/rustup CARGO_HOME=/usr/local/cargo /usr/local/cargo/bin/rustup component add rustfmt --toolchain "${RUST_TOOLCHAIN}-${rustup_arch}" \
   && ln -sf "/usr/local/rustup/toolchains/${RUST_TOOLCHAIN}-${rustup_arch}/bin/rustc" /usr/local/bin/rustc \
   && ln -sf "/usr/local/rustup/toolchains/${RUST_TOOLCHAIN}-${rustup_arch}/bin/cargo" /usr/local/bin/cargo \
+  && ln -sf "/usr/local/rustup/toolchains/${RUST_TOOLCHAIN}-${rustup_arch}/bin/rustfmt" /usr/local/bin/rustfmt \
   && rm /tmp/rustup-init \
   && rustc --version >/dev/null \
-  && cargo --version >/dev/null
+  && cargo --version >/dev/null \
+  && rustfmt --version >/dev/null
 
 ENV JAVA_HOME=/opt/java/default
 # Opencode enable LSP and EXA
