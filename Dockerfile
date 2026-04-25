@@ -14,6 +14,9 @@ ARG JAVA25_AMD64_SHA256=69264a7a211bf5029830d07bc3370f879769d62ebc5b5488e90c9343
 ARG RUSTUP_VERSION=1.29.0
 ARG RUSTUP_INIT_AMD64_SHA256=4acc9acc76d5079515b46346a485974457b5a79893cfb01112423c89aeb5aa10
 ARG RUST_TOOLCHAIN=1.95.0
+ARG DIOXUS_CLI_VERSION=0.7.5
+ARG DIOXUS_CLI_AMD64_URL=https://github.com/DioxusLabs/dioxus/releases/download/v0.7.5/dx-x86_64-unknown-linux-gnu.tar.gz
+ARG DIOXUS_CLI_AMD64_SHA256=969144a955bc6d399c9a62ed5804363629f0090b5a6bae9e6ed7ffc1b17a7615
 ARG DOCKER_CLI_VERSION=29.4.1
 ARG DOCKER_CLI_AMD64_URL=https://download.docker.com/linux/static/stable/x86_64/docker-29.4.1.tgz
 ARG DOCKER_CLI_AMD64_SHA256=0fb3d2b72414ab862d68517f0b17b78c93c149d1c5c461acb969aacde1a2189d
@@ -95,6 +98,7 @@ RUN rustup_arch="x86_64-unknown-linux-gnu" \
   && chmod +x /tmp/rustup-init \
   && RUSTUP_HOME=/usr/local/rustup CARGO_HOME=/usr/local/cargo /tmp/rustup-init -y --profile minimal --default-toolchain "${RUST_TOOLCHAIN}" --no-modify-path \
   && RUSTUP_HOME=/usr/local/rustup CARGO_HOME=/usr/local/cargo /usr/local/cargo/bin/rustup component add rustfmt --toolchain "${RUST_TOOLCHAIN}-${rustup_arch}" \
+  && RUSTUP_HOME=/usr/local/rustup CARGO_HOME=/usr/local/cargo /usr/local/cargo/bin/rustup target add wasm32-unknown-unknown --toolchain "${RUST_TOOLCHAIN}-${rustup_arch}" \
   && ln -sf "/usr/local/rustup/toolchains/${RUST_TOOLCHAIN}-${rustup_arch}/bin/rustc" /usr/local/bin/rustc \
   && ln -sf "/usr/local/rustup/toolchains/${RUST_TOOLCHAIN}-${rustup_arch}/bin/cargo" /usr/local/bin/cargo \
   && ln -sf "/usr/local/rustup/toolchains/${RUST_TOOLCHAIN}-${rustup_arch}/bin/rustfmt" /usr/local/bin/rustfmt \
@@ -102,6 +106,14 @@ RUN rustup_arch="x86_64-unknown-linux-gnu" \
   && rustc --version >/dev/null \
   && cargo --version >/dev/null \
   && rustfmt --version >/dev/null
+
+RUN curl -fsSL "${DIOXUS_CLI_AMD64_URL}" -o /tmp/dx.tar.gz \
+  && echo "${DIOXUS_CLI_AMD64_SHA256}  /tmp/dx.tar.gz" | sha256sum -c - \
+  && tar -xzf /tmp/dx.tar.gz -C /tmp \
+  && install -m 0755 /tmp/dx /usr/local/bin/dx \
+  && rm -f /tmp/dx /tmp/dx.tar.gz \
+  && dx_version="$(dx --version)" \
+  && case "${dx_version}" in *"${DIOXUS_CLI_VERSION}"*) ;; *) echo "Error: expected dx ${DIOXUS_CLI_VERSION}, got ${dx_version}." >&2; exit 1; esac
 
 ENV JAVA_HOME=/opt/java/default
 # Opencode enable LSP and EXA
