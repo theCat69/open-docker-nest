@@ -74,7 +74,7 @@ The Docker Hub publish workflow may resolve fresher pinned versions of `cache-ct
 Canonical default image: `felixdock/open-docker-nest:latest`.
 For reproducible runs, replace `latest` with a specific version tag or image digest.
 
-The image installs `cache-ctrl`, Playwright CLI, Playwright Chromium browser support, both Java 21 and Java 25 (`java`/`javac` via a runtime-selected default), and a pinned Rust toolchain (`rustc`/`cargo`, default `1.84.0`) during build. The image and Docker Hub publish workflow support `linux/amd64` only. Arm64 is unsupported.
+The image installs `cache-ctrl`, Playwright CLI, Playwright Chromium browser support, both Java 21 and Java 25 (`java`/`javac` via a runtime-selected default), and a pinned Rust toolchain (`rustc`/`cargo`, default `1.95.0`) with a native `cc` linker baseline for Rust native builds during image build. The image and Docker Hub publish workflow support `linux/amd64` only. Arm64 is unsupported.
 
 To keep image size/coupling bounded while still supporting browser automation, this slice preinstalls Chromium only (not full multi-browser bundles).
 
@@ -396,10 +396,10 @@ open-docker-nest -- /usr/bin/env bash -lc 'printf "%s\n" "$0" "$1" "$2"' passthr
 # beta
 ```
 
-Validate Java 21 default, Java 25 opt-in, and Rust availability as non-root `opencode` runtime user:
+Validate Java 21 default, Java 25 opt-in, and Rust native-build readiness as non-root `opencode` runtime user:
 
 ```bash
-open-docker-nest -- /usr/bin/env bash -lc 'java -version && javac -version && printf "%s\n" "$JAVA_HOME" && rustc --version && cargo --version'
+open-docker-nest -- /usr/bin/env bash -lc 'java -version && javac -version && printf "%s\n" "$JAVA_HOME" && command -v cc && rustc --version && cargo --version && printf "fn main() { println!(\"rust-linker-ok\"); }\n" > /tmp/rust-linker-smoke.rs && rustc /tmp/rust-linker-smoke.rs -o /tmp/rust-linker-smoke && /tmp/rust-linker-smoke'
 open-docker-nest --java 25 -- /usr/bin/env bash -lc 'java -version && javac -version && printf "%s\n" "$JAVA_HOME"'
 ```
 

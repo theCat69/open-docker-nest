@@ -162,14 +162,16 @@ The system SHALL include Docker CLI in the container image so in-container host-
 - **THEN** the build fails non-zero
 - **AND** host-docker mode is not shipped with a partial runtime dependency state
 
-### Requirement: Docker image support is limited to amd64 with Java 21 by default, Java 25 opt-in, and a pinned Rust runtime toolchain
-The system SHALL support amd64 container images only, and SHALL install both Java 21 and Java 25 plus a pinned Rust toolchain so non-root wrapper sessions can use both toolchains without runtime bootstrap steps, with Java 21 as the default JDK and Java 25 selectable explicitly per run.
+### Requirement: Docker image support is limited to amd64 with Java 21 by default, Java 25 opt-in, and a pinned Rust native-build baseline
+The system SHALL support amd64 container images only, and SHALL install both Java 21 and Java 25 plus a pinned Rust toolchain and native `cc` linker baseline so non-root wrapper sessions can use both toolchains and compile native-linking Rust binaries without runtime bootstrap steps, with Java 21 as the default JDK and Java 25 selectable explicitly per run.
 
-#### Scenario: Java 21 default and Rust are available to non-root opencode runtime
+#### Scenario: Java 21 default and Rust native-build baseline are available to non-root opencode runtime
 - **GIVEN** the repository Docker image is built successfully
 - **WHEN** a container is started through `bin/open-docker-nest.js` as the remapped non-root runtime user
 - **THEN** `java` and `javac` from Java 21 are available in the runtime command environment by default
 - **AND** `rustc` and `cargo` are available in the runtime command environment
+- **AND** `cc` is available in the runtime command environment for Rust native linking
+- **AND** a minimal `rustc` compile-and-link smoke program succeeds without extra runtime package installs
 
 #### Scenario: Java 25 can be selected explicitly for a container run
 - **GIVEN** the repository Docker image is built successfully

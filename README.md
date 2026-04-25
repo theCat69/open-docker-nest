@@ -5,7 +5,7 @@ Run [OpenCode](https://github.com/anomalyco/opencode) inside Docker with host-pr
 ## What this repository provides
 
 - Canonical CLI command: `open-docker-nest` (published from `package.json`)
-- A Docker image with `opencode`, `cache-ctrl`, Playwright CLI + bundled Chromium support, Java 21 as the default JDK, Java 25 as an opt-in JDK, and a pinned Rust toolchain (`1.84.0`) installed
+- A Docker image with `opencode`, `cache-ctrl`, Playwright CLI + bundled Chromium support, Java 21 as the default JDK, Java 25 as an opt-in JDK, and a pinned Rust toolchain (`1.95.0`) plus native `cc` build baseline for Rust native linking
 - A `/workspace` mount model for running against your host project
 - Persistent host-backed OpenCode config/state/share directories across runs
 - Non-root execution via host UID/GID remapping

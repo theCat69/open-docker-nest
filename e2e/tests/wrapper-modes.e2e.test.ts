@@ -65,7 +65,7 @@ describe("docker wrapper mode smoke coverage", () => {
     expect(outputLines).toEqual(["passthrough-check", "alpha", "beta"]);
   });
 
-  it("exposes Java 25 and Rust toolchains to the non-root runtime user", () => {
+  it("exposes Java 25 and Rust native-build baseline to the non-root runtime user", () => {
     const fixtureProjectPath = createTemporaryDirectory("open-docker-nest-e2e-toolchains-");
     temporaryPathsToClean.push(fixtureProjectPath);
 
@@ -76,7 +76,7 @@ describe("docker wrapper mode smoke coverage", () => {
       "/usr/bin/env",
       "bash",
       "-lc",
-      "java -version >/dev/null && javac -version >/dev/null && rustc --version >/dev/null && cargo --version >/dev/null",
+      "java -version >/dev/null && javac -version >/dev/null && command -v cc >/dev/null && rustc --version >/dev/null && cargo --version >/dev/null && printf 'fn main() { println!(\"rust-linker-ok\"); }\n' > /tmp/rust-linker-smoke.rs && rustc /tmp/rust-linker-smoke.rs -o /tmp/rust-linker-smoke && /tmp/rust-linker-smoke >/dev/null",
     ]);
 
     expect(result.status).toBe(0);
