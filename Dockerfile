@@ -65,6 +65,7 @@ RUN npm install --global \
   "bun@${BUN_VERSION}" \
   "opencode-ai@${OPENCODE_VERSION}" \
   "@thecat69/cache-ctrl@${CACHE_CTRL_VERSION}" \
+  "@fission-ai/openspec@latest" \
   && ln -sf /usr/local/lib/node_modules/bun/bin/bun.exe /usr/local/bin/bun \
   && bun --version >/dev/null \
   && cache-ctrl version >/dev/null \
