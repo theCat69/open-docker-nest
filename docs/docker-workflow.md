@@ -69,12 +69,14 @@ This example builds a local image in your Docker daemon with the same tag as the
 It does not publish or modify Docker Hub; it only controls local tag resolution for `felixdock/open-docker-nest:latest` on your host.
 Local builds use the Dockerfile's checked-in default pinned toolchain arguments.
 
-The Docker Hub publish workflow may resolve fresher pinned versions of `cache-ctrl`, Bun, Java 21, Java 25, Rust/rustup, Docker CLI, and Docker Buildx at publish time, inject them as Docker build args, and upload the resolved version set as CI artifacts.
+The Docker Hub publish workflow may resolve fresher pinned versions of `cache-ctrl`, Bun, Playwright, Java 21, Java 25, Rust/rustup, Docker CLI, and Docker Buildx at publish time, inject them as Docker build args, and upload the resolved version set as CI artifacts.
 
 Canonical default image: `felixdock/open-docker-nest:latest`.
 For reproducible runs, replace `latest` with a specific version tag or image digest.
 
-The image installs `cache-ctrl`, both Java 21 and Java 25 (`java`/`javac` via a runtime-selected default), and a pinned Rust toolchain (`rustc`/`cargo`, default `1.84.0`) during build. The image and Docker Hub publish workflow support `linux/amd64` only. Arm64 is unsupported.
+The image installs `cache-ctrl`, Playwright CLI, Playwright Chromium browser support, both Java 21 and Java 25 (`java`/`javac` via a runtime-selected default), and a pinned Rust toolchain (`rustc`/`cargo`, default `1.84.0`) during build. The image and Docker Hub publish workflow support `linux/amd64` only. Arm64 is unsupported.
+
+To keep image size/coupling bounded while still supporting browser automation, this slice preinstalls Chromium only (not full multi-browser bundles).
 
 ## Wrapper usage
 
@@ -386,6 +388,16 @@ Validate Java 21 default, Java 25 opt-in, and Rust availability as non-root `ope
 open-docker-nest -- /usr/bin/env bash -lc 'java -version && javac -version && printf "%s\n" "$JAVA_HOME" && rustc --version && cargo --version'
 open-docker-nest --java 25 -- /usr/bin/env bash -lc 'java -version && javac -version && printf "%s\n" "$JAVA_HOME"'
 ```
+
+Validate Playwright CLI and bundled Chromium availability:
+
+```bash
+open-docker-nest -- /usr/bin/env bash -lc 'playwright --version && printf "%s\n" "$PLAYWRIGHT_BROWSERS_PATH" && test "$PLAYWRIGHT_BROWSERS_PATH" = "/ms-playwright" && test -d /ms-playwright && test -r /ms-playwright && test -x /ms-playwright && playwright screenshot --browser=chromium --timeout=20000 about:blank /tmp/playwright-smoke.png >/dev/null'
+```
+
+Playwright browser scope in this image is intentionally **Chromium-only** to control image size and dependency coupling.
+
+The browser bundle path is fixed to `PLAYWRIGHT_BROWSERS_PATH=/ms-playwright` at image build/runtime. For non-root wrapper sessions to remain compatible, `/ms-playwright` and its contents are expected to stay world-readable/executable (`a+rX`).
 
 ## Permissions and file ownership
 

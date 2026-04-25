@@ -206,6 +206,39 @@ The system SHALL install cache-ctrl in the Docker image so containerized OpenCod
 - **THEN** the build fails non-zero
 - **AND** runtime execution does not proceed with a partial dependency state
 
+### Requirement: Docker image includes pinned Playwright CLI with bundled browser support
+The system SHALL install a pinned Playwright CLI release in the Docker image and SHALL bundle a documented browser set that is readable by non-root runtime sessions without startup-time browser installation.
+
+#### Scenario: Pinned Playwright build arg is resolved and applied in publish workflow
+- **GIVEN** the Docker publish workflow resolves pinned build-tool versions
+- **WHEN** build args are generated and passed to Docker build
+- **THEN** `PLAYWRIGHT_VERSION` is included in resolved build args
+- **AND** workflow metadata/summary expose the resolved Playwright version for traceability
+
+#### Scenario: Playwright CLI and bundled Chromium are available to non-root runtime user
+- **GIVEN** the repository Docker image is built successfully
+- **WHEN** a container is started through `bin/open-docker-nest.js` as the remapped non-root runtime user
+- **THEN** `playwright --version` succeeds
+- **AND** Chromium can be launched headlessly without additional runtime browser install steps
+
+#### Scenario: Playwright install or browser bundle install failure stops image build
+- **GIVEN** pinned Playwright CLI install or bundled browser install fails during Docker build
+- **WHEN** image build executes
+- **THEN** the build fails non-zero
+- **AND** runtime execution is not shipped with a partial Playwright dependency state
+
+#### Scenario: Browser bundle scope is intentionally constrained for image-size control
+- **GIVEN** the repository Docker image is built in this slice
+- **WHEN** Playwright browser support is installed
+- **THEN** the image bundles Chromium support only
+- **AND** documentation explicitly records this scope choice as an image-size/coupling trade-off
+
+#### Scenario: Playwright browser bundle path and non-root permission contract are documented
+- **GIVEN** the repository Docker image pins Playwright with bundled browser artifacts
+- **WHEN** maintainers read Docker workflow documentation
+- **THEN** documentation states the fixed `PLAYWRIGHT_BROWSERS_PATH=/ms-playwright` contract
+- **AND** documentation states that `/ms-playwright` is expected to remain readable/executable for non-root runtime sessions
+
 ### Requirement: Local cache-ctrl development mode supports explicit env contract
 The system SHALL support a local cache-ctrl development mode that uses `CACHE_CTRL_LOCAL_MODE` (`auto`, `force`, `off`) as the explicit mode contract and supports optional `CACHE_CTRL_LOCAL_PATH` as an explicit assertion of the derived local cache-ctrl checkout root.
 

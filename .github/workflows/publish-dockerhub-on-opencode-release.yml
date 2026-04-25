@@ -133,6 +133,7 @@ jobs:
             io.open-docker-nest.opencode.version=${{ steps.release.outputs.version }}
             io.open-docker-nest.cache-ctrl.version=${{ steps.tool_versions.outputs.cache_ctrl_version }}
             io.open-docker-nest.bun.version=${{ steps.tool_versions.outputs.bun_version }}
+            io.open-docker-nest.playwright.version=${{ steps.tool_versions.outputs.playwright_version }}
             io.open-docker-nest.java21.version=${{ steps.tool_versions.outputs.java21_version }}
             io.open-docker-nest.java25.version=${{ steps.tool_versions.outputs.java25_version }}
             io.open-docker-nest.rust.toolchain.version=${{ steps.tool_versions.outputs.rust_toolchain_version }}
@@ -152,6 +153,7 @@ jobs:
           REASON: ${{ steps.decision.outputs.reason }}
           CACHE_CTRL_VERSION: ${{ steps.tool_versions.outputs.cache_ctrl_version }}
           BUN_VERSION: ${{ steps.tool_versions.outputs.bun_version }}
+          PLAYWRIGHT_VERSION: ${{ steps.tool_versions.outputs.playwright_version }}
           JAVA21_VERSION: ${{ steps.tool_versions.outputs.java21_version }}
           JAVA25_VERSION: ${{ steps.tool_versions.outputs.java25_version }}
           RUST_TOOLCHAIN_VERSION: ${{ steps.tool_versions.outputs.rust_toolchain_version }}
@@ -171,6 +173,7 @@ jobs:
               echo "Resolved tool versions:"
               echo "- cache-ctrl: \`${CACHE_CTRL_VERSION}\`"
               echo "- bun: \`${BUN_VERSION}\`"
+              echo "- playwright: \`${PLAYWRIGHT_VERSION}\`"
               echo "- Java 21: \`${JAVA21_VERSION}\`"
               echo "- Java 25: \`${JAVA25_VERSION}\`"
               echo "- Rust toolchain: \`${RUST_TOOLCHAIN_VERSION}\`"

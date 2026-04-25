@@ -82,6 +82,21 @@ describe("docker wrapper mode smoke coverage", () => {
     expect(result.status).toBe(0);
   });
 
+  it("exposes Playwright CLI and bundled Chromium to the non-root runtime user", () => {
+    const fixtureProjectPath = createTemporaryDirectory("open-docker-nest-e2e-playwright-");
+    temporaryPathsToClean.push(fixtureProjectPath);
+
+    const result = runWrapper(fixtureProjectPath, [
+      "--",
+      "/usr/bin/env",
+      "bash",
+      "-lc",
+      "playwright --version >/dev/null && test \"${PLAYWRIGHT_BROWSERS_PATH:-}\" = \"/ms-playwright\" && test -d /ms-playwright && test -r /ms-playwright && test -x /ms-playwright && playwright screenshot --browser=chromium --timeout=20000 about:blank /tmp/playwright-smoke.png >/dev/null",
+    ]);
+
+    expect(result.status).toBe(0);
+  });
+
   it("runs host-docker mode on Unix-like hosts and reaches host daemon from inside container", () => {
     const fixtureProjectPath = createTemporaryDirectory("open-docker-nest-e2e-host-docker-");
     temporaryPathsToClean.push(fixtureProjectPath);

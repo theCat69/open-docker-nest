@@ -5,7 +5,7 @@ Run [OpenCode](https://github.com/anomalyco/opencode) inside Docker with host-pr
 ## What this repository provides
 
 - Canonical CLI command: `open-docker-nest` (published from `package.json`)
-- A Docker image with `opencode`, `cache-ctrl`, Java 21 as the default JDK, Java 25 as an opt-in JDK, and a pinned Rust toolchain (`1.84.0`) installed
+- A Docker image with `opencode`, `cache-ctrl`, Playwright CLI + bundled Chromium support, Java 21 as the default JDK, Java 25 as an opt-in JDK, and a pinned Rust toolchain (`1.84.0`) installed
 - A `/workspace` mount model for running against your host project
 - Persistent host-backed OpenCode config/state/share directories across runs
 - Non-root execution via host UID/GID remapping
@@ -82,8 +82,10 @@ This command builds a local image in your Docker daemon using the same tag as th
 It does not pull or overwrite Docker Hub content; it only defines what `felixdock/open-docker-nest:latest` resolves to on your machine.
 Local builds use the Dockerfile's checked-in default pinned toolchain arguments.
 
-The Docker Hub publish workflow may rebuild with newer pinned versions of `cache-ctrl`, Bun, Java 21, Java 25, Rust/rustup, Docker CLI, and Docker Buildx resolved at publish time and passed as Docker build args.
+The Docker Hub publish workflow may rebuild with newer pinned versions of `cache-ctrl`, Bun, Playwright, Java 21, Java 25, Rust/rustup, Docker CLI, and Docker Buildx resolved at publish time and passed as Docker build args.
 When that happens, the workflow uploads the resolved versions as CI artifacts for traceability.
+
+To limit image bloat while preserving browser automation support, the image preinstalls Playwright Chromium only (instead of full multi-browser bundles).
 
 The image and Docker Hub publish workflow support `linux/amd64` only. Arm64 is unsupported.
 

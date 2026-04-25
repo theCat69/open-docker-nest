@@ -287,9 +287,10 @@ async function appendGithubOutputs(entries) {
 
 await assertNpmPackageVersionExists('opencode-ai', opencodeVersion);
 
-const [cacheCtrl, bun, java21, java25, rustToolchain, rustup, dockerCli, dockerBuildx] = await Promise.all([
+const [cacheCtrl, bun, playwright, java21, java25, rustToolchain, rustup, dockerCli, dockerBuildx] = await Promise.all([
   resolveNpmLatestVersion('@thecat69/cache-ctrl'),
   resolveNpmLatestVersion('bun'),
+  resolveNpmLatestVersion('playwright'),
   resolveJavaRelease(21),
   resolveJavaRelease(25),
   resolveRustToolchainVersion(),
@@ -301,6 +302,7 @@ const [cacheCtrl, bun, java21, java25, rustToolchain, rustup, dockerCli, dockerB
 const buildArgsEntries = [
   ['CACHE_CTRL_VERSION', cacheCtrl.version],
   ['BUN_VERSION', bun.version],
+  ['PLAYWRIGHT_VERSION', playwright.version],
   ['JAVA21_DIRNAME', java21.dirname],
   ['JAVA21_AMD64_URL', java21.amd64.url],
   ['JAVA21_AMD64_SHA256', java21.amd64.sha256],
@@ -328,6 +330,7 @@ const resolvedVersions = {
   },
   cacheCtrl,
   bun,
+  playwright,
   java: {
     java21,
     java25,
@@ -359,6 +362,7 @@ await appendGithubOutputs([
   ['build_args_path', outputBuildArgsPath],
   ['cache_ctrl_version', cacheCtrl.version],
   ['bun_version', bun.version],
+  ['playwright_version', playwright.version],
   ['java21_version', java21.resolvedVersion],
   ['java25_version', java25.resolvedVersion],
   ['rust_toolchain_version', rustToolchain.version],

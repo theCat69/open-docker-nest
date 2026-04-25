@@ -4,6 +4,7 @@ FROM node:24-bookworm-slim
 # override them with freshly resolved pinned versions during CI rebuilds.
 ARG CACHE_CTRL_VERSION=1.5.1
 ARG BUN_VERSION=1.3.11
+ARG PLAYWRIGHT_VERSION=1.58.2
 ARG JAVA21_DIRNAME=jdk-21.0.10+7
 ARG JAVA21_AMD64_URL=https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.10%2B7/OpenJDK21U-jdk_x64_linux_hotspot_21.0.10_7.tar.gz
 ARG JAVA21_AMD64_SHA256=ea3b9bd464d6dd253e9a7accf59f7ccd2a36e4aa69640b7251e3370caef896a4
@@ -21,6 +22,8 @@ ARG DOCKER_BUILDX_AMD64_URL=https://github.com/docker/buildx/releases/download/v
 ARG DOCKER_BUILDX_AMD64_SHA256=9426a15411f35f635afef3f5d3bae53155c3e30d26dee430cc968e13d34be49f
 ARG OPENCODE_VERSION=1.14.20
 
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
     bash \
@@ -36,6 +39,13 @@ RUN apt-get update \
 
 RUN debian_arch="$(dpkg --print-architecture)" \
   && if [ "${debian_arch}" != "amd64" ]; then echo "Error: open-docker-nest images support only amd64. Received architecture: ${debian_arch}." >&2; exit 1; fi
+
+RUN npm install --global "playwright@${PLAYWRIGHT_VERSION}" \
+  && playwright install --with-deps chromium \
+  && chmod -R a+rX /ms-playwright \
+  && playwright --version >/dev/null \
+  && npm cache clean --force \
+  && rm -rf /root/.npm /tmp/npm-* /tmp/.npm-*
 
 RUN curl -fsSL "${DOCKER_CLI_AMD64_URL}" -o /tmp/docker.tgz \
   && echo "${DOCKER_CLI_AMD64_SHA256}  /tmp/docker.tgz" | sha256sum -c - \
