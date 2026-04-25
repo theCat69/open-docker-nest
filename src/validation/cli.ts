@@ -17,6 +17,24 @@ function parseJavaVersion(value: string): JavaVersion {
 }
 
 export function parseCliArguments(argv: readonly string[]): ParsedCliOptions {
+  if (argv[0] === "update") {
+    if (argv.length > 1) {
+      fail("update does not accept additional arguments. Usage: open-docker-nest update");
+    }
+
+    return {
+      updateRequested: true,
+      projectPath: process.cwd(),
+      imageRef: DEFAULT_IMAGE,
+      imageSelectionSource: "default",
+      javaVersion: "21",
+      shellMode: false,
+      hostDockerMode: false,
+      passthroughCommand: [],
+      helpRequested: false,
+    };
+  }
+
   let projectPath = process.cwd();
   const environmentImageRef = process.env.OPEN_DOCKER_NEST_IMAGE;
   let imageRef = environmentImageRef ?? DEFAULT_IMAGE;
@@ -95,6 +113,7 @@ export function parseCliArguments(argv: readonly string[]): ParsedCliOptions {
   }
 
   return {
+    updateRequested: false,
     projectPath,
     imageRef,
     imageSelectionSource,

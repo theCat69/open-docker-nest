@@ -5,6 +5,7 @@ export type LocalMode = "auto" | "force" | "off";
 export type ImageSelectionSource = "default" | "environment" | "cli";
 
 export interface ParsedCliOptions {
+  readonly updateRequested: boolean;
   readonly projectPath: string;
   readonly imageRef: string;
   readonly imageSelectionSource: ImageSelectionSource;

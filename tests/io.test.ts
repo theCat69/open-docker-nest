@@ -17,5 +17,7 @@ describe("printUsage", () => {
 
     const usageOutput = String(writeSpy.mock.calls[0]?.[0] ?? "");
     expect(usageOutput).toContain(`Docker image reference (default: ${DEFAULT_IMAGE})`);
+    expect(usageOutput).toContain("open-docker-nest update");
+    expect(usageOutput).toContain("update                 Update CLI package and default Docker image");
   });
 });

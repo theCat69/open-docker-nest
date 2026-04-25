@@ -1,5 +1,6 @@
 export const SCRIPT_NAME = "open-docker-nest";
 export const DEFAULT_IMAGE = "felixdock/open-docker-nest:latest";
+export const NPM_PACKAGE_LATEST = `${SCRIPT_NAME}@latest`;
 export const CONTAINER_PROJECT_DIR = "/workspace";
 export const CONTAINER_HOME_DIR = "/home/opencode";
 export const OPEN_DOCKER_NEST_CONFIG_DIRECTORY_NAME = "open-docker-nest";

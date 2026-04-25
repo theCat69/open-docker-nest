@@ -1,6 +1,7 @@
 import { describe, expect, it, vi, afterEach } from "vitest";
 
 import type { DockerRuntimePlan } from "../src/shared/types.js";
+import { DEFAULT_IMAGE, NPM_PACKAGE_LATEST } from "../src/shared/constants.js";
 
 const spawnSyncMock = vi.hoisted(() => vi.fn());
 
@@ -14,7 +15,7 @@ const processExitSpy = vi.spyOn(process, "exit").mockImplementation(() => {
 
 const processKillSpy = vi.spyOn(process, "kill").mockImplementation(() => true);
 
-import { executeDockerRun } from "../src/runtime/process.js";
+import { executeDockerRun, runExplicitUpdateFlow } from "../src/runtime/process.js";
 
 const samplePlan: DockerRuntimePlan = {
   imageRef: "felixdock/open-docker-nest:latest",
@@ -80,5 +81,62 @@ describe("executeDockerRun", () => {
     expect(() => executeDockerRun(samplePlan)).toThrow(/wrapper could not terminate with the same signal/);
     expect(processKillSpy).toHaveBeenCalledWith(process.pid, "SIGINT");
     expect(processExitSpy).not.toHaveBeenCalled();
+  });
+});
+
+describe("runExplicitUpdateFlow", () => {
+  it("runs npm update then docker pull", () => {
+    spawnSyncMock
+      .mockReturnValueOnce({
+        status: 0,
+        error: undefined,
+        signal: null,
+      })
+      .mockReturnValueOnce({
+        status: 0,
+        error: undefined,
+        signal: null,
+      });
+
+    runExplicitUpdateFlow();
+
+    expect(spawnSyncMock).toHaveBeenNthCalledWith(
+      1,
+      "npm",
+      ["install", "-g", NPM_PACKAGE_LATEST],
+      expect.objectContaining({ stdio: "inherit" }),
+    );
+    expect(spawnSyncMock).toHaveBeenNthCalledWith(
+      2,
+      "docker",
+      ["pull", DEFAULT_IMAGE],
+      expect.objectContaining({ stdio: "inherit" }),
+    );
+  });
+
+  it("fails fast when npm install fails", () => {
+    spawnSyncMock.mockReturnValueOnce({
+      status: 1,
+      error: undefined,
+      signal: null,
+    });
+
+    expect(() => runExplicitUpdateFlow()).toThrow(/Failed to update npm package/);
+  });
+
+  it("fails fast when docker pull fails after npm update", () => {
+    spawnSyncMock
+      .mockReturnValueOnce({
+        status: 0,
+        error: undefined,
+        signal: null,
+      })
+      .mockReturnValueOnce({
+        status: 1,
+        error: undefined,
+        signal: null,
+      });
+
+    expect(() => runExplicitUpdateFlow()).toThrow(/npm package update succeeded, but failed to pull/);
   });
 });

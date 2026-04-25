@@ -64,8 +64,8 @@ The system SHALL support both interactive shell sessions and direct command exec
 - **WHEN** the wrapper runs
 - **THEN** the container executes `opencode` as the default command
 
-### Requirement: Image selection provenance and default-image warning behavior
-The system SHALL track image selection provenance as `default`, `environment`, or `cli`, and SHALL scope canonical default-image warnings to implicit default-image runs only.
+### Requirement: Image selection provenance and default-image availability behavior
+The system SHALL track image selection provenance as `default`, `environment`, or `cli`, and SHALL scope implicit default-image availability handling to default-image runs only.
 
 #### Scenario: Image selection provenance is explicit and ordered
 - **GIVEN** wrapper startup resolves the container image reference
@@ -74,18 +74,33 @@ The system SHALL track image selection provenance as `default`, `environment`, o
 - **AND** when `OPEN_DOCKER_NEST_IMAGE` is set, provenance is `environment`
 - **AND** when `--image <image-ref>` is supplied, provenance is `cli`
 
-#### Scenario: Implicit default-image run may emit advisory canonical-image warnings
+#### Scenario: Implicit default-image run ensures local canonical image availability
 - **GIVEN** image provenance is `default`
-- **WHEN** startup performs local and short best-effort canonical-image checks
-- **THEN** the wrapper MAY warn if the canonical default image is missing locally
-- **AND** the wrapper MAY warn if the local canonical default image appears outdated
-- **AND** these warnings are advisory and do not block startup
-- **AND** the wrapper does not auto-pull images
+- **WHEN** startup checks whether the canonical default image exists locally
+- **THEN** the wrapper pulls `felixdock/open-docker-nest:latest` only when it is missing locally
+- **AND** startup does not run remote canonical-image freshness checks
 
-#### Scenario: Explicit image selection bypasses canonical default-image warning path
+#### Scenario: Explicit image selection bypasses implicit default-image availability path
 - **GIVEN** image provenance is `environment` or `cli`
 - **WHEN** startup runs
-- **THEN** canonical default-image missing/outdated warnings are not emitted for that run
+- **THEN** implicit default-image local-availability check/pull path is not executed for that run
+
+### Requirement: Explicit update command refreshes published CLI and default image
+The system SHALL provide an explicit `open-docker-nest update` command that runs update operations outside normal runtime execution.
+
+#### Scenario: Update command runs npm package update then default-image pull
+- **GIVEN** a developer invokes `open-docker-nest update`
+- **WHEN** command execution starts
+- **THEN** the wrapper runs `npm install -g open-docker-nest@latest`
+- **AND** on success, runs `docker pull felixdock/open-docker-nest:latest`
+- **AND** normal runtime planning/execution is not entered for that command invocation
+
+#### Scenario: Update command fails fast on update step failures
+- **GIVEN** a developer invokes `open-docker-nest update`
+- **WHEN** npm update fails
+- **THEN** command exits non-zero with actionable diagnostics
+- **AND** docker pull step is not run
+- **AND** when npm update succeeds but docker pull fails, command exits non-zero with diagnostics indicating the failed pull step
 
 ### Requirement: Explicit host-docker mode enables Docker-aware in-container sessions
 The system SHALL provide an explicit `--host-docker` mode that grants host Docker daemon access to the launched in-container session only when a usable local Unix-socket daemon is available and the active Docker context is the default/local context.

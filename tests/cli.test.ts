@@ -10,8 +10,23 @@ describe("parseCliArguments", () => {
   it("defaults to the canonical published Docker Hub image", () => {
     const parsed = parseCliArguments([]);
 
+    expect(parsed.updateRequested).toBe(false);
     expect(parsed.imageRef).toBe("felixdock/open-docker-nest:latest");
     expect(parsed.imageSelectionSource).toBe("default");
+  });
+
+  it("parses explicit update command", () => {
+    const parsed = parseCliArguments(["update"]);
+
+    expect(parsed.updateRequested).toBe(true);
+    expect(parsed.helpRequested).toBe(false);
+    expect(parsed.passthroughCommand).toEqual([]);
+  });
+
+  it("fails fast when update command includes extra arguments", () => {
+    expect(() => parseCliArguments(["update", "--image", "example/custom:image"])).toThrow(
+      /update does not accept additional arguments/,
+    );
   });
 
   it("uses OPEN_DOCKER_NEST_IMAGE when provided", () => {

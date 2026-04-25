@@ -95,6 +95,7 @@ For reproducible runs, replace `latest` with a specific version tag or image dig
 ## Usage
 
 ```bash
+open-docker-nest update
 open-docker-nest [--project <host-path>] [--image <image-ref>] [--java <21|25>] [--shell] [--host-docker] [--] [command ...args]
 ```
 
@@ -105,7 +106,22 @@ open-docker-nest [--project <host-path>] [--image <image-ref>] [--java <21|25>] 
 - With no command args and no `--shell`, the wrapper still runs `opencode` by default.
 - Commands provided after `--` are passed through unchanged (`-- <command> ...args`).
 - `--repo-command` is removed; use `--host-docker` for session-wide host Docker access.
-- On implicit default-image runs (no `--image`, no `OPEN_DOCKER_NEST_IMAGE`), the wrapper may emit non-blocking warnings if `felixdock/open-docker-nest:latest` is missing locally or appears outdated. It never auto-pulls.
+- On implicit default-image runs (no `--image`, no `OPEN_DOCKER_NEST_IMAGE`), the wrapper checks local availability and pulls `felixdock/open-docker-nest:latest` only when missing locally.
+
+### Explicit update command
+
+Use the explicit update flow when you want to refresh both the published CLI and the default image:
+
+```bash
+open-docker-nest update
+```
+
+This command runs:
+
+- `npm install -g open-docker-nest@latest`
+- `docker pull felixdock/open-docker-nest:latest`
+
+Normal runtime startup does not perform remote freshness checks.
 
 ### Host Docker mode (`--host-docker`)
 

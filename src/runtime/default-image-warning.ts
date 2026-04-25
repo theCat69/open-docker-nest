@@ -1,156 +1,87 @@
 import { spawnSync } from "node:child_process";
 
 import { DEFAULT_IMAGE } from "../shared/constants.js";
-import { warn } from "../shared/io.js";
+import { fail } from "../shared/io.js";
 
-const SHORT_REMOTE_CHECK_TIMEOUT_MS = 700;
-const SHA256_DIGEST_PATTERN = /^sha256:[a-f0-9]{64}$/;
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === "object";
+interface LocalImageCheckResultPresent {
+  readonly kind: "present";
 }
 
-function runDockerReadOnlyCommand(argumentsToRun: readonly string[], timeoutMs?: number): string | null {
-  const result = spawnSync("docker", argumentsToRun, {
+interface LocalImageCheckResultMissing {
+  readonly kind: "missing";
+}
+
+interface LocalImageCheckResultError {
+  readonly kind: "error";
+  readonly details: string;
+}
+
+type LocalImageCheckResult =
+  | LocalImageCheckResultPresent
+  | LocalImageCheckResultMissing
+  | LocalImageCheckResultError;
+
+function inspectResultIndicatesMissingImage(stderrOutput: string): boolean {
+  const normalizedOutput = stderrOutput.toLowerCase();
+  return normalizedOutput.includes("no such image");
+}
+
+function checkDefaultImageLocally(): LocalImageCheckResult {
+  const inspectResult = spawnSync("docker", ["image", "inspect", DEFAULT_IMAGE, "--format", "{{.Id}}"], {
+    stdio: ["ignore", "ignore", "pipe"],
     encoding: "utf8",
-    stdio: ["ignore", "pipe", "ignore"],
-    timeout: timeoutMs,
   });
 
-  if (result.status !== 0) {
-    return null;
+  if (inspectResult.error !== undefined) {
+    return {
+      kind: "error",
+      details: inspectResult.error.message,
+    };
   }
 
-  return result.stdout.trim();
+  if (inspectResult.status === 0) {
+    return { kind: "present" };
+  }
+
+  if (inspectResult.signal !== null) {
+    return {
+      kind: "error",
+      details: `docker image inspect terminated by signal ${inspectResult.signal}`,
+    };
+  }
+
+  const inspectStderr = typeof inspectResult.stderr === "string" ? inspectResult.stderr : "";
+  if (inspectResultIndicatesMissingImage(inspectStderr)) {
+    return { kind: "missing" };
+  }
+
+  const statusDetails = inspectResult.status === null
+    ? "docker image inspect exited with null status"
+    : `docker image inspect exited with status ${inspectResult.status}`;
+
+  const stderrDetails = inspectStderr.trim().length > 0 ? `: ${inspectStderr.trim()}` : "";
+  return {
+    kind: "error",
+    details: `${statusDetails}${stderrDetails}`,
+  };
 }
 
-function warnWhenDefaultImageMissingLocally(): boolean {
-  const localImageIdentifier = runDockerReadOnlyCommand([
-    "image",
-    "inspect",
-    DEFAULT_IMAGE,
-    "--format",
-    "{{.Id}}",
-  ]);
-
-  if (localImageIdentifier !== null) {
-    return false;
-  }
-
-  warn(
-    `Default image ${DEFAULT_IMAGE} is not present locally. Remediation: pull it with 'docker pull ${DEFAULT_IMAGE}' before normal runs.`,
-  );
-  return true;
-}
-
-function parseShaDigest(candidate: unknown): string | null {
-  return typeof candidate === "string" && SHA256_DIGEST_PATTERN.test(candidate) ? candidate : null;
-}
-
-function tryReadSingleManifestArrayDigest(remoteManifest: Record<string, unknown>): string | null {
-  const manifestsValue = remoteManifest.manifests;
-  if (!Array.isArray(manifestsValue)) {
-    return null;
-  }
-
-  if (manifestsValue.length !== 1) {
-    return null;
-  }
-
-  const singleManifest = manifestsValue[0];
-  if (!isRecord(singleManifest)) {
-    return null;
-  }
-
-  return parseShaDigest(singleManifest.digest);
-}
-
-function tryReadDescriptorDigest(remoteManifest: Record<string, unknown>): string | null {
-  const descriptorValue = remoteManifest.Descriptor;
-  if (!isRecord(descriptorValue)) {
-    return null;
-  }
-
-  return parseShaDigest(descriptorValue.digest);
-}
-
-function tryReadHighConfidenceRemoteDigest(remoteManifestJson: string): string | null {
-  try {
-    const parsedManifest: unknown = JSON.parse(remoteManifestJson);
-    if (!isRecord(parsedManifest)) {
-      return null;
-    }
-
-    const hasManifestArray = Array.isArray(parsedManifest.manifests);
-    if (hasManifestArray) {
-      return tryReadSingleManifestArrayDigest(parsedManifest);
-    }
-
-    return tryReadDescriptorDigest(parsedManifest);
-  } catch {
-    return null;
-  }
-}
-
-function tryReadRemoteDefaultDigest(): string | null {
-  const remoteManifestJson = runDockerReadOnlyCommand(
-    ["manifest", "inspect", DEFAULT_IMAGE, "--verbose"],
-    SHORT_REMOTE_CHECK_TIMEOUT_MS,
-  );
-
-  if (remoteManifestJson === null || remoteManifestJson.length === 0) {
-    return null;
-  }
-
-  return tryReadHighConfidenceRemoteDigest(remoteManifestJson);
-}
-
-function tryReadLocalRepoDigest(): string | null {
-  const repoDigest = runDockerReadOnlyCommand([
-    "image",
-    "inspect",
-    DEFAULT_IMAGE,
-    "--format",
-    "{{index .RepoDigests 0}}",
-  ]);
-
-  if (repoDigest === null || repoDigest.length === 0 || !repoDigest.includes("@")) {
-    return null;
-  }
-
-  const digest = repoDigest.split("@")[1] ?? null;
-  if (digest === null || !SHA256_DIGEST_PATTERN.test(digest)) {
-    return null;
-  }
-
-  return digest;
-}
-
-function warnWhenDefaultImageAppearsOutdated(): void {
-  const localDigest = tryReadLocalRepoDigest();
-  if (localDigest === null) {
+export function ensureImplicitDefaultImageAvailable(): void {
+  const localImageCheck = checkDefaultImageLocally();
+  if (localImageCheck.kind === "present") {
     return;
   }
 
-  const remoteDigest = tryReadRemoteDefaultDigest();
-  if (remoteDigest === null) {
-    return;
+  if (localImageCheck.kind === "error") {
+    fail(`Unable to verify local default image ${DEFAULT_IMAGE} (${localImageCheck.details}). Remediation: ensure Docker daemon/context/auth is healthy and retry.`);
   }
 
-  if (localDigest === remoteDigest) {
-    return;
+  const pullResult = spawnSync("docker", ["pull", DEFAULT_IMAGE], {
+    stdio: "inherit",
+  });
+
+  if (pullResult.error !== undefined || pullResult.status !== 0) {
+    const details = pullResult.error?.message ?? "docker pull exited non-zero";
+    fail(`Unable to pull missing default image ${DEFAULT_IMAGE} (${details}). Remediation: run 'docker pull ${DEFAULT_IMAGE}' and retry.`);
   }
-
-  warn(
-    `Default image ${DEFAULT_IMAGE} may be outdated locally. Advisory: compare/pull with 'docker pull ${DEFAULT_IMAGE}' if you want the latest tag contents.`,
-  );
-}
-
-export function warnAboutImplicitDefaultImageState(): void {
-  const missingLocally = warnWhenDefaultImageMissingLocally();
-  if (missingLocally) {
-    return;
-  }
-
-  warnWhenDefaultImageAppearsOutdated();
 }

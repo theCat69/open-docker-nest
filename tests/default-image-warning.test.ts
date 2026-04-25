@@ -1,132 +1,91 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 const spawnSyncMock = vi.hoisted(() => vi.fn());
-const warnMock = vi.hoisted(() => vi.fn());
 
 vi.mock("node:child_process", () => ({
   spawnSync: spawnSyncMock,
 }));
 
-vi.mock("../src/shared/io.js", async (importOriginal) => {
-  const originalModule = await importOriginal<typeof import("../src/shared/io.js")>();
-  return {
-    ...originalModule,
-    warn: warnMock,
-  };
-});
+vi.mock("../src/shared/io.js", () => ({
+  fail: (message: string) => {
+    throw new Error(message);
+  },
+}));
 
-import { warnAboutImplicitDefaultImageState } from "../src/runtime/default-image-warning.js";
+import { ensureImplicitDefaultImageAvailable } from "../src/runtime/default-image-warning.js";
 
 afterEach(() => {
   spawnSyncMock.mockReset();
-  warnMock.mockReset();
 });
 
-describe("warnAboutImplicitDefaultImageState", () => {
-  it("warns when the default image is missing locally", () => {
+describe("ensureImplicitDefaultImageAvailable", () => {
+  it("does nothing when the default image exists locally", () => {
     spawnSyncMock.mockReturnValueOnce({
-      status: 1,
-      stdout: "",
+      status: 0,
+      error: undefined,
+      signal: null,
     });
 
-    warnAboutImplicitDefaultImageState();
+    ensureImplicitDefaultImageAvailable();
 
-    expect(warnMock).toHaveBeenCalledOnce();
-    expect(warnMock.mock.calls[0]?.[0]).toMatch(/not present locally/);
+    expect(spawnSyncMock).toHaveBeenCalledOnce();
+    expect(spawnSyncMock).toHaveBeenCalledWith(
+      "docker",
+      ["image", "inspect", "felixdock/open-docker-nest:latest", "--format", "{{.Id}}"],
+      expect.objectContaining({ stdio: ["ignore", "ignore", "pipe"], encoding: "utf8" }),
+    );
   });
 
-  it("does not warn when local inspect succeeds and remote freshness is unavailable", () => {
+  it("pulls the default image when missing locally", () => {
     spawnSyncMock
-      .mockReturnValueOnce({
-        status: 0,
-        stdout: "sha256:localid\n",
-      })
-      .mockReturnValueOnce({
-        status: 0,
-        stdout: "felixdock/open-docker-nest@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n",
-      })
       .mockReturnValueOnce({
         status: 1,
-        stdout: "",
+        error: undefined,
+        signal: null,
+        stderr: "Error response from daemon: No such image: felixdock/open-docker-nest:latest",
+      })
+      .mockReturnValueOnce({
+        status: 0,
+        error: undefined,
+        signal: null,
       });
 
-    warnAboutImplicitDefaultImageState();
-
-    expect(warnMock).not.toHaveBeenCalled();
-  });
-
-  it("warns when remote digest differs from local digest", () => {
-    spawnSyncMock
-      .mockReturnValueOnce({
-        status: 0,
-        stdout: "sha256:localid\n",
-      })
-      .mockReturnValueOnce({
-        status: 0,
-        stdout: "felixdock/open-docker-nest@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n",
-      })
-      .mockReturnValueOnce({
-        status: 0,
-        stdout: JSON.stringify({
-          Descriptor: {
-            digest: "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-          },
-        }),
-      });
-
-    warnAboutImplicitDefaultImageState();
-
-    expect(warnMock).toHaveBeenCalledOnce();
-    expect(warnMock.mock.calls[0]?.[0]).toMatch(/may be outdated locally/);
-  });
-
-  it("skips outdated warning on ambiguous remote manifest data", () => {
-    spawnSyncMock
-      .mockReturnValueOnce({
-        status: 0,
-        stdout: "sha256:localid\n",
-      })
-      .mockReturnValueOnce({
-        status: 0,
-        stdout: "felixdock/open-docker-nest@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n",
-      })
-      .mockReturnValueOnce({
-        status: 0,
-        stdout: JSON.stringify({
-          manifests: [
-            { digest: "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" },
-            { digest: "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc" },
-          ],
-        }),
-      });
-
-    warnAboutImplicitDefaultImageState();
-
-    expect(warnMock).not.toHaveBeenCalled();
-  });
-
-  it("uses a tightly bounded timeout for remote freshness probe", () => {
-    spawnSyncMock
-      .mockReturnValueOnce({
-        status: 0,
-        stdout: "sha256:localid\n",
-      })
-      .mockReturnValueOnce({
-        status: 0,
-        stdout: "felixdock/open-docker-nest@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n",
-      })
-      .mockReturnValueOnce({
-        status: 1,
-        stdout: "",
-      });
-
-    warnAboutImplicitDefaultImageState();
+    ensureImplicitDefaultImageAvailable();
 
     expect(spawnSyncMock).toHaveBeenNthCalledWith(
-      3,
+      2,
       "docker",
-      ["manifest", "inspect", "felixdock/open-docker-nest:latest", "--verbose"],
-      expect.objectContaining({ timeout: 700 }),
+      ["pull", "felixdock/open-docker-nest:latest"],
+      expect.objectContaining({ stdio: "inherit" }),
     );
+  });
+
+  it("fails fast when pulling a missing image fails", () => {
+    spawnSyncMock
+      .mockReturnValueOnce({
+        status: 1,
+        error: undefined,
+        signal: null,
+        stderr: "Error response from daemon: No such image: felixdock/open-docker-nest:latest",
+      })
+      .mockReturnValueOnce({
+        status: 1,
+        error: undefined,
+        signal: null,
+      });
+
+    expect(() => ensureImplicitDefaultImageAvailable()).toThrow(/Unable to pull missing default image/);
+  });
+
+  it("fails fast when inspect fails for non-missing-image reasons", () => {
+    spawnSyncMock.mockReturnValueOnce({
+      status: 1,
+      error: undefined,
+      signal: null,
+      stderr: "Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?",
+    });
+
+    expect(() => ensureImplicitDefaultImageAvailable()).toThrow(/Unable to verify local default image/);
+    expect(spawnSyncMock).toHaveBeenCalledOnce();
   });
 });

@@ -81,7 +81,8 @@ To keep image size/coupling bounded while still supporting browser automation, t
 ## Wrapper usage
 
 ```bash
- open-docker-nest [--project <host-path>] [--image <image-ref>] [--java <21|25>] [--shell] [--host-docker] [--] [command ...args]
+open-docker-nest update
+open-docker-nest [--project <host-path>] [--image <image-ref>] [--java <21|25>] [--shell] [--host-docker] [--] [command ...args]
 ```
 
 - `open-docker-nest` is the published command (mapped to `bin/open-docker-nest.js` in `package.json`).
@@ -90,14 +91,27 @@ To keep image size/coupling bounded while still supporting browser automation, t
 - Default image is `felixdock/open-docker-nest:latest`.
 - Override image with `--image <image-ref>`.
 - Image selection provenance is tracked as: implicit `default`, `OPEN_DOCKER_NEST_IMAGE` `environment`, or `--image` `cli`.
-- On implicit default-image runs only (no `--image`, no `OPEN_DOCKER_NEST_IMAGE`), the wrapper may emit non-blocking warnings when `felixdock/open-docker-nest:latest` is missing locally or appears outdated from a short best-effort canonical-image check.
-- These warnings are advisory, never auto-pull, and never block startup.
+- On implicit default-image runs only (no `--image`, no `OPEN_DOCKER_NEST_IMAGE`), the wrapper checks local availability and pulls `felixdock/open-docker-nest:latest` only when missing locally.
+- Startup no longer performs remote canonical-image freshness checks.
 - Choose the in-container default JDK with `--java <21|25>` (default: `21`).
 - `--shell` starts an interactive shell at `/workspace` as user `opencode` with `HOME=/home/opencode`.
 - `--host-docker` enables host Docker daemon access for the entire in-container session.
 - `--repo-command` is removed; use `--host-docker`.
 - Without `--shell` and without command args, default command is `opencode`.
 - Any command after `--` is passed through unchanged.
+
+### Explicit update command
+
+Use `open-docker-nest update` to run explicit updates outside normal runtime startup:
+
+```bash
+open-docker-nest update
+```
+
+This command executes:
+
+- `npm install -g open-docker-nest@latest`
+- `docker pull felixdock/open-docker-nest:latest`
 
 ### Java version selection
 
