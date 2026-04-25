@@ -15,8 +15,7 @@ ARG RUSTUP_VERSION=1.29.0
 ARG RUSTUP_INIT_AMD64_SHA256=4acc9acc76d5079515b46346a485974457b5a79893cfb01112423c89aeb5aa10
 ARG RUST_TOOLCHAIN=1.95.0
 ARG DIOXUS_CLI_VERSION=0.7.5
-ARG DIOXUS_CLI_AMD64_URL=https://github.com/DioxusLabs/dioxus/releases/download/v0.7.5/dx-x86_64-unknown-linux-gnu.tar.gz
-ARG DIOXUS_CLI_AMD64_SHA256=969144a955bc6d399c9a62ed5804363629f0090b5a6bae9e6ed7ffc1b17a7615
+ARG DIOXUS_CLI_CRATE_SHA256=450097b47dc9452243645015379433ab63d600d5b29f8d5b4237d6d63b59d7a0
 ARG DOCKER_CLI_VERSION=29.4.1
 ARG DOCKER_CLI_AMD64_URL=https://download.docker.com/linux/static/stable/x86_64/docker-29.4.1.tgz
 ARG DOCKER_CLI_AMD64_SHA256=0fb3d2b72414ab862d68517f0b17b78c93c149d1c5c461acb969aacde1a2189d
@@ -34,7 +33,9 @@ RUN apt-get update \
     ca-certificates \
     curl \
     git \
+    libssl-dev \
     openssh-client \
+    pkg-config \
     tini \
     util-linux \
     ripgrep \
@@ -107,11 +108,13 @@ RUN rustup_arch="x86_64-unknown-linux-gnu" \
   && cargo --version >/dev/null \
   && rustfmt --version >/dev/null
 
-RUN curl -fsSL "${DIOXUS_CLI_AMD64_URL}" -o /tmp/dx.tar.gz \
-  && echo "${DIOXUS_CLI_AMD64_SHA256}  /tmp/dx.tar.gz" | sha256sum -c - \
-  && tar -xzf /tmp/dx.tar.gz -C /tmp \
-  && install -m 0755 /tmp/dx /usr/local/bin/dx \
-  && rm -f /tmp/dx /tmp/dx.tar.gz \
+RUN curl -fsSL "https://crates.io/api/v1/crates/dioxus-cli/${DIOXUS_CLI_VERSION}/download" -o /tmp/dioxus-cli.crate \
+  && echo "${DIOXUS_CLI_CRATE_SHA256}  /tmp/dioxus-cli.crate" | sha256sum -c - \
+  && mkdir -p /tmp/dioxus-cli-src \
+  && tar -xzf /tmp/dioxus-cli.crate -C /tmp/dioxus-cli-src \
+  && CARGO_HOME=/usr/local/cargo cargo install --locked --path "/tmp/dioxus-cli-src/dioxus-cli-${DIOXUS_CLI_VERSION}" \
+  && ln -sf /usr/local/cargo/bin/dx /usr/local/bin/dx \
+  && rm -rf /tmp/dioxus-cli.crate /tmp/dioxus-cli-src /usr/local/cargo/registry /usr/local/cargo/git \
   && dx_version="$(dx --version)" \
   && case "${dx_version}" in *"${DIOXUS_CLI_VERSION}"*) ;; *) echo "Error: expected dx ${DIOXUS_CLI_VERSION}, got ${dx_version}." >&2; exit 1; esac
 
