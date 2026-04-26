@@ -4,7 +4,7 @@ FROM node:24-trixie-slim
 # override them with freshly resolved pinned versions during CI rebuilds.
 ARG CACHE_CTRL_VERSION=1.6.0
 ARG BUN_VERSION=1.3.13
-ARG PLAYWRIGHT_VERSION=1.58.2
+ARG PLAYWRIGHT_VERSION=1.59.1
 ARG JAVA21_DIRNAME=jdk-21.0.11+10
 ARG JAVA21_AMD64_URL=https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.11%2B10/OpenJDK21U-jdk_x64_linux_hotspot_21.0.11_10.tar.gz
 ARG JAVA21_AMD64_SHA256=4b2220e232a97997b436ca6ab15cbf70171ecff52958a46159dfa5a8c44ca4de
@@ -72,6 +72,7 @@ RUN npm install --global \
   "opencode-ai@${OPENCODE_VERSION}" \
   "@thecat69/cache-ctrl@${CACHE_CTRL_VERSION}" \
   "@fission-ai/openspec@latest" \
+  "@playwright/cli@latest" \
   && ln -sf /usr/local/lib/node_modules/bun/bin/bun.exe /usr/local/bin/bun \
   && bun --version >/dev/null \
   && cache-ctrl version >/dev/null \
