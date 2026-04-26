@@ -411,6 +411,8 @@ open-docker-nest -- /usr/bin/env bash -lc 'playwright --version && printf "%s\n"
 
 Playwright browser scope in this image is intentionally **Chromium-only** to control image size and dependency coupling.
 
+This image does **not** install branded Google Chrome packages. To keep Chrome-channel Playwright commands compatible in this Chromium-only image, `/opt/google/chrome/chrome` is provided as a lightweight launcher that delegates to bundled Playwright Chromium.
+
 The browser bundle path is fixed to `PLAYWRIGHT_BROWSERS_PATH=/ms-playwright` at image build/runtime. For non-root wrapper sessions to remain compatible, `/ms-playwright` and its contents are expected to stay world-readable/executable (`a+rX`).
 
 ## Permissions and file ownership
@@ -441,6 +443,7 @@ Result: files created or edited in `/workspace` are owned by the invoking host u
 - `CACHE_CTRL local-dev auto mode did not activate...`: auto mode found invalid/missing/inconsistent local inputs and safely fell back to image-installed `cache-ctrl`; fix reported inputs or set `CACHE_CTRL_LOCAL_MODE=off` to disable probing.
 - `CACHE_CTRL local-dev preflight failed...`: in force mode one or more local-dev prerequisites failed (for example missing `~/.local/bin/cache-ctrl`, broken `cache-ctrl-caller/SKILL.md` symlink, unreadable targets, inaccessible or mismatched checkout roots); fix the reported input(s) or disable with `CACHE_CTRL_LOCAL_MODE=off`.
 - `CACHE_CTRL_LOCAL_PATH must match the derived cache-ctrl checkout root...`: set `CACHE_CTRL_LOCAL_PATH` to the derived absolute checkout path (or unset it).
+- `playwright ... /opt/google/chrome/chrome`: verify the image includes the Chrome-channel compatibility launcher and that bundled Chromium exists under `/ms-playwright`. If you require branded Google Chrome specifically (not the compatibility launcher), run in an environment that intentionally provisions it.
 
 ## Release plugin installation behavior
 

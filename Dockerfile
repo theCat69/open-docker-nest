@@ -45,6 +45,9 @@ RUN debian_arch="$(dpkg --print-architecture)" \
 
 RUN npm install --global "playwright@${PLAYWRIGHT_VERSION}" \
   && playwright install --with-deps chromium \
+  && install -d -m 0755 /opt/google/chrome \
+  && printf '#!/usr/bin/env bash\nset -euo pipefail\n\nfor chromium_binary in /ms-playwright/chromium-*/chrome-linux/chrome; do\n  if [ -x "${chromium_binary}" ]; then\n    exec "${chromium_binary}" "$@"\n  fi\ndone\n\necho "Error: bundled Playwright Chromium executable was not found under /ms-playwright." >&2\nexit 1\n' > /opt/google/chrome/chrome \
+  && chmod 0755 /opt/google/chrome/chrome \
   && chmod -R a+rX /ms-playwright \
   && playwright --version >/dev/null \
   && npm cache clean --force \

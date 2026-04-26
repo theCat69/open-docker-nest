@@ -91,7 +91,22 @@ describe("docker wrapper mode smoke coverage", () => {
       "/usr/bin/env",
       "bash",
       "-lc",
-      "playwright --version >/dev/null && test \"${PLAYWRIGHT_BROWSERS_PATH:-}\" = \"/ms-playwright\" && test -d /ms-playwright && test -r /ms-playwright && test -x /ms-playwright && playwright screenshot --browser=chromium --timeout=20000 about:blank /tmp/playwright-smoke.png >/dev/null",
+      "playwright --version >/dev/null && test \"${PLAYWRIGHT_BROWSERS_PATH:-}\" = \"/ms-playwright\" && test -d /ms-playwright && test -r /ms-playwright && test -x /ms-playwright && playwright screenshot --timeout=20000 about:blank /tmp/playwright-smoke.png >/dev/null",
+    ]);
+
+    expect(result.status).toBe(0);
+  });
+
+  it("maps Playwright Chrome channel requests onto bundled Chromium", () => {
+    const fixtureProjectPath = createTemporaryDirectory("open-docker-nest-e2e-playwright-chrome-channel-");
+    temporaryPathsToClean.push(fixtureProjectPath);
+
+    const result = runWrapper(fixtureProjectPath, [
+      "--",
+      "/usr/bin/env",
+      "bash",
+      "-lc",
+      "test -x /opt/google/chrome/chrome && playwright screenshot --browser=chrome --timeout=20000 about:blank /tmp/playwright-smoke-chrome-channel.png >/dev/null",
     ]);
 
     expect(result.status).toBe(0);

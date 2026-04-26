@@ -250,6 +250,12 @@ The system SHALL install a pinned Playwright CLI release in the Docker image and
 - **THEN** the image bundles Chromium support only
 - **AND** documentation explicitly records this scope choice as an image-size/coupling trade-off
 
+#### Scenario: Chrome-channel launch path maps to bundled Chromium without provisioning branded Chrome
+- **GIVEN** the repository Docker image is built in this slice
+- **WHEN** browser runtime dependencies are validated
+- **THEN** branded Google Chrome packages are not a provisioned dependency
+- **AND** the `/opt/google/chrome/chrome` launch path resolves to bundled Playwright Chromium for compatibility
+
 #### Scenario: Playwright browser bundle path and non-root permission contract are documented
 - **GIVEN** the repository Docker image pins Playwright with bundled browser artifacts
 - **WHEN** maintainers read Docker workflow documentation

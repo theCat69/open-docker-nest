@@ -86,6 +86,8 @@ The Docker Hub publish workflow may rebuild with newer pinned versions of `cache
 When that happens, the workflow uploads the resolved versions as CI artifacts for traceability.
 
 To limit image bloat while preserving browser automation support, the image preinstalls Playwright Chromium only (instead of full multi-browser bundles).
+Playwright runtime contract: the image remains Chromium-only, and `/opt/google/chrome/chrome` is provided as a compatibility launcher to the bundled Chromium binary.
+`PLAYWRIGHT_BROWSERS_PATH=/ms-playwright` is set in-image, and bundled browser artifacts must remain readable by the remapped non-root runtime user.
 
 The image and Docker Hub publish workflow support `linux/amd64` only. Arm64 is unsupported.
 

@@ -25,7 +25,7 @@ Examples are intentionally focused excerpts copied from real project code. They 
 - `js-wrapper-runtime-plan-modules.md` — thin JS entrypoint delegation to modular runtime planning/execution.
 - `host-docker-socket-bridge-gating.md` — explicit host-docker gating for host Docker socket bridge wiring.
 - `docker-toolchain-checksum-install.md` — Dockerfile pattern for pinned toolchain downloads with SHA-256 verification.
-- `playwright-chromium-bundled-install.md` — pinned Playwright CLI install with Chromium-only browser bundle and non-root-readable browser artifacts.
+- `playwright-chromium-bundled-install.md` — pinned Playwright CLI install with Chromium-only browser bundle, Chrome-channel compatibility launcher wiring, and non-root-readable browser artifacts.
 - `optional-host-gitconfig-readonly-mount.md` — optional host `~/.gitconfig` validation and read-only bind-mount wiring.
 - `zod-project-config-env-expansion.md` — Zod-defined project config with strict `{env:VAR}` expansion to validated runtime env values.
 - `local-cli-symlink-install-guards.md` — idempotent local CLI symlink install/uninstall with unrelated-target protection.
