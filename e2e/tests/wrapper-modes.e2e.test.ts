@@ -65,7 +65,7 @@ describe("docker wrapper mode smoke coverage", () => {
     expect(outputLines).toEqual(["passthrough-check", "alpha", "beta"]);
   });
 
-  it("exposes Java 25 and Rust native-build baseline to the non-root runtime user", () => {
+  it("exposes Java 25 and Rust fmt/clippy usable native-build baseline to the non-root runtime user", () => {
     const fixtureProjectPath = createTemporaryDirectory("open-docker-nest-e2e-toolchains-");
     temporaryPathsToClean.push(fixtureProjectPath);
 
@@ -76,7 +76,7 @@ describe("docker wrapper mode smoke coverage", () => {
       "/usr/bin/env",
       "bash",
       "-lc",
-      "java -version >/dev/null && javac -version >/dev/null && command -v cc >/dev/null && rustc --version >/dev/null && cargo --version >/dev/null && printf 'fn main() { println!(\"rust-linker-ok\"); }\n' > /tmp/rust-linker-smoke.rs && rustc /tmp/rust-linker-smoke.rs -o /tmp/rust-linker-smoke && /tmp/rust-linker-smoke >/dev/null",
+      "java -version >/dev/null && javac -version >/dev/null && command -v cc >/dev/null && rustc --version >/dev/null && cargo --version >/dev/null && rm -rf /tmp/runtime-smoke-project && mkdir -p /tmp/runtime-smoke-project && cargo init --quiet --bin --vcs none /tmp/runtime-smoke-project && printf 'fn main() {\n    println!(\"rust-linker-ok\");\n}\n' > /tmp/runtime-smoke-project/src/main.rs && cargo fmt --manifest-path /tmp/runtime-smoke-project/Cargo.toml --check >/dev/null && cargo clippy --manifest-path /tmp/runtime-smoke-project/Cargo.toml --no-deps >/dev/null && cargo run --quiet --manifest-path /tmp/runtime-smoke-project/Cargo.toml >/dev/null && rm -rf /tmp/runtime-smoke-project",
     ]);
 
     expect(result.status).toBe(0);

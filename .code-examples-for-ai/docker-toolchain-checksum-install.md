@@ -28,15 +28,23 @@ RUN curl -fsSL "${JAVA21_AMD64_URL}" -o /tmp/java21.tar.gz \
 ```
 
 ```Dockerfile
-ARG RUSTUP_VERSION=1.28.2
-ARG RUSTUP_INIT_AMD64_SHA256=20a06e644b0d9bd2fbdbfd52d42540bdde820ea7df86e92e533c073da0cdd43c
-ARG RUST_TOOLCHAIN=1.84.0
+ARG RUSTUP_VERSION=1.29.0
+ARG RUSTUP_INIT_AMD64_SHA256=4acc9acc76d5079515b46346a485974457b5a79893cfb01112423c89aeb5aa10
+ARG RUST_TOOLCHAIN=1.95.0
+
+ENV RUSTUP_HOME=/usr/local/rustup
+ENV CARGO_HOME=/usr/local/cargo
+ENV PATH=/usr/local/cargo/bin:${PATH}
 
 RUN rustup_arch="x86_64-unknown-linux-gnu" \
   && curl -fsSL "https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/${rustup_arch}/rustup-init" -o /tmp/rustup-init \
   && echo "${RUSTUP_INIT_AMD64_SHA256}  /tmp/rustup-init" | sha256sum -c - \
   && chmod +x /tmp/rustup-init \
-  && RUSTUP_HOME=/usr/local/rustup CARGO_HOME=/usr/local/cargo /tmp/rustup-init -y --profile minimal --default-toolchain "${RUST_TOOLCHAIN}" --no-modify-path \
-  && ln -sf "/usr/local/rustup/toolchains/${RUST_TOOLCHAIN}-${rustup_arch}/bin/rustc" /usr/local/bin/rustc \
-  && ln -sf "/usr/local/rustup/toolchains/${RUST_TOOLCHAIN}-${rustup_arch}/bin/cargo" /usr/local/bin/cargo
+  && /tmp/rustup-init -y --profile minimal --default-toolchain "${RUST_TOOLCHAIN}" --no-modify-path \
+  && rustup component add rustfmt clippy --toolchain "${RUST_TOOLCHAIN}-${rustup_arch}" \
+  && rustup target add wasm32-unknown-unknown --toolchain "${RUST_TOOLCHAIN}-${rustup_arch}" \
+  && rustc --version >/dev/null \
+  && cargo --version >/dev/null \
+  && cargo fmt --version >/dev/null \
+  && cargo clippy --version >/dev/null
 ```

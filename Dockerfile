@@ -23,6 +23,9 @@ ARG DOCKER_BUILDX_AMD64_SHA256=9426a15411f35f635afef3f5d3bae53155c3e30d26dee430c
 ARG OPENCODE_VERSION=1.14.25
 
 ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+ENV RUSTUP_HOME=/usr/local/rustup
+ENV CARGO_HOME=/usr/local/cargo
+ENV PATH=/usr/local/cargo/bin:${PATH}
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
@@ -99,16 +102,18 @@ RUN rustup_arch="x86_64-unknown-linux-gnu" \
   && curl -fsSL "https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/${rustup_arch}/rustup-init" -o /tmp/rustup-init \
   && echo "${RUSTUP_INIT_AMD64_SHA256}  /tmp/rustup-init" | sha256sum -c - \
   && chmod +x /tmp/rustup-init \
-  && RUSTUP_HOME=/usr/local/rustup CARGO_HOME=/usr/local/cargo /tmp/rustup-init -y --profile minimal --default-toolchain "${RUST_TOOLCHAIN}" --no-modify-path \
-  && RUSTUP_HOME=/usr/local/rustup CARGO_HOME=/usr/local/cargo /usr/local/cargo/bin/rustup component add rustfmt --toolchain "${RUST_TOOLCHAIN}-${rustup_arch}" \
-  && RUSTUP_HOME=/usr/local/rustup CARGO_HOME=/usr/local/cargo /usr/local/cargo/bin/rustup target add wasm32-unknown-unknown --toolchain "${RUST_TOOLCHAIN}-${rustup_arch}" \
-  && ln -sf "/usr/local/rustup/toolchains/${RUST_TOOLCHAIN}-${rustup_arch}/bin/rustc" /usr/local/bin/rustc \
-  && ln -sf "/usr/local/rustup/toolchains/${RUST_TOOLCHAIN}-${rustup_arch}/bin/cargo" /usr/local/bin/cargo \
-  && ln -sf "/usr/local/rustup/toolchains/${RUST_TOOLCHAIN}-${rustup_arch}/bin/rustfmt" /usr/local/bin/rustfmt \
+  && /tmp/rustup-init -y --profile minimal --default-toolchain "${RUST_TOOLCHAIN}" --no-modify-path \
+  && rustup component add rustfmt clippy --toolchain "${RUST_TOOLCHAIN}-${rustup_arch}" \
+  && rustup target add wasm32-unknown-unknown --toolchain "${RUST_TOOLCHAIN}-${rustup_arch}" \
+  && printf '%s\n' 'export PATH="/usr/local/cargo/bin:${PATH}"' > /etc/profile.d/rust-cargo-path.sh \
+  && chmod 0644 /etc/profile.d/rust-cargo-path.sh \
   && rm /tmp/rustup-init \
   && rustc --version >/dev/null \
   && cargo --version >/dev/null \
-  && rustfmt --version >/dev/null
+  && rustfmt --version >/dev/null \
+  && cargo fmt --version >/dev/null \
+  && cargo clippy --version >/dev/null \
+  && /usr/bin/env bash -lc 'cargo --version >/dev/null && cargo fmt --version >/dev/null && cargo clippy --version >/dev/null'
 
 RUN dioxus_tarball="/tmp/dx-x86_64-unknown-linux-gnu.tar.gz" \
   && dioxus_checksum_file="/tmp/dx-x86_64-unknown-linux-gnu.sha256" \
